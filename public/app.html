@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
   <style>
     :root {
       --navy:#1B2B5E; --navy-mid:#243579; --navy-dark:#111C3E;
@@ -602,18 +602,18 @@
     <div class="gate-plans">
       <div class="gate-plan" id="plan-starter" onclick="selectPlan('starter')">
         <div class="gate-plan-name">Starter</div>
-        <div class="gate-plan-price">£29<span>/mo</span></div>
+        <div class="gate-plan-price">£9.99<span>/mo</span></div>
         <div class="gate-plan-desc">50 leads/month · 1 trade · 1 area</div>
       </div>
       <div class="gate-plan popular selected" id="plan-professional" onclick="selectPlan('professional')">
         <div class="gate-plan-badge">⭐ Most Popular</div>
         <div class="gate-plan-name">Professional</div>
-        <div class="gate-plan-price">£59<span>/mo</span></div>
+        <div class="gate-plan-price">£14.99<span>/mo</span></div>
         <div class="gate-plan-desc">Unlimited leads · 3 trades · 5 areas</div>
       </div>
-      <div class="gate-plan" id="plan-agency" onclick="selectPlan('agency')">
-        <div class="gate-plan-name">Agency</div>
-        <div class="gate-plan-price">£129<span>/mo</span></div>
+      <div class="gate-plan" id="plan-ultimate" onclick="selectPlan('ultimate')">
+        <div class="gate-plan-name">Ultimate</div>
+        <div class="gate-plan-price">£19.99<span>/mo</span></div>
         <div class="gate-plan-desc">Everything + team seats + API</div>
       </div>
     </div>
@@ -859,9 +859,12 @@
 <div class="toast" id="toast"><span id="toast-msg"></span></div>
 
 <script>
-// ─── CONFIG ─── Replace with your real Supabase project values
+// ─── CONFIG ───────────────────────────────────────────────
+// SUPABASE_URL:  Your project URL from Supabase → Settings → General
+// SUPABASE_ANON: Your sb_publishable_... key from Settings → API Keys
 const SUPABASE_URL  = 'https://gsahuqwmstnzejnoyfic.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_wYMMhxVA7noyBwUYFogGRQ_HOBw4-t8';
+// ──────────────────────────────────────────────────────────
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
