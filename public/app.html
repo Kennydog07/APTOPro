@@ -1,1323 +1,1285 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta name="robots" content="noindex,nofollow"/>
   <title>APTO Pro — Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
-      --navy:      #1B2B5E;
-      --navy-mid:  #243579;
-      --navy-dark: #111C3E;
-      --yellow:    #F5C518;
-      --yellow-lt: #FDE96B;
-      --orange:    #C4541A;
-      --orange-lt: #E8722E;
-      --white:     #FFFFFF;
-      --slate:     #F4F6FA;
-      --slate-mid: #E8ECF4;
-      --grey:      #6B7280;
-      --dark:      #1A1A2E;
-      --success:   #16A34A;
-      --success-lt:#DCFCE7;
-      --danger:    #DC2626;
-      --danger-lt: #FEE2E2;
-      --warn:      #D97706;
-      --warn-lt:   #FEF3C7;
-      --font-d: 'Plus Jakarta Sans', sans-serif;
-      --font-b: 'Inter', sans-serif;
-      --r-sm: 6px; --r-md: 12px; --r-lg: 20px;
-      --sh-sm: 0 1px 3px rgba(27,43,94,0.08);
-      --sh-md: 0 4px 16px rgba(27,43,94,0.12);
-      --sh-lg: 0 12px 40px rgba(27,43,94,0.16);
+      --navy:#1B2B5E; --navy-mid:#243579; --navy-dark:#111C3E;
+      --yellow:#F5C518; --yellow-lt:#FDE96B;
+      --orange:#C4541A; --orange-lt:#E8722E;
+      --white:#FFFFFF; --slate:#F4F6FA; --slate-mid:#E8ECF4;
+      --grey:#6B7280; --dark:#1A1A2E;
+      --success:#16A34A; --success-lt:#DCFCE7;
+      --danger:#DC2626; --danger-lt:#FEE2E2;
+      --warn:#D97706; --warn-lt:#FEF3C7;
+      --font-d:'Plus Jakarta Sans',sans-serif;
+      --font-b:'Inter',sans-serif;
+      --r-sm:6px; --r-md:12px; --r-lg:20px;
+      --sh-sm:0 1px 3px rgba(27,43,94,0.08);
+      --sh-md:0 4px 16px rgba(27,43,94,0.12);
+      --sh-lg:0 12px 40px rgba(27,43,94,0.16);
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: var(--font-b); background: var(--slate); color: var(--dark); overflow-x: hidden; }
-    button { cursor: pointer; border: none; font-family: inherit; }
-    input, select { font-family: inherit; }
-    a { text-decoration: none; color: inherit; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font-b);background:var(--slate);color:var(--dark);overflow-x:hidden;}
+    button{cursor:pointer;border:none;font-family:inherit;}
+    input,select,textarea{font-family:inherit;}
+    a{text-decoration:none;color:inherit;}
+    img{max-width:100%;display:block;}
 
     /* ── SCREENS ── */
-    .screen { display: none; min-height: 100vh; }
-    .screen.active { display: flex; }
+    .screen{display:none;min-height:100vh;}
+    .screen.active{display:flex;}
 
-    /* ════════════════════════════
-       AUTH SCREENS
-    ════════════════════════════ */
-    .auth-screen {
-      background: var(--navy);
-      position: relative; overflow: hidden;
-      align-items: center; justify-content: center;
-      flex-direction: column; padding: 24px;
+    /* ── AUTH BACKGROUND ── */
+    .auth-screen{
+      background:var(--navy);
+      align-items:center;justify-content:center;
+      flex-direction:column;padding:24px;
+      position:relative;overflow:hidden;
     }
-    .auth-bg-grid {
-      position: absolute; inset: 0; pointer-events: none;
+    .auth-bg{
+      position:absolute;inset:0;pointer-events:none;
       background-image:
-        linear-gradient(rgba(245,197,24,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(245,197,24,0.04) 1px, transparent 1px);
-      background-size: 56px 56px;
+        linear-gradient(rgba(245,197,24,0.04) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(245,197,24,0.04) 1px,transparent 1px);
+      background-size:56px 56px;
     }
-    .auth-glow {
-      position: absolute; width: 600px; height: 600px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(245,197,24,0.07) 0%, transparent 70%);
-      pointer-events: none;
+    .auth-glow{
+      position:absolute;width:500px;height:500px;border-radius:50%;
+      background:radial-gradient(circle,rgba(245,197,24,0.07) 0%,transparent 70%);
+      pointer-events:none;
     }
-    .auth-glow.tl { top: -200px; left: -200px; }
-    .auth-glow.br { bottom: -200px; right: -200px; background: radial-gradient(circle, rgba(196,84,26,0.07) 0%, transparent 70%); }
+    .glow-tl{top:-200px;left:-200px;}
+    .glow-br{bottom:-200px;right:-200px;background:radial-gradient(circle,rgba(196,84,26,0.07) 0%,transparent 70%);}
 
-    .auth-card {
-      position: relative; z-index: 2;
-      background: var(--white); border-radius: var(--r-lg);
-      padding: 44px 40px; width: 100%; max-width: 420px;
-      box-shadow: var(--sh-lg);
+    /* ── AUTH CARD ── */
+    .auth-card{
+      position:relative;z-index:2;
+      background:var(--white);border-radius:var(--r-lg);
+      padding:40px 36px;width:100%;max-width:420px;
+      box-shadow:var(--sh-lg);
     }
-    .auth-logo {
-      display: flex; align-items: center; gap: 10px;
-      justify-content: center; margin-bottom: 8px;
+    .auth-logo{
+      display:flex;align-items:center;gap:10px;
+      justify-content:center;margin-bottom:20px;
     }
-    .auth-logo img { width: 52px; }
-    .auth-logo-text {
-      font-family: var(--font-d); font-weight: 800; font-size: 22px;
-      color: var(--navy); letter-spacing: -0.02em;
+    .auth-logo img{width:48px;}
+    .auth-logo-text{
+      font-family:var(--font-d);font-weight:800;font-size:22px;
+      color:var(--navy);letter-spacing:-0.02em;
     }
-    .auth-logo-text span { color: var(--orange); }
-    .auth-mascot-wrap {
-      text-align: center; margin-bottom: 20px;
+    .auth-logo-text span{color:var(--orange);}
+    .auth-mascot{text-align:center;margin-bottom:16px;}
+    .auth-mascot img{width:88px;margin:0 auto;}
+    .auth-title{
+      font-family:var(--font-d);font-weight:800;font-size:22px;
+      color:var(--navy);text-align:center;margin-bottom:6px;
+      letter-spacing:-0.02em;
     }
-    .auth-mascot-wrap img { width: 90px; margin: 0 auto; }
-    .auth-title {
-      font-family: var(--font-d); font-weight: 800; font-size: 22px;
-      color: var(--navy); text-align: center; margin-bottom: 6px;
-      letter-spacing: -0.02em;
-    }
-    .auth-sub {
-      font-size: 14px; color: var(--grey); text-align: center;
-      margin-bottom: 28px; line-height: 1.6;
-    }
-    .form-group { margin-bottom: 16px; }
-    .form-label {
-      display: block; font-size: 13px; font-weight: 600;
-      color: var(--navy); margin-bottom: 6px;
-    }
-    .form-input {
-      width: 100%; padding: 11px 14px;
-      border: 1.5px solid var(--slate-mid); border-radius: var(--r-sm);
-      font-size: 14px; color: var(--dark);
-      background: var(--white); transition: border-color 0.2s, box-shadow 0.2s;
-      outline: none;
-    }
-    .form-input:focus {
-      border-color: var(--navy); box-shadow: 0 0 0 3px rgba(27,43,94,0.1);
-    }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .btn-auth {
-      width: 100%; padding: 13px;
-      background: var(--navy); color: var(--white);
-      font-family: var(--font-d); font-weight: 700; font-size: 15px;
-      border-radius: var(--r-sm); margin-top: 8px;
-      transition: background 0.2s, transform 0.15s;
-    }
-    .btn-auth:hover { background: var(--navy-mid); transform: translateY(-1px); }
-    .btn-auth.yellow {
-      background: var(--yellow); color: var(--navy-dark);
-      box-shadow: 0 3px 12px rgba(245,197,24,0.4);
-    }
-    .btn-auth.yellow:hover { background: var(--yellow-lt); }
-    .auth-divider {
-      text-align: center; font-size: 13px; color: var(--grey);
-      margin: 16px 0; position: relative;
-    }
-    .auth-divider::before, .auth-divider::after {
-      content: ''; position: absolute; top: 50%; width: 40%; height: 1px;
-      background: var(--slate-mid);
-    }
-    .auth-divider::before { left: 0; }
-    .auth-divider::after { right: 0; }
-    .auth-switch {
-      text-align: center; font-size: 13px; color: var(--grey); margin-top: 20px;
-    }
-    .auth-switch a { color: var(--navy); font-weight: 600; cursor: pointer; }
-    .auth-switch a:hover { color: var(--orange); }
-    .auth-features {
-      margin-top: 20px; background: var(--slate); border-radius: var(--r-md);
-      padding: 14px 16px;
-    }
-    .auth-features-title {
-      font-size: 11px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.08em; color: var(--grey); margin-bottom: 10px;
-    }
-    .auth-feature-item {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 13px; color: var(--dark); margin-bottom: 6px;
-    }
-    .auth-feature-item:last-child { margin-bottom: 0; }
-    .auth-feature-item .chk { color: var(--success); font-size: 13px; }
+    .auth-sub{font-size:14px;color:var(--grey);text-align:center;margin-bottom:24px;line-height:1.6;}
 
-    /* ── SUBSCRIPTION GATE ── */
-    .gate-card {
-      position: relative; z-index: 2;
-      background: var(--white); border-radius: var(--r-lg);
-      padding: 44px 40px; width: 100%; max-width: 560px;
-      box-shadow: var(--sh-lg); text-align: center;
+    .form-group{margin-bottom:14px;}
+    .form-label{display:block;font-size:13px;font-weight:600;color:var(--navy);margin-bottom:5px;}
+    .form-input{
+      width:100%;padding:11px 14px;
+      border:1.5px solid var(--slate-mid);border-radius:var(--r-sm);
+      font-size:14px;color:var(--dark);background:var(--white);
+      outline:none;transition:border-color 0.2s,box-shadow 0.2s;
     }
-    .gate-mascot { width: 80px; margin: 0 auto 20px; }
-    .gate-title {
-      font-family: var(--font-d); font-weight: 800; font-size: 24px;
-      color: var(--navy); margin-bottom: 10px; letter-spacing: -0.02em;
-    }
-    .gate-sub {
-      font-size: 15px; color: var(--grey); margin-bottom: 32px; line-height: 1.7;
-    }
-    .gate-plans {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
-      margin-bottom: 28px; text-align: left;
-    }
-    .gate-plan {
-      border: 2px solid var(--slate-mid); border-radius: var(--r-md);
-      padding: 16px 14px; cursor: pointer; transition: border-color 0.2s, background 0.2s;
-    }
-    .gate-plan:hover, .gate-plan.selected {
-      border-color: var(--navy); background: rgba(27,43,94,0.03);
-    }
-    .gate-plan.popular {
-      border-color: var(--yellow); background: rgba(245,197,24,0.05);
-    }
-    .gate-plan-badge {
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.06em; color: var(--orange); margin-bottom: 6px;
-    }
-    .gate-plan-name {
-      font-family: var(--font-d); font-weight: 700; font-size: 14px;
-      color: var(--navy); margin-bottom: 4px;
-    }
-    .gate-plan-price {
-      font-family: var(--font-d); font-weight: 800; font-size: 22px;
-      color: var(--navy);
-    }
-    .gate-plan-price span { font-size: 13px; font-weight: 500; color: var(--grey); }
-    .btn-gate {
-      width: 100%; padding: 14px;
-      background: var(--yellow); color: var(--navy-dark);
-      font-family: var(--font-d); font-weight: 700; font-size: 16px;
-      border-radius: var(--r-md); box-shadow: 0 4px 16px rgba(245,197,24,0.4);
-      transition: background 0.2s, transform 0.15s;
-    }
-    .btn-gate:hover { background: var(--yellow-lt); transform: translateY(-1px); }
-    .gate-note { font-size: 12px; color: var(--grey); margin-top: 12px; }
+    .form-input:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,43,94,0.08);}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 
-    /* ════════════════════════════
-       APP SHELL
-    ════════════════════════════ */
-    .app-screen { flex-direction: row; }
+    .btn-auth{
+      width:100%;padding:13px;
+      background:var(--navy);color:var(--white);
+      font-family:var(--font-d);font-weight:700;font-size:15px;
+      border-radius:var(--r-sm);margin-top:8px;
+      transition:background 0.2s,transform 0.15s;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+    }
+    .btn-auth:hover:not(:disabled){background:var(--navy-mid);transform:translateY(-1px);}
+    .btn-auth:disabled{opacity:0.6;cursor:not-allowed;}
+    .btn-auth.yellow{background:var(--yellow);color:var(--navy-dark);box-shadow:0 3px 12px rgba(245,197,24,0.4);}
+    .btn-auth.yellow:hover:not(:disabled){background:var(--yellow-lt);}
 
-    /* SIDEBAR */
-    .sidebar {
-      width: 240px; flex-shrink: 0;
-      background: var(--navy-dark);
-      display: flex; flex-direction: column;
-      min-height: 100vh; position: fixed; left: 0; top: 0; bottom: 0;
-      z-index: 50; overflow-y: auto;
+    .auth-error{
+      background:var(--danger-lt);border:1px solid rgba(220,38,38,0.2);
+      border-radius:var(--r-sm);padding:10px 14px;
+      font-size:13px;color:var(--danger);margin-bottom:14px;
+      display:none;
     }
-    .sidebar-logo {
-      display: flex; align-items: center; gap: 10px;
-      padding: 20px 20px 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+    .auth-error.show{display:block;}
+    .auth-success{
+      background:var(--success-lt);border:1px solid rgba(22,163,74,0.2);
+      border-radius:var(--r-sm);padding:10px 14px;
+      font-size:13px;color:var(--success);margin-bottom:14px;
+      display:none;
     }
-    .sidebar-logo img { width: 36px; }
-    .sidebar-logo-text {
-      font-family: var(--font-d); font-weight: 800; font-size: 17px;
-      color: var(--white); letter-spacing: -0.02em;
-    }
-    .sidebar-logo-text span { color: var(--yellow); }
-    .sidebar-section-label {
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.1em; color: rgba(255,255,255,0.3);
-      padding: 20px 20px 8px;
-    }
-    .sidebar-nav { flex: 1; padding-bottom: 16px; }
-    .nav-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 20px; font-size: 14px; font-weight: 500;
-      color: rgba(255,255,255,0.55); cursor: pointer;
-      border-radius: 0; transition: color 0.15s, background 0.15s;
-      position: relative; border-left: 3px solid transparent;
-    }
-    .nav-item:hover { color: var(--white); background: rgba(255,255,255,0.04); }
-    .nav-item.active {
-      color: var(--white); background: rgba(245,197,24,0.08);
-      border-left-color: var(--yellow);
-    }
-    .nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
-    .nav-item .nav-badge {
-      margin-left: auto; background: var(--orange); color: var(--white);
-      font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 100px;
-    }
-    .sidebar-bottom {
-      padding: 16px 20px;
-      border-top: 1px solid rgba(255,255,255,0.06);
-    }
-    .user-pill {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 12px; border-radius: var(--r-md);
-      background: rgba(255,255,255,0.05); cursor: pointer;
-      transition: background 0.15s;
-    }
-    .user-pill:hover { background: rgba(255,255,255,0.09); }
-    .user-avatar {
-      width: 32px; height: 32px; border-radius: 50%;
-      background: var(--yellow); color: var(--navy-dark);
-      font-family: var(--font-d); font-weight: 800; font-size: 13px;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .user-info .user-name { font-size: 13px; font-weight: 600; color: var(--white); }
-    .user-info .user-plan { font-size: 11px; color: rgba(255,255,255,0.4); }
-    .user-chevron { margin-left: auto; color: rgba(255,255,255,0.3); font-size: 12px; }
+    .auth-success.show{display:block;}
 
-    /* MAIN */
-    .main {
-      margin-left: 240px; flex: 1; display: flex; flex-direction: column;
-      min-height: 100vh;
+    .auth-divider{
+      text-align:center;font-size:13px;color:var(--grey);
+      margin:16px 0;position:relative;
+    }
+    .auth-divider::before,.auth-divider::after{
+      content:'';position:absolute;top:50%;width:40%;height:1px;background:var(--slate-mid);
+    }
+    .auth-divider::before{left:0;} .auth-divider::after{right:0;}
+    .auth-switch{text-align:center;font-size:13px;color:var(--grey);margin-top:16px;}
+    .auth-switch a{color:var(--navy);font-weight:600;cursor:pointer;}
+    .auth-switch a:hover{color:var(--orange);}
+
+    .auth-benefits{
+      margin-top:20px;background:var(--slate);border-radius:var(--r-md);padding:14px 16px;
+    }
+    .auth-benefits-title{
+      font-size:11px;font-weight:700;text-transform:uppercase;
+      letter-spacing:0.08em;color:var(--grey);margin-bottom:10px;
+    }
+    .benefit-item{
+      display:flex;align-items:center;gap:8px;
+      font-size:13px;color:var(--dark);margin-bottom:6px;
+    }
+    .benefit-item:last-child{margin-bottom:0;}
+    .benefit-item .chk{color:var(--success);font-size:14px;flex-shrink:0;}
+
+    /* ── GATE SCREEN ── */
+    .gate-card{
+      position:relative;z-index:2;
+      background:var(--white);border-radius:var(--r-lg);
+      padding:40px 36px;width:100%;max-width:580px;
+      box-shadow:var(--sh-lg);text-align:center;
+    }
+    .gate-mascot{width:80px;margin:0 auto 20px;}
+    .gate-title{
+      font-family:var(--font-d);font-weight:800;font-size:24px;
+      color:var(--navy);margin-bottom:10px;letter-spacing:-0.02em;
+    }
+    .gate-sub{font-size:15px;color:var(--grey);margin-bottom:28px;line-height:1.7;}
+    .gate-plans{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;text-align:left;}
+    .gate-plan{
+      border:2px solid var(--slate-mid);border-radius:var(--r-md);
+      padding:16px 14px;cursor:pointer;
+      transition:border-color 0.2s,background 0.2s,transform 0.15s;
+      position:relative;
+    }
+    .gate-plan:hover{border-color:var(--navy);background:rgba(27,43,94,0.02);transform:translateY(-2px);}
+    .gate-plan.selected{border-color:var(--navy);background:rgba(27,43,94,0.04);}
+    .gate-plan.popular{border-color:var(--yellow);}
+    .gate-plan-badge{
+      font-size:10px;font-weight:700;text-transform:uppercase;
+      letter-spacing:0.06em;color:var(--orange);margin-bottom:6px;
+    }
+    .gate-plan-name{font-family:var(--font-d);font-weight:700;font-size:14px;color:var(--navy);margin-bottom:4px;}
+    .gate-plan-price{font-family:var(--font-d);font-weight:800;font-size:24px;color:var(--navy);}
+    .gate-plan-price span{font-size:13px;font-weight:500;color:var(--grey);}
+    .gate-plan-desc{font-size:11px;color:var(--grey);margin-top:4px;}
+    .btn-gate{
+      width:100%;padding:14px;
+      background:var(--yellow);color:var(--navy-dark);
+      font-family:var(--font-d);font-weight:800;font-size:16px;
+      border-radius:var(--r-md);box-shadow:0 4px 16px rgba(245,197,24,0.4);
+      transition:background 0.2s,transform 0.15s;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+    }
+    .btn-gate:hover:not(:disabled){background:var(--yellow-lt);transform:translateY(-1px);}
+    .btn-gate:disabled{opacity:0.6;cursor:not-allowed;}
+    .gate-note{font-size:12px;color:var(--grey);margin-top:12px;}
+    .gate-logout{font-size:13px;color:var(--grey);margin-top:16px;cursor:pointer;}
+    .gate-logout:hover{color:var(--navy);}
+
+    /* ── APP SHELL ── */
+    .app-screen{flex-direction:row;}
+
+    .sidebar{
+      width:240px;flex-shrink:0;background:var(--navy-dark);
+      display:flex;flex-direction:column;
+      min-height:100vh;position:fixed;left:0;top:0;bottom:0;
+      z-index:50;overflow-y:auto;
+    }
+    .sidebar-logo{
+      display:flex;align-items:center;gap:10px;
+      padding:20px 20px 16px;
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+    .sidebar-logo img{width:36px;}
+    .sidebar-logo-text{
+      font-family:var(--font-d);font-weight:800;font-size:17px;
+      color:var(--white);letter-spacing:-0.02em;
+    }
+    .sidebar-logo-text span{color:var(--yellow);}
+
+    .sidebar-section-label{
+      font-size:10px;font-weight:700;text-transform:uppercase;
+      letter-spacing:0.1em;color:rgba(255,255,255,0.3);
+      padding:20px 20px 8px;
+    }
+    .nav-item{
+      display:flex;align-items:center;gap:12px;
+      padding:10px 20px;font-size:14px;font-weight:500;
+      color:rgba(255,255,255,0.55);cursor:pointer;
+      border-left:3px solid transparent;
+      transition:color 0.15s,background 0.15s;
+    }
+    .nav-item:hover{color:var(--white);background:rgba(255,255,255,0.04);}
+    .nav-item.active{color:var(--white);background:rgba(245,197,24,0.08);border-left-color:var(--yellow);}
+    .nav-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+    .nav-badge{
+      margin-left:auto;background:var(--orange);color:var(--white);
+      font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;
+    }
+    .sidebar-bottom{
+      margin-top:auto;padding:16px 20px;
+      border-top:1px solid rgba(255,255,255,0.06);
+    }
+    .user-pill{
+      display:flex;align-items:center;gap:10px;
+      padding:10px 12px;border-radius:var(--r-md);
+      background:rgba(255,255,255,0.05);cursor:pointer;
+      transition:background 0.15s;
+    }
+    .user-pill:hover{background:rgba(255,255,255,0.09);}
+    .user-avatar{
+      width:32px;height:32px;border-radius:50%;
+      background:var(--yellow);color:var(--navy-dark);
+      font-family:var(--font-d);font-weight:800;font-size:13px;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    }
+    .user-info .user-name{font-size:13px;font-weight:600;color:var(--white);}
+    .user-info .user-plan{font-size:11px;color:rgba(255,255,255,0.4);}
+    .sidebar-trade-mascot{
+      width:80px;margin:0 auto 8px;display:block;
+      opacity:0.85;
     }
 
-    /* TOP BAR */
-    .topbar {
-      background: var(--white); border-bottom: 1px solid var(--slate-mid);
-      padding: 0 28px; height: 64px;
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 40;
-      box-shadow: var(--sh-sm);
+    .main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+
+    .topbar{
+      background:var(--white);border-bottom:1px solid var(--slate-mid);
+      padding:0 28px;height:64px;
+      display:flex;align-items:center;justify-content:space-between;
+      position:sticky;top:0;z-index:40;box-shadow:var(--sh-sm);
     }
-    .topbar-left { display: flex; align-items: center; gap: 16px; }
-    .topbar-title {
-      font-family: var(--font-d); font-weight: 700; font-size: 17px;
-      color: var(--navy);
+    .topbar-title{font-family:var(--font-d);font-weight:700;font-size:17px;color:var(--navy);}
+    .topbar-right{display:flex;align-items:center;gap:12px;}
+    .topbar-search{
+      display:flex;align-items:center;gap:8px;
+      background:var(--slate);border:1.5px solid var(--slate-mid);
+      border-radius:var(--r-sm);padding:8px 14px;
     }
-    .topbar-right { display: flex; align-items: center; gap: 12px; }
-    .topbar-search {
-      display: flex; align-items: center; gap: 8px;
-      background: var(--slate); border: 1.5px solid var(--slate-mid);
-      border-radius: var(--r-sm); padding: 8px 14px;
+    .topbar-search input{border:none;background:none;outline:none;font-size:13px;color:var(--dark);width:180px;}
+    .topbar-search input::placeholder{color:var(--grey);}
+    .topbar-btn{
+      width:36px;height:36px;border-radius:var(--r-sm);
+      background:var(--slate);border:1.5px solid var(--slate-mid);
+      display:flex;align-items:center;justify-content:center;
+      font-size:15px;cursor:pointer;transition:background 0.15s;position:relative;
     }
-    .topbar-search input {
-      border: none; background: none; outline: none;
-      font-size: 13px; color: var(--dark); width: 200px;
+    .topbar-btn:hover{background:var(--slate-mid);}
+    .notif-dot{
+      position:absolute;top:6px;right:6px;
+      width:7px;height:7px;border-radius:50%;
+      background:var(--orange);border:2px solid var(--white);
     }
-    .topbar-search input::placeholder { color: var(--grey); }
-    .topbar-icon-btn {
-      width: 36px; height: 36px; border-radius: var(--r-sm);
-      background: var(--slate); border: 1.5px solid var(--slate-mid);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 15px; cursor: pointer; position: relative;
-      transition: background 0.15s;
-    }
-    .topbar-icon-btn:hover { background: var(--slate-mid); }
-    .topbar-icon-btn .notif-dot {
-      position: absolute; top: 6px; right: 6px;
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--orange); border: 2px solid var(--white);
-    }
-    .plan-chip {
-      display: flex; align-items: center; gap: 6px;
-      background: rgba(245,197,24,0.12); border: 1px solid rgba(245,197,24,0.3);
-      border-radius: 100px; padding: 5px 12px;
-      font-family: var(--font-d); font-size: 12px; font-weight: 700;
-      color: var(--navy);
+    .plan-chip{
+      background:rgba(245,197,24,0.12);border:1px solid rgba(245,197,24,0.3);
+      border-radius:100px;padding:5px 12px;
+      font-family:var(--font-d);font-size:12px;font-weight:700;color:var(--navy);
     }
 
-    /* PAGE CONTENT */
-    .page-content {
-      padding: 28px; flex: 1;
-      display: none;
-    }
-    .page-content.active { display: block; }
+    .page-content{padding:28px;flex:1;display:none;}
+    .page-content.active{display:block;}
 
     /* ── DASHBOARD PAGE ── */
-    .dash-welcome {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 24px; flex-wrap: wrap; gap: 16px;
+    .welcome-bar{
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:24px;flex-wrap:wrap;gap:16px;
     }
-    .dash-welcome-text h1 {
-      font-family: var(--font-d); font-weight: 800; font-size: 24px;
-      color: var(--navy); letter-spacing: -0.02em; margin-bottom: 4px;
+    .welcome-bar h1{
+      font-family:var(--font-d);font-weight:800;font-size:24px;
+      color:var(--navy);letter-spacing:-0.02em;margin-bottom:4px;
     }
-    .dash-welcome-text p { font-size: 14px; color: var(--grey); }
-    .dash-welcome-mascot { width: 72px; opacity: 0.9; }
+    .welcome-bar p{font-size:14px;color:var(--grey);}
+    .welcome-mascot{width:72px;}
 
-    .kpi-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr);
-      gap: 16px; margin-bottom: 24px;
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+    .kpi-card{
+      background:var(--white);border-radius:var(--r-md);
+      padding:20px 22px;border:1px solid var(--slate-mid);box-shadow:var(--sh-sm);
     }
-    .kpi-card {
-      background: var(--white); border-radius: var(--r-md);
-      padding: 20px 22px; border: 1px solid var(--slate-mid);
-      box-shadow: var(--sh-sm);
-    }
-    .kpi-label {
-      font-size: 12px; font-weight: 600; text-transform: uppercase;
-      letter-spacing: 0.06em; color: var(--grey); margin-bottom: 10px;
-    }
-    .kpi-value {
-      font-family: var(--font-d); font-size: 32px; font-weight: 800;
-      color: var(--navy); letter-spacing: -0.03em; line-height: 1;
-      margin-bottom: 8px;
-    }
-    .kpi-delta {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: 12px; font-weight: 600; padding: 2px 8px;
-      border-radius: 100px;
-    }
-    .kpi-delta.up { background: var(--success-lt); color: var(--success); }
-    .kpi-delta.warn { background: var(--warn-lt); color: var(--warn); }
+    .kpi-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--grey);margin-bottom:10px;}
+    .kpi-value{font-family:var(--font-d);font-size:32px;font-weight:800;color:var(--navy);letter-spacing:-0.03em;line-height:1;margin-bottom:8px;}
+    .kpi-delta{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:100px;}
+    .delta-up{background:var(--success-lt);color:var(--success);}
+    .delta-warn{background:var(--warn-lt);color:var(--warn);}
+    .delta-red{background:var(--danger-lt);color:var(--danger);}
 
-    .dash-grid {
-      display: grid; grid-template-columns: 1fr 340px;
-      gap: 20px;
-    }
+    .dash-grid{display:grid;grid-template-columns:1fr 340px;gap:20px;}
 
-    /* Lead Feed */
-    .panel {
-      background: var(--white); border-radius: var(--r-md);
-      border: 1px solid var(--slate-mid); box-shadow: var(--sh-sm);
-      overflow: hidden;
-    }
-    .panel-header {
-      padding: 16px 20px; border-bottom: 1px solid var(--slate-mid);
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .panel-title {
-      font-family: var(--font-d); font-weight: 700; font-size: 15px;
-      color: var(--navy); display: flex; align-items: center; gap: 8px;
-    }
-    .live-dot {
-      width: 7px; height: 7px; border-radius: 50%; background: #4ADE80;
-      animation: pulse 1.8s ease-in-out infinite;
-    }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
-    .panel-action {
-      font-size: 13px; font-weight: 600; color: var(--navy); cursor: pointer;
-      transition: color 0.15s;
-    }
-    .panel-action:hover { color: var(--orange); }
+    .panel{background:var(--white);border-radius:var(--r-md);border:1px solid var(--slate-mid);box-shadow:var(--sh-sm);overflow:hidden;}
+    .panel-header{padding:16px 20px;border-bottom:1px solid var(--slate-mid);display:flex;align-items:center;justify-content:space-between;}
+    .panel-title{font-family:var(--font-d);font-weight:700;font-size:15px;color:var(--navy);display:flex;align-items:center;gap:8px;}
+    .live-dot{width:7px;height:7px;border-radius:50%;background:#4ADE80;animation:pulse 1.8s ease-in-out infinite;}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+    .panel-link{font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;transition:color 0.15s;}
+    .panel-link:hover{color:var(--orange);}
 
-    /* Lead Row */
-    .lead-row {
-      padding: 14px 20px; border-bottom: 1px solid var(--slate-mid);
-      display: flex; align-items: flex-start; gap: 14px;
-      cursor: pointer; transition: background 0.15s;
+    /* Lead rows */
+    .lead-row{
+      padding:14px 20px;border-bottom:1px solid var(--slate-mid);
+      display:flex;align-items:flex-start;gap:14px;
+      cursor:pointer;transition:background 0.15s;
     }
-    .lead-row:last-child { border-bottom: none; }
-    .lead-row:hover { background: var(--slate); }
-    .lead-score-circle {
-      width: 44px; height: 44px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-d); font-weight: 800; font-size: 14px;
-      flex-shrink: 0;
-    }
-    .score-high { background: rgba(22,163,74,0.12); color: var(--success); }
-    .score-mid  { background: rgba(245,197,24,0.15); color: #B45309; }
-    .score-low  { background: rgba(107,114,128,0.1); color: var(--grey); }
-    .lead-row-info { flex: 1; min-width: 0; }
-    .lead-row-top {
-      display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
-      flex-wrap: wrap;
-    }
-    .lrt-trade {
-      font-family: var(--font-d); font-size: 13px; font-weight: 700;
-      color: var(--navy);
-    }
-    .lrt-loc { font-size: 12px; color: var(--grey); }
-    .lrt-time { font-size: 11px; color: rgba(107,114,128,0.7); margin-left: auto; }
-    .lead-row-msg {
-      font-size: 13px; color: var(--dark); line-height: 1.5;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .lead-row-badges {
-      display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;
-    }
-    .mini-badge {
-      font-size: 10px; font-weight: 600; padding: 2px 8px;
-      border-radius: 100px; white-space: nowrap;
-    }
-    .mb-urgent  { background: var(--danger-lt); color: var(--danger); }
-    .mb-high    { background: var(--warn-lt); color: var(--warn); }
-    .mb-normal  { background: var(--slate-mid); color: var(--grey); }
-    .mb-trade   { background: rgba(27,43,94,0.08); color: var(--navy); }
+    .lead-row:last-child{border-bottom:none;}
+    .lead-row:hover{background:var(--slate);}
+    .lead-trade-img{width:48px;height:48px;object-fit:contain;flex-shrink:0;}
+    .lead-row-info{flex:1;min-width:0;}
+    .lead-row-top{display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;}
+    .lrt-trade{font-family:var(--font-d);font-size:13px;font-weight:700;color:var(--navy);}
+    .lrt-loc{font-size:12px;color:var(--grey);}
+    .lrt-time{font-size:11px;color:rgba(107,114,128,0.7);margin-left:auto;}
+    .lead-row-msg{font-size:13px;color:var(--dark);line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .lead-row-badges{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+    .mini-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:100px;white-space:nowrap;}
+    .mb-urgent{background:var(--danger-lt);color:var(--danger);}
+    .mb-high{background:var(--warn-lt);color:var(--warn);}
+    .mb-normal{background:var(--slate-mid);color:var(--grey);}
+    .mb-trade{background:rgba(27,43,94,0.08);color:var(--navy);}
 
-    /* Right column */
-    .right-col { display: flex; flex-direction: column; gap: 20px; }
-
-    /* AI Tips panel */
-    .ai-tip {
-      background: var(--navy); border-radius: var(--r-md);
-      padding: 20px; display: flex; gap: 14px; align-items: flex-start;
-    }
-    .ai-tip img { width: 48px; flex-shrink: 0; margin-top: 2px; }
-    .ai-tip-body .ai-tip-label {
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.08em; color: var(--yellow); margin-bottom: 6px;
-    }
-    .ai-tip-body p {
-      font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.65;
-    }
-
-    /* Activity feed */
-    .activity-item {
-      display: flex; align-items: flex-start; gap: 12px;
-      padding: 12px 20px; border-bottom: 1px solid var(--slate-mid);
-    }
-    .activity-item:last-child { border-bottom: none; }
-    .activity-icon {
-      width: 30px; height: 30px; border-radius: var(--r-sm);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; flex-shrink: 0;
-    }
-    .ai-yellow { background: rgba(245,197,24,0.15); }
-    .ai-green  { background: var(--success-lt); }
-    .ai-orange { background: rgba(196,84,26,0.12); }
-    .activity-text { flex: 1; }
-    .activity-text .at-main { font-size: 13px; color: var(--dark); line-height: 1.5; }
-    .activity-text .at-time { font-size: 11px; color: var(--grey); margin-top: 2px; }
+    /* Right col */
+    .right-col{display:flex;flex-direction:column;gap:20px;}
+    .ai-tip{background:var(--navy);border-radius:var(--r-md);padding:20px;display:flex;gap:14px;align-items:flex-start;}
+    .ai-tip img{width:52px;flex-shrink:0;}
+    .ai-tip-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--yellow);margin-bottom:6px;}
+    .ai-tip p{font-size:13px;color:rgba(255,255,255,0.75);line-height:1.65;}
+    .activity-item{display:flex;align-items:flex-start;gap:12px;padding:12px 20px;border-bottom:1px solid var(--slate-mid);}
+    .activity-item:last-child{border-bottom:none;}
+    .act-icon{width:30px;height:30px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+    .ai-yellow{background:rgba(245,197,24,0.15);}
+    .ai-green{background:var(--success-lt);}
+    .ai-orange{background:rgba(196,84,26,0.12);}
+    .act-main{font-size:13px;color:var(--dark);line-height:1.5;}
+    .act-time{font-size:11px;color:var(--grey);margin-top:2px;}
 
     /* ── LEAD FEED PAGE ── */
-    .feed-toolbar {
-      display: flex; align-items: center; gap: 12px;
-      margin-bottom: 20px; flex-wrap: wrap;
-    }
-    .filter-select {
-      padding: 8px 12px; border: 1.5px solid var(--slate-mid);
-      border-radius: var(--r-sm); font-size: 13px; color: var(--dark);
-      background: var(--white); outline: none; cursor: pointer;
-    }
-    .filter-select:focus { border-color: var(--navy); }
-    .btn-sm {
-      padding: 8px 16px; border-radius: var(--r-sm);
-      font-family: var(--font-d); font-weight: 600; font-size: 13px;
-      display: inline-flex; align-items: center; gap: 6px;
-    }
-    .btn-navy { background: var(--navy); color: var(--white); }
-    .btn-navy:hover { background: var(--navy-mid); }
-    .btn-outline { background: transparent; color: var(--navy); border: 1.5px solid var(--slate-mid); }
-    .btn-outline:hover { border-color: var(--navy); }
+    .feed-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+    .filter-select{padding:8px 12px;border:1.5px solid var(--slate-mid);border-radius:var(--r-sm);font-size:13px;color:var(--dark);background:var(--white);outline:none;cursor:pointer;}
+    .filter-select:focus{border-color:var(--navy);}
+    .btn-sm{padding:8px 16px;border-radius:var(--r-sm);font-family:var(--font-d);font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:6px;}
+    .btn-navy{background:var(--navy);color:var(--white);} .btn-navy:hover{background:var(--navy-mid);}
+    .btn-outline{background:transparent;color:var(--navy);border:1.5px solid var(--slate-mid);} .btn-outline:hover{border-color:var(--navy);}
 
-    .lead-card-full {
-      background: var(--white); border-radius: var(--r-md);
-      border: 1px solid var(--slate-mid); margin-bottom: 12px;
-      overflow: hidden; box-shadow: var(--sh-sm);
-      transition: box-shadow 0.2s;
-    }
-    .lead-card-full:hover { box-shadow: var(--sh-md); }
-    .lcf-header {
-      background: var(--navy); padding: 12px 16px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .lcf-header-left {
-      display: flex; align-items: center; gap: 10px;
-    }
-    .lcf-score {
-      background: var(--yellow); color: var(--navy-dark);
-      font-family: var(--font-d); font-weight: 800; font-size: 12px;
-      padding: 3px 10px; border-radius: 100px;
-    }
-    .lcf-meta { font-size: 12px; color: rgba(255,255,255,0.6); }
-    .lcf-body { padding: 16px; }
-    .lcf-msg {
-      background: var(--slate); border-radius: var(--r-sm);
-      padding: 12px 14px; font-size: 14px; color: var(--dark);
-      line-height: 1.6; margin-bottom: 12px;
-      border-left: 3px solid var(--orange-lt);
-    }
-    .lcf-stats {
-      display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
-    }
-    .lcf-stat-chip {
-      background: var(--slate); border-radius: 100px;
-      padding: 4px 12px; font-size: 12px; font-weight: 600; color: var(--navy);
-    }
-    .lcf-reply-box {
-      background: linear-gradient(135deg, rgba(27,43,94,0.03), rgba(245,197,24,0.05));
-      border: 1px solid rgba(27,43,94,0.08); border-radius: var(--r-sm);
-      padding: 12px 14px;
-    }
-    .lcf-reply-label {
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.08em; color: var(--orange); margin-bottom: 6px;
-    }
-    .lcf-reply-text { font-size: 13px; color: var(--dark); line-height: 1.6; }
-    .lcf-actions {
-      display: flex; gap: 8px; padding: 12px 16px;
-      border-top: 1px solid var(--slate-mid); flex-wrap: wrap;
-    }
-    .btn-lcf-save {
-      background: var(--navy); color: var(--white);
-      font-family: var(--font-d); font-weight: 600; font-size: 12px;
-      padding: 8px 14px; border-radius: var(--r-sm);
-      transition: background 0.15s;
-    }
-    .btn-lcf-save:hover { background: var(--navy-mid); }
-    .btn-lcf-copy {
-      background: var(--yellow); color: var(--navy-dark);
-      font-family: var(--font-d); font-weight: 600; font-size: 12px;
-      padding: 8px 14px; border-radius: var(--r-sm);
-      transition: background 0.15s;
-    }
-    .btn-lcf-copy:hover { background: var(--yellow-lt); }
-    .btn-lcf-dismiss {
-      background: var(--slate); color: var(--grey);
-      font-family: var(--font-d); font-weight: 600; font-size: 12px;
-      padding: 8px 14px; border-radius: var(--r-sm);
-      transition: background 0.15s;
-    }
-    .btn-lcf-dismiss:hover { background: var(--slate-mid); }
+    .lead-card{background:var(--white);border-radius:var(--r-md);border:1px solid var(--slate-mid);margin-bottom:12px;overflow:hidden;box-shadow:var(--sh-sm);transition:box-shadow 0.2s;}
+    .lead-card:hover{box-shadow:var(--sh-md);}
+    .lc-header{background:var(--navy);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;}
+    .lc-score{background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:800;font-size:12px;padding:3px 10px;border-radius:100px;}
+    .lc-meta{font-size:12px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;}
+    .lc-body{padding:16px;display:flex;gap:16px;align-items:flex-start;}
+    .lc-trade-mascot{width:64px;flex-shrink:0;}
+    .lc-body-text{flex:1;}
+    .lc-msg{background:var(--slate);border-radius:var(--r-sm);padding:12px 14px;font-size:14px;color:var(--dark);line-height:1.6;margin-bottom:12px;border-left:3px solid var(--orange-lt);}
+    .lc-chips{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+    .lc-chip{background:var(--slate);border-radius:100px;padding:4px 12px;font-size:12px;font-weight:600;color:var(--navy);}
+    .lc-reply{background:linear-gradient(135deg,rgba(27,43,94,0.03),rgba(245,197,24,0.06));border:1px solid rgba(27,43,94,0.1);border-radius:var(--r-sm);padding:12px 14px;}
+    .lc-reply-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--orange);margin-bottom:6px;}
+    .lc-reply-text{font-size:13px;color:var(--dark);line-height:1.6;}
+    .lc-actions{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--slate-mid);flex-wrap:wrap;}
+    .btn-lc{padding:8px 14px;border-radius:var(--r-sm);font-family:var(--font-d);font-weight:600;font-size:12px;flex:1;transition:all 0.15s;}
+    .btn-lc-save{background:var(--navy);color:var(--white);} .btn-lc-save:hover{background:var(--navy-mid);}
+    .btn-lc-copy{background:var(--yellow);color:var(--navy-dark);box-shadow:0 2px 6px rgba(245,197,24,0.3);} .btn-lc-copy:hover{background:var(--yellow-lt);}
+    .btn-lc-dismiss{background:var(--slate);color:var(--grey);} .btn-lc-dismiss:hover{background:var(--slate-mid);}
 
     /* ── SETTINGS PAGE ── */
-    .settings-grid { display: grid; grid-template-columns: 240px 1fr; gap: 24px; }
-    .settings-nav { background: var(--white); border-radius: var(--r-md); border: 1px solid var(--slate-mid); overflow: hidden; }
-    .settings-nav-item {
-      padding: 12px 16px; font-size: 14px; font-weight: 500;
-      color: var(--grey); cursor: pointer; border-left: 3px solid transparent;
-      transition: all 0.15s;
-    }
-    .settings-nav-item:hover { background: var(--slate); color: var(--navy); }
-    .settings-nav-item.active {
-      background: rgba(27,43,94,0.05); color: var(--navy);
-      border-left-color: var(--navy); font-weight: 600;
-    }
-    .settings-panel { background: var(--white); border-radius: var(--r-md); border: 1px solid var(--slate-mid); padding: 28px; }
-    .settings-section-title {
-      font-family: var(--font-d); font-weight: 700; font-size: 17px;
-      color: var(--navy); margin-bottom: 6px;
-    }
-    .settings-section-sub { font-size: 14px; color: var(--grey); margin-bottom: 24px; }
-    .settings-field { margin-bottom: 20px; }
-    .settings-label {
-      display: block; font-size: 13px; font-weight: 600;
-      color: var(--navy); margin-bottom: 6px;
-    }
-    .settings-input {
-      width: 100%; padding: 10px 14px;
-      border: 1.5px solid var(--slate-mid); border-radius: var(--r-sm);
-      font-size: 14px; color: var(--dark); outline: none;
-      transition: border-color 0.2s;
-    }
-    .settings-input:focus { border-color: var(--navy); }
-    .settings-save {
-      background: var(--navy); color: var(--white);
-      font-family: var(--font-d); font-weight: 700; font-size: 14px;
-      padding: 11px 24px; border-radius: var(--r-sm);
-      transition: background 0.15s;
-    }
-    .settings-save:hover { background: var(--navy-mid); }
-    .toggle-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 0; border-bottom: 1px solid var(--slate-mid);
-    }
-    .toggle-row:last-child { border-bottom: none; }
-    .toggle-info .tl { font-size: 14px; font-weight: 600; color: var(--dark); }
-    .toggle-info .td { font-size: 12px; color: var(--grey); margin-top: 2px; }
-    .toggle {
-      width: 40px; height: 22px; border-radius: 100px;
-      background: var(--slate-mid); position: relative; cursor: pointer;
-      transition: background 0.2s; flex-shrink: 0;
-    }
-    .toggle.on { background: var(--navy); }
-    .toggle::after {
-      content: ''; position: absolute; top: 3px; left: 3px;
-      width: 16px; height: 16px; border-radius: 50%;
-      background: var(--white); transition: transform 0.2s;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    }
-    .toggle.on::after { transform: translateX(18px); }
+    .settings-grid{display:grid;grid-template-columns:220px 1fr;gap:24px;}
+    .settings-nav{background:var(--white);border-radius:var(--r-md);border:1px solid var(--slate-mid);overflow:hidden;height:fit-content;}
+    .settings-nav-item{padding:12px 16px;font-size:14px;font-weight:500;color:var(--grey);cursor:pointer;border-left:3px solid transparent;transition:all 0.15s;}
+    .settings-nav-item:hover{background:var(--slate);color:var(--navy);}
+    .settings-nav-item.active{background:rgba(27,43,94,0.05);color:var(--navy);border-left-color:var(--navy);font-weight:600;}
+    .settings-panel{background:var(--white);border-radius:var(--r-md);border:1px solid var(--slate-mid);padding:28px;}
+    .settings-title{font-family:var(--font-d);font-weight:700;font-size:17px;color:var(--navy);margin-bottom:6px;}
+    .settings-sub{font-size:14px;color:var(--grey);margin-bottom:24px;}
+    .settings-field{margin-bottom:18px;}
+    .settings-label{display:block;font-size:13px;font-weight:600;color:var(--navy);margin-bottom:5px;}
+    .settings-input{width:100%;padding:10px 14px;border:1.5px solid var(--slate-mid);border-radius:var(--r-sm);font-size:14px;color:var(--dark);outline:none;transition:border-color 0.2s;}
+    .settings-input:focus{border-color:var(--navy);}
+    .btn-save{background:var(--navy);color:var(--white);font-family:var(--font-d);font-weight:700;font-size:14px;padding:11px 24px;border-radius:var(--r-sm);transition:background 0.15s;}
+    .btn-save:hover{background:var(--navy-mid);}
+    .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--slate-mid);}
+    .toggle-row:last-child{border-bottom:none;}
+    .toggle-lbl{font-size:14px;font-weight:600;color:var(--dark);}
+    .toggle-desc{font-size:12px;color:var(--grey);margin-top:2px;}
+    .toggle{width:40px;height:22px;border-radius:100px;background:var(--slate-mid);position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;}
+    .toggle.on{background:var(--navy);}
+    .toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--white);transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+    .toggle.on::after{transform:translateX(18px);}
 
-    /* ── EMPTY / LOADING ── */
-    .empty-state {
-      text-align: center; padding: 60px 24px;
-      display: flex; flex-direction: column; align-items: center; gap: 16px;
+    /* ── BILLING PAGE ── */
+    .billing-plan-card{
+      background:var(--white);border-radius:var(--r-lg);border:1px solid var(--slate-mid);
+      padding:28px;margin-bottom:20px;display:flex;align-items:center;gap:24px;
     }
-    .empty-state img { width: 80px; opacity: 0.7; }
-    .empty-state h3 {
-      font-family: var(--font-d); font-weight: 700; font-size: 18px;
-      color: var(--navy);
-    }
-    .empty-state p { font-size: 14px; color: var(--grey); max-width: 300px; line-height: 1.6; }
+    .billing-mascot{width:80px;flex-shrink:0;}
+    .billing-plan-name{font-family:var(--font-d);font-weight:800;font-size:22px;color:var(--navy);margin-bottom:4px;}
+    .billing-status{display:inline-flex;align-items:center;gap:6px;background:var(--success-lt);color:var(--success);font-size:13px;font-weight:600;padding:4px 12px;border-radius:100px;margin-bottom:12px;}
+    .billing-detail{font-size:14px;color:var(--grey);line-height:1.7;}
+    .btn-manage{background:var(--navy);color:var(--white);font-family:var(--font-d);font-weight:700;font-size:14px;padding:10px 20px;border-radius:var(--r-sm);margin-top:16px;display:inline-flex;align-items:center;gap:8px;transition:background 0.15s;}
+    .btn-manage:hover{background:var(--navy-mid);}
+    .btn-danger{background:var(--danger-lt);color:var(--danger);font-family:var(--font-d);font-weight:600;font-size:13px;padding:8px 16px;border-radius:var(--r-sm);transition:background 0.15s;}
+    .btn-danger:hover{background:rgba(220,38,38,0.15);}
 
-    /* TOAST */
-    .toast {
-      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-      background: var(--navy-dark); color: var(--white);
-      padding: 12px 20px; border-radius: var(--r-md);
-      font-size: 14px; font-weight: 500;
-      box-shadow: var(--sh-lg);
-      transform: translateY(80px); opacity: 0;
-      transition: transform 0.3s, opacity 0.3s;
-      display: flex; align-items: center; gap: 10px;
-    }
-    .toast.show { transform: translateY(0); opacity: 1; }
-    .toast .t-icon { font-size: 16px; }
+    /* ── EMPTY STATE ── */
+    .empty-state{text-align:center;padding:60px 24px;display:flex;flex-direction:column;align-items:center;gap:16px;}
+    .empty-state img{width:80px;opacity:0.7;}
+    .empty-state h3{font-family:var(--font-d);font-weight:700;font-size:18px;color:var(--navy);}
+    .empty-state p{font-size:14px;color:var(--grey);max-width:300px;line-height:1.6;}
 
-    @media (max-width: 900px) {
-      .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
-      .sidebar.open { transform: translateX(0); }
-      .main { margin-left: 0; }
-      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-      .dash-grid { grid-template-columns: 1fr; }
-      .settings-grid { grid-template-columns: 1fr; }
-      .gate-plans { grid-template-columns: 1fr; }
+    /* ── TOAST ── */
+    .toast{
+      position:fixed;bottom:24px;right:24px;z-index:9999;
+      background:var(--navy-dark);color:var(--white);
+      padding:12px 20px;border-radius:var(--r-md);
+      font-size:14px;font-weight:500;box-shadow:var(--sh-lg);
+      transform:translateY(80px);opacity:0;
+      transition:transform 0.3s,opacity 0.3s;
+      display:flex;align-items:center;gap:10px;
+    }
+    .toast.show{transform:translateY(0);opacity:1;}
+
+    /* ── LOADING ── */
+    .full-loading{
+      position:fixed;inset:0;background:var(--navy);
+      display:flex;align-items:center;justify-content:center;
+      flex-direction:column;gap:16px;z-index:999;
+    }
+    .full-loading img{width:80px;animation:bounce 0.8s ease-in-out infinite alternate;}
+    @keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-12px)}}
+    .full-loading p{font-family:var(--font-d);font-weight:700;font-size:16px;color:var(--white);}
+
+    @media(max-width:900px){
+      .sidebar{display:none;}
+      .main{margin-left:0;}
+      .kpi-grid{grid-template-columns:repeat(2,1fr);}
+      .dash-grid{grid-template-columns:1fr;}
+      .settings-grid{grid-template-columns:1fr;}
+      .gate-plans{grid-template-columns:1fr;}
     }
   </style>
 </head>
 <body>
 
-<!-- ════════════════════════════════════
-     SCREEN 1: LOGIN
-════════════════════════════════════ -->
-<div class="screen auth-screen active" id="screen-login">
-  <div class="auth-bg-grid"></div>
-  <div class="auth-glow tl"></div>
-  <div class="auth-glow br"></div>
+<!-- LOADING -->
+<div class="full-loading" id="loading">
+  <img src="/images/mascot.png" alt="Loading APTO Pro"/>
+  <p>Loading APTO Pro...</p>
+</div>
 
+<!-- ════════ SCREEN: LOGIN ════════ -->
+<div class="screen auth-screen" id="screen-login">
+  <div class="auth-bg"></div>
+  <div class="auth-glow glow-tl"></div>
+  <div class="auth-glow glow-br"></div>
   <div class="auth-card">
     <div class="auth-logo">
-      <img src="/images/mascot.png" alt="APTO Pro" />
+      <img src="/images/mascot.png" alt="APTO Pro"/>
       <span class="auth-logo-text">APTO <span>Pro</span></span>
     </div>
     <div class="auth-title">Welcome back</div>
     <div class="auth-sub">Sign in to your APTO Pro account</div>
-
+    <div class="auth-error" id="login-error"></div>
+    <div class="auth-success" id="login-success"></div>
     <div class="form-group">
       <label class="form-label">Email address</label>
-      <input class="form-input" type="email" placeholder="you@example.com" id="login-email" />
+      <input class="form-input" type="email" id="login-email" placeholder="you@example.com" autocomplete="email"/>
     </div>
     <div class="form-group">
       <label class="form-label">Password</label>
-      <input class="form-input" type="password" placeholder="••••••••" id="login-password" />
+      <input class="form-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"/>
     </div>
-    <button class="btn-auth yellow" onclick="doLogin()">Sign in to APTO Pro</button>
-
+    <button class="btn-auth yellow" id="login-btn" onclick="doLogin()">Sign in to APTO Pro</button>
     <div class="auth-divider">or</div>
-
-    <div class="auth-switch">
-      Don't have an account? <a onclick="showScreen('screen-signup')">Start your free trial</a>
-    </div>
-    <div class="auth-switch" style="margin-top:8px;">
-      <a href="#" style="font-size:13px;color:var(--grey);">Forgot your password?</a>
-    </div>
+    <div class="auth-switch">Don't have an account? <a onclick="showScreen('screen-signup')">Start free trial</a></div>
+    <div class="auth-switch" style="margin-top:8px;"><a onclick="showScreen('screen-reset')" style="color:var(--grey);font-size:12px;">Forgot password?</a></div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════
-     SCREEN 2: SIGN UP
-════════════════════════════════════ -->
+<!-- ════════ SCREEN: SIGN UP ════════ -->
 <div class="screen auth-screen" id="screen-signup">
-  <div class="auth-bg-grid"></div>
-  <div class="auth-glow tl"></div>
-  <div class="auth-glow br"></div>
-
+  <div class="auth-bg"></div>
+  <div class="auth-glow glow-tl"></div>
   <div class="auth-card">
-    <div class="auth-mascot-wrap">
-      <img src="/images/mascot.png" alt="APTO Pro mascot" />
-    </div>
+    <div class="auth-mascot"><img src="/images/mascot.png" alt="APTO Pro"/></div>
     <div class="auth-title">Start finding leads today</div>
     <div class="auth-sub">14-day free trial · No credit card required</div>
-
+    <div class="auth-error" id="signup-error"></div>
+    <div class="auth-success" id="signup-success"></div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">First name</label>
-        <input class="form-input" type="text" placeholder="John" />
+        <input class="form-input" type="text" id="signup-first" placeholder="John"/>
       </div>
       <div class="form-group">
         <label class="form-label">Last name</label>
-        <input class="form-input" type="text" placeholder="Smith" />
+        <input class="form-input" type="text" id="signup-last" placeholder="Smith"/>
       </div>
     </div>
     <div class="form-group">
       <label class="form-label">Email address</label>
-      <input class="form-input" type="email" placeholder="you@example.com" />
+      <input class="form-input" type="email" id="signup-email" placeholder="you@example.com" autocomplete="email"/>
     </div>
     <div class="form-group">
       <label class="form-label">Your trade</label>
-      <select class="form-input">
-        <option>Plumbing</option>
-        <option>Electrical</option>
-        <option>Decorating / Painting</option>
-        <option>Gardening / Landscaping</option>
-        <option>Building / Construction</option>
-        <option>Dog Grooming</option>
-        <option>Cleaning</option>
-        <option>Removals</option>
-        <option>Other</option>
+      <select class="form-input" id="signup-trade">
+        <option value="plumbing">🔧 Plumbing</option>
+        <option value="electrical">⚡ Electrical</option>
+        <option value="decorating">🏠 Decorating / Painting</option>
+        <option value="gardening">🌿 Gardening / Landscaping</option>
+        <option value="building">🏗️ Building / Construction</option>
+        <option value="dog-grooming">🐕 Dog Grooming</option>
+        <option value="cleaning">🧹 Cleaning</option>
+        <option value="removals">🚚 Removals</option>
+        <option value="hvac">❄️ HVAC / Air Con</option>
+        <option value="locksmith">🔒 Locksmith</option>
+        <option value="catering">🍕 Catering</option>
+        <option value="photography">📸 Photography</option>
+        <option value="windows-doors">🪟 Windows & Doors</option>
+        <option value="hairdressing">💇 Hair & Beauty</option>
       </select>
     </div>
     <div class="form-group">
       <label class="form-label">Password</label>
-      <input class="form-input" type="password" placeholder="Min. 8 characters" />
+      <input class="form-input" type="password" id="signup-password" placeholder="Min. 8 characters" autocomplete="new-password"/>
     </div>
-    <button class="btn-auth yellow" onclick="showScreen('screen-gate')">Create my account →</button>
-
-    <div class="auth-features">
-      <div class="auth-features-title">What you get free for 14 days</div>
-      <div class="auth-feature-item"><span class="chk">✓</span> AI lead finder scanning your area 24/7</div>
-      <div class="auth-feature-item"><span class="chk">✓</span> Instant alerts when leads are found</div>
-      <div class="auth-feature-item"><span class="chk">✓</span> AI-written reply suggestions</div>
-      <div class="auth-feature-item"><span class="chk">✓</span> Full dashboard access — no limits</div>
+    <button class="btn-auth yellow" id="signup-btn" onclick="doSignup()">Create my account →</button>
+    <div class="auth-benefits">
+      <div class="auth-benefits-title">What you get free for 14 days</div>
+      <div class="benefit-item"><span class="chk">✓</span> AI lead finder scanning 24/7</div>
+      <div class="benefit-item"><span class="chk">✓</span> Instant alerts when leads are found</div>
+      <div class="benefit-item"><span class="chk">✓</span> AI-written reply suggestions</div>
+      <div class="benefit-item"><span class="chk">✓</span> Full dashboard — no limits</div>
     </div>
-
-    <div class="auth-switch">
-      Already have an account? <a onclick="showScreen('screen-login')">Sign in</a>
-    </div>
+    <div class="auth-switch">Already have an account? <a onclick="showScreen('screen-login')">Sign in</a></div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════
-     SCREEN 3: SUBSCRIPTION GATE
-════════════════════════════════════ -->
+<!-- ════════ SCREEN: PASSWORD RESET ════════ -->
+<div class="screen auth-screen" id="screen-reset">
+  <div class="auth-bg"></div>
+  <div class="auth-glow glow-tl"></div>
+  <div class="auth-card">
+    <div class="auth-logo">
+      <img src="/images/mascot.png" alt="APTO Pro"/>
+      <span class="auth-logo-text">APTO <span>Pro</span></span>
+    </div>
+    <div class="auth-title">Reset your password</div>
+    <div class="auth-sub">Enter your email and we'll send you a reset link</div>
+    <div class="auth-error" id="reset-error"></div>
+    <div class="auth-success" id="reset-success"></div>
+    <div class="form-group">
+      <label class="form-label">Email address</label>
+      <input class="form-input" type="email" id="reset-email" placeholder="you@example.com"/>
+    </div>
+    <button class="btn-auth yellow" id="reset-btn" onclick="doReset()">Send reset link</button>
+    <div class="auth-switch"><a onclick="showScreen('screen-login')">← Back to sign in</a></div>
+  </div>
+</div>
+
+<!-- ════════ SCREEN: PLAN SELECTION ════════ -->
 <div class="screen auth-screen" id="screen-gate">
-  <div class="auth-bg-grid"></div>
-  <div class="auth-glow tl"></div>
-
+  <div class="auth-bg"></div>
+  <div class="auth-glow glow-tl"></div>
   <div class="gate-card">
-    <img class="gate-mascot" src="/images/mascot.png" alt="APTO Pro" />
-    <div class="gate-title">Choose your plan to get started</div>
-    <div class="gate-sub">All plans include a 14-day free trial. No credit card charged today. Cancel anytime.</div>
-
+    <img class="gate-mascot" src="/images/mascot.png" alt="APTO Pro"/>
+    <div class="gate-title">One last step — choose your plan</div>
+    <div class="gate-sub">14-day free trial on all plans. No credit card charged today. Cancel anytime.</div>
     <div class="gate-plans">
-      <div class="gate-plan" onclick="selectPlan(this)">
+      <div class="gate-plan" id="plan-starter" onclick="selectPlan('starter')">
         <div class="gate-plan-name">Starter</div>
         <div class="gate-plan-price">£29<span>/mo</span></div>
-        <div style="font-size:12px;color:var(--grey);margin-top:4px;">50 leads/month</div>
+        <div class="gate-plan-desc">50 leads/month · 1 trade · 1 area</div>
       </div>
-      <div class="gate-plan popular selected" onclick="selectPlan(this)">
+      <div class="gate-plan popular selected" id="plan-professional" onclick="selectPlan('professional')">
         <div class="gate-plan-badge">⭐ Most Popular</div>
         <div class="gate-plan-name">Professional</div>
         <div class="gate-plan-price">£59<span>/mo</span></div>
-        <div style="font-size:12px;color:var(--grey);margin-top:4px;">Unlimited leads</div>
+        <div class="gate-plan-desc">Unlimited leads · 3 trades · 5 areas</div>
       </div>
-      <div class="gate-plan" onclick="selectPlan(this)">
+      <div class="gate-plan" id="plan-agency" onclick="selectPlan('agency')">
         <div class="gate-plan-name">Agency</div>
         <div class="gate-plan-price">£129<span>/mo</span></div>
-        <div style="font-size:12px;color:var(--grey);margin-top:4px;">Multi-trade + team</div>
+        <div class="gate-plan-desc">Everything + team seats + API</div>
       </div>
     </div>
-
-    <button class="btn-gate" onclick="showScreen('screen-app')">
-      Start my free 14-day trial →
+    <button class="btn-gate" id="checkout-btn" onclick="doCheckout()">
+      <span>Start my free 14-day trial →</span>
     </button>
     <div class="gate-note">🔒 Secured by Stripe · No charge until trial ends · Cancel anytime</div>
+    <div class="gate-logout" onclick="doLogout()">← Sign out</div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════
-     SCREEN 4: APP DASHBOARD
-════════════════════════════════════ -->
+<!-- ════════ SCREEN: APP ════════ -->
 <div class="screen app-screen" id="screen-app">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
+  <aside class="sidebar">
     <div class="sidebar-logo">
-      <img src="/images/mascot.png" alt="APTO Pro" />
+      <img src="/images/mascot.png" alt="APTO Pro"/>
       <span class="sidebar-logo-text">APTO <span>Pro</span></span>
     </div>
-
-    <nav class="sidebar-nav">
+    <nav>
       <div class="sidebar-section-label">Main</div>
-      <div class="nav-item active" onclick="showPage('page-dashboard', this)">
-        <span class="nav-icon">📊</span> Dashboard
-      </div>
-      <div class="nav-item" onclick="showPage('page-feed', this)">
-        <span class="nav-icon">🎯</span> Lead Feed
-        <span class="nav-badge">12</span>
-      </div>
-      <div class="nav-item" onclick="showPage('page-saved', this)">
-        <span class="nav-icon">💾</span> Saved Leads
-      </div>
-      <div class="nav-item" onclick="showPage('page-empty', this)">
-        <span class="nav-icon">🔍</span> Search
-      </div>
-      <div class="nav-item" onclick="showPage('page-empty', this)">
-        <span class="nav-icon">🗺️</span> Maps
-      </div>
-      <div class="nav-item" onclick="showPage('page-empty', this)">
-        <span class="nav-icon">📈</span> Reports
-      </div>
-
+      <div class="nav-item active" onclick="showPage('page-dashboard',this)"><span class="nav-icon">📊</span> Dashboard</div>
+      <div class="nav-item" onclick="showPage('page-feed',this)"><span class="nav-icon">🎯</span> Lead Feed <span class="nav-badge" id="feed-badge">12</span></div>
+      <div class="nav-item" onclick="showPage('page-saved',this)"><span class="nav-icon">💾</span> Saved Leads</div>
+      <div class="nav-item" onclick="showPage('page-ai',this)"><span class="nav-icon">🤖</span> AI Engine</div>
+      <div class="nav-item" onclick="showPage('page-empty',this)"><span class="nav-icon">🗺️</span> Maps</div>
+      <div class="nav-item" onclick="showPage('page-empty',this)"><span class="nav-icon">📈</span> Reports</div>
       <div class="sidebar-section-label">Configure</div>
-      <div class="nav-item" onclick="showPage('page-empty', this)">
-        <span class="nav-icon">🔑</span> Keywords
-      </div>
-      <div class="nav-item" onclick="showPage('page-empty', this)">
-        <span class="nav-icon">🏗️</span> Industries
-      </div>
-      <div class="nav-item" onclick="showPage('page-empty', this)">
-        <span class="nav-icon">🔔</span> Notifications
-        <span class="nav-badge">3</span>
-      </div>
-
+      <div class="nav-item" onclick="showPage('page-empty',this)"><span class="nav-icon">🔑</span> Keywords</div>
+      <div class="nav-item" onclick="showPage('page-empty',this)"><span class="nav-icon">🏗️</span> Industries</div>
+      <div class="nav-item" onclick="showPage('page-empty',this)"><span class="nav-icon">🔔</span> Notifications <span class="nav-badge">3</span></div>
       <div class="sidebar-section-label">Account</div>
-      <div class="nav-item" onclick="showPage('page-empty', this)">
-        <span class="nav-icon">💳</span> Billing
-      </div>
-      <div class="nav-item" onclick="showPage('page-settings', this)">
-        <span class="nav-icon">⚙️</span> Settings
-      </div>
-      <div class="nav-item" onclick="showPage('page-empty', this)">
-        <span class="nav-icon">💬</span> Support
-      </div>
+      <div class="nav-item" onclick="showPage('page-billing',this)"><span class="nav-icon">💳</span> Billing</div>
+      <div class="nav-item" onclick="showPage('page-settings',this)"><span class="nav-icon">⚙️</span> Settings</div>
+      <div class="nav-item" onclick="showPage('page-empty',this)"><span class="nav-icon">💬</span> Support</div>
+      <div class="nav-item" onclick="doLogout()" style="margin-top:8px;"><span class="nav-icon">🚪</span> Sign out</div>
     </nav>
-
     <div class="sidebar-bottom">
       <div class="user-pill">
-        <div class="user-avatar">J</div>
+        <div class="user-avatar" id="sidebar-avatar">J</div>
         <div class="user-info">
-          <div class="user-name">John G.</div>
-          <div class="user-plan">Pro Plan · Trial</div>
+          <div class="user-name" id="sidebar-name">Loading...</div>
+          <div class="user-plan" id="sidebar-plan">Pro · Trial</div>
         </div>
-        <span class="user-chevron">⌃</span>
       </div>
     </div>
   </aside>
 
-  <!-- MAIN AREA -->
   <div class="main">
-
-    <!-- TOP BAR -->
     <div class="topbar">
-      <div class="topbar-left">
-        <div class="topbar-title" id="topbar-title">Dashboard</div>
-      </div>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
       <div class="topbar-right">
-        <div class="topbar-search">
-          <span>🔍</span>
-          <input type="text" placeholder="Search leads..." />
-        </div>
-        <div class="topbar-icon-btn">
-          🔔
-          <span class="notif-dot"></span>
-        </div>
-        <div class="plan-chip">⭐ Pro Trial</div>
-        <div class="topbar-icon-btn" onclick="logout()" title="Log out">🚪</div>
+        <div class="topbar-search"><span>🔍</span><input type="text" placeholder="Search leads..."/></div>
+        <div class="topbar-btn">🔔<span class="notif-dot"></span></div>
+        <div class="plan-chip" id="topbar-plan">⭐ Pro Trial</div>
       </div>
     </div>
 
-    <!-- ── PAGE: DASHBOARD ── -->
+    <!-- ── DASHBOARD ── -->
     <div class="page-content active" id="page-dashboard">
-      <div class="dash-welcome">
-        <div class="dash-welcome-text">
-          <h1>Good morning, John 👋</h1>
+      <div class="welcome-bar">
+        <div>
+          <h1 id="welcome-msg">Good morning 👋</h1>
           <p>Your AI found <strong>12 new leads</strong> overnight. Here's your summary.</p>
         </div>
-        <img class="dash-welcome-mascot" src="/images/mascot.png" alt="" />
+        <img class="welcome-mascot" id="welcome-mascot" src="/images/mascot.png" alt=""/>
       </div>
-
-      <!-- KPIs -->
       <div class="kpi-grid">
-        <div class="kpi-card">
-          <div class="kpi-label">Today's Leads</div>
-          <div class="kpi-value">12</div>
-          <span class="kpi-delta up">↑ 4 vs yesterday</span>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Urgent Opportunities</div>
-          <div class="kpi-value">3</div>
-          <span class="kpi-delta up" style="background:var(--danger-lt);color:var(--danger);">🔴 Act now</span>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Avg Lead Score</div>
-          <div class="kpi-value">78</div>
-          <span class="kpi-delta up">↑ High quality</span>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Saved This Week</div>
-          <div class="kpi-value">7</div>
-          <span class="kpi-delta warn">2 need reply</span>
-        </div>
+        <div class="kpi-card"><div class="kpi-label">Today's Leads</div><div class="kpi-value">12</div><span class="kpi-delta delta-up">↑ 4 vs yesterday</span></div>
+        <div class="kpi-card"><div class="kpi-label">Urgent</div><div class="kpi-value">3</div><span class="kpi-delta delta-red">🔴 Act now</span></div>
+        <div class="kpi-card"><div class="kpi-label">Avg Score</div><div class="kpi-value">78</div><span class="kpi-delta delta-up">↑ High quality</span></div>
+        <div class="kpi-card"><div class="kpi-label">Saved This Week</div><div class="kpi-value">7</div><span class="kpi-delta delta-warn">2 need reply</span></div>
       </div>
-
-      <!-- Main grid -->
       <div class="dash-grid">
-        <!-- Lead feed preview -->
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title">
-              <span class="live-dot"></span>
-              Live Lead Feed
-            </div>
-            <span class="panel-action" onclick="showPage('page-feed', document.querySelector('.nav-item:nth-child(3))'))">View all →</span>
+            <div class="panel-title"><span class="live-dot"></span>Live Lead Feed</div>
+            <span class="panel-link" onclick="showPage('page-feed',null)">View all →</span>
           </div>
-
-          <div class="lead-row">
-            <div class="lead-score-circle score-high">94</div>
-            <div class="lead-row-info">
-              <div class="lead-row-top">
-                <span class="lrt-trade">🔧 Plumbing</span>
-                <span class="lrt-loc">📍 Brighton, BN1</span>
-                <span class="lrt-time">2 mins ago</span>
-              </div>
-              <div class="lead-row-msg">"Need an emergency plumber tonight — boiler's packed in and no hot water…"</div>
-              <div class="lead-row-badges">
-                <span class="mini-badge mb-urgent">🔴 Urgent</span>
-                <span class="mini-badge mb-trade">Plumbing</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="lead-row">
-            <div class="lead-score-circle score-high">87</div>
-            <div class="lead-row-info">
-              <div class="lead-row-top">
-                <span class="lrt-trade">🌿 Gardening</span>
-                <span class="lrt-loc">📍 Worthing</span>
-                <span class="lrt-time">18 mins ago</span>
-              </div>
-              <div class="lead-row-msg">"Looking for a reliable gardener for regular monthly maintenance — large garden…"</div>
-              <div class="lead-row-badges">
-                <span class="mini-badge mb-high">🟡 High intent</span>
-                <span class="mini-badge mb-trade">Gardening</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="lead-row">
-            <div class="lead-score-circle score-high">81</div>
-            <div class="lead-row-info">
-              <div class="lead-row-top">
-                <span class="lrt-trade">⚡ Electrical</span>
-                <span class="lrt-loc">📍 Hove</span>
-                <span class="lrt-time">34 mins ago</span>
-              </div>
-              <div class="lead-row-msg">"Anyone recommend a good electrician in Hove? Need a full rewire quote…"</div>
-              <div class="lead-row-badges">
-                <span class="mini-badge mb-high">🟡 High value</span>
-                <span class="mini-badge mb-trade">Electrical</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="lead-row">
-            <div class="lead-score-circle score-mid">65</div>
-            <div class="lead-row-info">
-              <div class="lead-row-top">
-                <span class="lrt-trade">🏠 Decorating</span>
-                <span class="lrt-loc">📍 Lancing</span>
-                <span class="lrt-time">1 hr ago</span>
-              </div>
-              <div class="lead-row-msg">"Looking for a decorator to repaint whole house — 4 bed semi. Any recommendations?"</div>
-              <div class="lead-row-badges">
-                <span class="mini-badge mb-normal">Medium intent</span>
-                <span class="mini-badge mb-trade">Decorating</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="lead-row">
-            <div class="lead-score-circle score-mid">58</div>
-            <div class="lead-row-info">
-              <div class="lead-row-top">
-                <span class="lrt-trade">🐕 Dog Grooming</span>
-                <span class="lrt-loc">📍 Shoreham</span>
-                <span class="lrt-time">2 hrs ago</span>
-              </div>
-              <div class="lead-row-msg">"Need a dog groomer near Shoreham for my golden retriever, ideally mobile groomer…"</div>
-              <div class="lead-row-badges">
-                <span class="mini-badge mb-normal">Medium intent</span>
-                <span class="mini-badge mb-trade">Dog Grooming</span>
-              </div>
-            </div>
-          </div>
+          <div id="dash-lead-rows"></div>
         </div>
-
-        <!-- Right column -->
         <div class="right-col">
-          <!-- AI Tip -->
           <div class="ai-tip">
-            <img src="/images/mascot.png" alt="APTO Pro AI tip" />
-            <div class="ai-tip-body">
+            <img src="/images/mascot.png" alt="AI tip"/>
+            <div>
               <div class="ai-tip-label">💡 APTO AI Tip</div>
-              <p>You have 3 urgent leads this morning. Businesses that respond within 5 minutes are <strong style="color:var(--yellow)">9× more likely</strong> to win the job. Open your Lead Feed now.</p>
+              <p>You have 3 urgent leads this morning. Businesses that respond within 5 minutes are <strong style="color:var(--yellow)">9× more likely</strong> to win the job.</p>
             </div>
           </div>
-
-          <!-- Activity Feed -->
           <div class="panel">
-            <div class="panel-header">
-              <div class="panel-title">Recent Activity</div>
-            </div>
-            <div class="activity-item">
-              <div class="activity-icon ai-yellow">🎯</div>
-              <div class="activity-text">
-                <div class="at-main">AI found <strong>3 new plumbing leads</strong> in Brighton</div>
-                <div class="at-time">2 minutes ago</div>
-              </div>
-            </div>
-            <div class="activity-item">
-              <div class="activity-icon ai-green">💾</div>
-              <div class="activity-text">
-                <div class="at-main">You saved a <strong>gardening lead</strong> in Worthing</div>
-                <div class="at-time">Yesterday, 4:32pm</div>
-              </div>
-            </div>
-            <div class="activity-item">
-              <div class="activity-icon ai-orange">📋</div>
-              <div class="activity-text">
-                <div class="at-main">AI reply copied for <strong>electrical lead</strong> in Hove</div>
-                <div class="at-time">Yesterday, 11:18am</div>
-              </div>
-            </div>
-            <div class="activity-item">
-              <div class="activity-icon ai-yellow">🎯</div>
-              <div class="activity-text">
-                <div class="at-main">AI found <strong>5 leads</strong> overnight across all trades</div>
-                <div class="at-time">Today, 6:00am</div>
-              </div>
-            </div>
+            <div class="panel-header"><div class="panel-title">Recent Activity</div></div>
+            <div class="activity-item"><div class="act-icon ai-yellow">🎯</div><div><div class="act-main">AI found <strong>3 new leads</strong> in your area</div><div class="act-time">2 minutes ago</div></div></div>
+            <div class="activity-item"><div class="act-icon ai-green">💾</div><div><div class="act-main">You <strong>saved a lead</strong> in Worthing</div><div class="act-time">Yesterday, 4:32pm</div></div></div>
+            <div class="activity-item"><div class="act-icon ai-orange">📋</div><div><div class="act-main"><strong>AI reply copied</strong> for Hove lead</div><div class="act-time">Yesterday, 11:18am</div></div></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ── PAGE: LEAD FEED ── -->
+    <!-- ── LEAD FEED ── -->
     <div class="page-content" id="page-feed">
       <div class="feed-toolbar">
         <select class="filter-select"><option>All trades</option><option>Plumbing</option><option>Electrical</option><option>Gardening</option><option>Decorating</option></select>
         <select class="filter-select"><option>All areas</option><option>Brighton</option><option>Hove</option><option>Worthing</option><option>Shoreham</option></select>
         <select class="filter-select"><option>All urgency</option><option>🔴 Urgent</option><option>🟡 High</option><option>Normal</option></select>
-        <select class="filter-select"><option>Score: High first</option><option>Score: Low first</option><option>Newest first</option></select>
+        <select class="filter-select"><option>Score: High first</option><option>Newest first</option></select>
         <button class="btn-sm btn-navy">🔄 Refresh</button>
-        <button class="btn-sm btn-outline">📥 Export</button>
       </div>
-
-      <!-- Lead cards -->
-      <div class="lead-card-full">
-        <div class="lcf-header">
-          <div class="lcf-header-left">
-            <div class="lcf-score">Score 94/100</div>
-            <div class="lcf-meta">🔧 Plumbing · 📍 Brighton, BN1 · 2 mins ago</div>
-          </div>
-          <span class="mini-badge mb-urgent">🔴 Urgent</span>
-        </div>
-        <div class="lcf-body">
-          <div class="lcf-msg">"Need an emergency plumber tonight — boiler's packed in and I've got no hot water. Happy to pay call-out fee, just need someone reliable ASAP."</div>
-          <div class="lcf-stats">
-            <span class="lcf-stat-chip">🔴 High Urgency</span>
-            <span class="lcf-stat-chip">94% Intent</span>
-            <span class="lcf-stat-chip">1.2 miles away</span>
-            <span class="lcf-stat-chip">£200–400 est. value</span>
-          </div>
-          <div class="lcf-reply-box">
-            <div class="lcf-reply-label">🤖 AI Suggested Reply</div>
-            <div class="lcf-reply-text">"Hi! I'm a local plumber in Brighton and I can help tonight. Give me a call on [your number] and I'll get your boiler sorted — I have availability this evening."</div>
-          </div>
-        </div>
-        <div class="lcf-actions">
-          <button class="btn-lcf-save" onclick="showToast('💾 Lead saved!')">💾 Save Lead</button>
-          <button class="btn-lcf-copy" onclick="showToast('📋 Reply copied to clipboard!')">📋 Copy Reply</button>
-          <button class="btn-lcf-dismiss">✕ Dismiss</button>
-        </div>
-      </div>
-
-      <div class="lead-card-full">
-        <div class="lcf-header">
-          <div class="lcf-header-left">
-            <div class="lcf-score">Score 87/100</div>
-            <div class="lcf-meta">🌿 Gardening · 📍 Worthing · 18 mins ago</div>
-          </div>
-          <span class="mini-badge mb-high">🟡 High Intent</span>
-        </div>
-        <div class="lcf-body">
-          <div class="lcf-msg">"Looking for a reliable gardener for regular monthly maintenance. Large garden, about ½ acre. Preferably someone local who can start this month."</div>
-          <div class="lcf-stats">
-            <span class="lcf-stat-chip">🟡 High Intent</span>
-            <span class="lcf-stat-chip">87% Intent</span>
-            <span class="lcf-stat-chip">3.4 miles away</span>
-            <span class="lcf-stat-chip">£80–150/visit est.</span>
-          </div>
-          <div class="lcf-reply-box">
-            <div class="lcf-reply-label">🤖 AI Suggested Reply</div>
-            <div class="lcf-reply-text">"Hi! I'm a local gardener based in Worthing and I'd love to help with your garden maintenance. I have availability starting this month — happy to come and give you a free quote. What days work best for you?"</div>
-          </div>
-        </div>
-        <div class="lcf-actions">
-          <button class="btn-lcf-save" onclick="showToast('💾 Lead saved!')">💾 Save Lead</button>
-          <button class="btn-lcf-copy" onclick="showToast('📋 Reply copied to clipboard!')">📋 Copy Reply</button>
-          <button class="btn-lcf-dismiss">✕ Dismiss</button>
-        </div>
-      </div>
-
-      <div class="lead-card-full">
-        <div class="lcf-header">
-          <div class="lcf-header-left">
-            <div class="lcf-score">Score 81/100</div>
-            <div class="lcf-meta">⚡ Electrical · 📍 Hove · 34 mins ago</div>
-          </div>
-          <span class="mini-badge mb-high">🟡 High Value</span>
-        </div>
-        <div class="lcf-body">
-          <div class="lcf-msg">"Anyone recommend a good electrician in Hove? Need a full rewire quote for a 3-bed Victorian terrace. Would like to get a few quotes this week."</div>
-          <div class="lcf-stats">
-            <span class="lcf-stat-chip">🟡 High Value</span>
-            <span class="lcf-stat-chip">81% Intent</span>
-            <span class="lcf-stat-chip">2.1 miles away</span>
-            <span class="lcf-stat-chip">£2,000–4,000 est.</span>
-          </div>
-          <div class="lcf-reply-box">
-            <div class="lcf-reply-label">🤖 AI Suggested Reply</div>
-            <div class="lcf-reply-text">"Hi! I'm a qualified electrician based locally in Hove and I specialise in rewires for older properties. I can come out this week for a free no-obligation quote — just send me a message with your availability."</div>
-          </div>
-        </div>
-        <div class="lcf-actions">
-          <button class="btn-lcf-save" onclick="showToast('💾 Lead saved!')">💾 Save Lead</button>
-          <button class="btn-lcf-copy" onclick="showToast('📋 Reply copied to clipboard!')">📋 Copy Reply</button>
-          <button class="btn-lcf-dismiss">✕ Dismiss</button>
-        </div>
-      </div>
+      <div id="lead-cards-container"></div>
     </div>
 
-    <!-- ── PAGE: SAVED LEADS ── -->
+    <!-- ── SAVED LEADS ── -->
     <div class="page-content" id="page-saved">
       <div class="empty-state">
-        <img src="/images/mascot.png" alt="No saved leads yet" />
+        <img src="/images/mascot.png" alt="No saved leads"/>
         <h3>No saved leads yet</h3>
-        <p>When you save leads from your feed, they'll appear here so you can track and follow up easily.</p>
-        <button class="btn-sm btn-navy" onclick="showPage('page-feed', null)">Go to Lead Feed →</button>
+        <p>Save leads from your feed and they'll appear here for easy follow-up.</p>
+        <button class="btn-sm btn-navy" onclick="showPage('page-feed',null)">Go to Lead Feed →</button>
       </div>
     </div>
 
-    <!-- ── PAGE: SETTINGS ── -->
+    <!-- ── AI ENGINE ── -->
+    <div class="page-content" id="page-ai">
+      <div style="background:var(--navy);border-radius:var(--r-lg);padding:28px 32px;margin-bottom:24px;display:flex;align-items:center;gap:24px;position:relative;overflow:hidden;">
+        <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(245,197,24,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(245,197,24,0.04) 1px,transparent 1px);background-size:40px 40px;"></div>
+        <img src="/images/mascot.png" style="width:72px;position:relative;z-index:1;" alt=""/>
+        <div style="position:relative;z-index:1;">
+          <h2 style="font-family:var(--font-d);font-weight:800;font-size:20px;color:var(--white);margin-bottom:6px;">AI Lead Engine — <span style="color:var(--yellow)">Paste any post, get a full analysis</span></h2>
+          <p style="font-size:14px;color:rgba(255,255,255,0.65);line-height:1.6;">Copy a post from Facebook, Nextdoor, or any community group. The AI will score it, detect urgency, and write you a reply in seconds.</p>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">📥 Paste Lead</div></div>
+          <div style="padding:20px;">
+            <label class="settings-label">Post or message text</label>
+            <textarea id="ai-input" style="width:100%;min-height:120px;padding:12px 14px;border:1.5px solid var(--slate-mid);border-radius:var(--r-md);font-size:14px;line-height:1.6;color:var(--dark);resize:vertical;outline:none;margin-bottom:14px;" placeholder="e.g. &quot;Does anyone know a good plumber in Brighton? Boiler's packed in...&quot;"></textarea>
+            <label class="settings-label" style="margin-bottom:6px;">Your trade</label>
+            <select class="filter-select" id="ai-trade" style="width:100%;margin-bottom:14px;">
+              <option value="Plumbing">🔧 Plumbing</option>
+              <option value="Electrical">⚡ Electrical</option>
+              <option value="Gardening">🌿 Gardening</option>
+              <option value="Decorating">🏠 Decorating</option>
+              <option value="Dog Grooming">🐕 Dog Grooming</option>
+              <option value="Cleaning">🧹 Cleaning</option>
+              <option value="Removals">🚚 Removals</option>
+              <option value="Building">🏗️ Building</option>
+            </select>
+            <label class="settings-label" style="margin-bottom:6px;">Your area</label>
+            <input type="text" class="settings-input" id="ai-location" value="Brighton and surrounding areas" style="margin-bottom:16px;"/>
+            <button onclick="runAI()" id="ai-btn" style="width:100%;padding:13px;background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:800;font-size:15px;border-radius:var(--r-md);box-shadow:0 4px 16px rgba(245,197,24,0.35);transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;">⚡ Analyse with AI</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+              <span style="font-size:11px;color:var(--grey);align-self:center;">Examples:</span>
+              <button onclick="loadEx(0)" style="font-size:11px;padding:4px 10px;border-radius:100px;background:var(--slate);border:1px solid var(--slate-mid);color:var(--navy);cursor:pointer;">🔧 Plumber</button>
+              <button onclick="loadEx(1)" style="font-size:11px;padding:4px 10px;border-radius:100px;background:var(--slate);border:1px solid var(--slate-mid);color:var(--navy);cursor:pointer;">⚡ Electrician</button>
+              <button onclick="loadEx(2)" style="font-size:11px;padding:4px 10px;border-radius:100px;background:var(--slate);border:1px solid var(--slate-mid);color:var(--navy);cursor:pointer;">🌿 Gardener</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="position:relative;">
+          <div class="panel-header"><div class="panel-title">📊 AI Result</div><span id="ai-time" style="font-size:12px;color:var(--grey);"></span></div>
+          <div id="ai-empty" style="text-align:center;padding:48px 24px;"><img src="/images/mascot.png" style="width:64px;margin:0 auto 16px;opacity:0.6;" alt=""/><p style="font-size:14px;color:var(--grey);">Paste a lead and click Analyse — your result appears here.</p></div>
+          <div id="ai-result" style="display:none;">
+            <div id="ai-score-header" style="background:var(--navy);padding:20px;display:flex;align-items:center;gap:16px;"></div>
+            <div style="padding:20px;display:flex;flex-direction:column;gap:16px;">
+              <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--grey);margin-bottom:10px;">📈 Metrics</div><div id="ai-metrics" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;"></div></div>
+              <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--grey);margin-bottom:8px;">🧠 AI Insight</div><div id="ai-insight" style="background:var(--slate);border-radius:var(--r-md);padding:14px;font-size:13px;color:var(--dark);line-height:1.7;border-left:3px solid var(--navy);"></div></div>
+              <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--grey);margin-bottom:8px;">✍️ AI Reply</div><div id="ai-reply" style="background:linear-gradient(135deg,rgba(27,43,94,0.03),rgba(245,197,24,0.06));border:1px solid rgba(27,43,94,0.1);border-radius:var(--r-md);padding:14px;font-size:13px;color:var(--dark);line-height:1.7;"></div></div>
+            </div>
+            <div style="display:flex;gap:8px;padding:12px 20px;border-top:1px solid var(--slate-mid);">
+              <button onclick="copyAIReply()" style="flex:1;padding:9px;background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:700;font-size:13px;border-radius:var(--r-sm);">📋 Copy Reply</button>
+              <button onclick="saveAILead()" style="flex:1;padding:9px;background:var(--navy);color:var(--white);font-family:var(--font-d);font-weight:700;font-size:13px;border-radius:var(--r-sm);">💾 Save Lead</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BILLING ── -->
+    <div class="page-content" id="page-billing">
+      <div class="billing-plan-card">
+        <img class="billing-mascot" src="/images/mascot.png" alt=""/>
+        <div>
+          <div class="billing-plan-name" id="billing-plan-name">Professional Plan</div>
+          <div class="billing-status"><span style="width:7px;height:7px;border-radius:50%;background:var(--success);display:inline-block;"></span> Active — Free Trial</div>
+          <div class="billing-detail" id="billing-detail">Your 14-day free trial is active. You will not be charged until your trial ends. Cancel anytime from the Stripe portal.</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <button class="btn-manage" onclick="openStripePortal()">💳 Manage Billing</button>
+            <button class="btn-danger" onclick="if(confirm('Are you sure you want to cancel?'))showToast('Please manage your subscription via the billing portal.')">Cancel subscription</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Invoice History</div></div>
+        <div class="empty-state" style="padding:32px;">
+          <p style="color:var(--grey);font-size:14px;">No invoices yet — your first charge will appear here after your trial ends.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
     <div class="page-content" id="page-settings">
       <div class="settings-grid">
         <div class="settings-nav">
           <div class="settings-nav-item active">Profile</div>
-          <div class="settings-nav-item">Trade & Location</div>
+          <div class="settings-nav-item">Trade & Area</div>
           <div class="settings-nav-item">Notifications</div>
-          <div class="settings-nav-item">Keywords</div>
-          <div class="settings-nav-item">Billing</div>
           <div class="settings-nav-item">Password</div>
         </div>
         <div class="settings-panel">
-          <div class="settings-section-title">Profile Settings</div>
-          <div class="settings-section-sub">Update your personal and business information.</div>
-
+          <div class="settings-title">Profile Settings</div>
+          <div class="settings-sub">Update your personal and business information.</div>
           <div class="form-row">
-            <div class="settings-field">
-              <label class="settings-label">First name</label>
-              <input class="settings-input" value="John" />
-            </div>
-            <div class="settings-field">
-              <label class="settings-label">Last name</label>
-              <input class="settings-input" value="G." />
-            </div>
+            <div class="settings-field"><label class="settings-label">First name</label><input class="settings-input" id="settings-first" placeholder="John"/></div>
+            <div class="settings-field"><label class="settings-label">Last name</label><input class="settings-input" id="settings-last" placeholder="Smith"/></div>
           </div>
-          <div class="settings-field">
-            <label class="settings-label">Email address</label>
-            <input class="settings-input" value="john@example.com" />
-          </div>
-          <div class="settings-field">
-            <label class="settings-label">Business name</label>
-            <input class="settings-input" placeholder="e.g. John's Plumbing Services" />
-          </div>
-          <div class="settings-field">
-            <label class="settings-label">Phone number</label>
-            <input class="settings-input" placeholder="07..." />
-          </div>
-
-          <div style="margin: 24px 0 16px; font-family: var(--font-d); font-weight:700; font-size:15px; color:var(--navy);">Notifications</div>
-          <div class="toggle-row">
-            <div class="toggle-info">
-              <div class="tl">Email alerts for new leads</div>
-              <div class="td">Get an email each time APTO finds a relevant lead</div>
-            </div>
-            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-          </div>
-          <div class="toggle-row">
-            <div class="toggle-info">
-              <div class="tl">Urgent lead SMS alerts</div>
-              <div class="td">Text message when a high-urgency lead is found</div>
-            </div>
-            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-          </div>
-          <div class="toggle-row">
-            <div class="toggle-info">
-              <div class="tl">Daily summary email</div>
-              <div class="td">Morning digest of all leads found overnight</div>
-            </div>
-            <div class="toggle" onclick="this.classList.toggle('on')"></div>
-          </div>
-          <div style="margin-top:28px;">
-            <button class="settings-save" onclick="showToast('✅ Settings saved!')">Save changes</button>
+          <div class="settings-field"><label class="settings-label">Email</label><input class="settings-input" id="settings-email" placeholder="you@example.com"/></div>
+          <div class="settings-field"><label class="settings-label">Business name</label><input class="settings-input" placeholder="e.g. John's Plumbing Services"/></div>
+          <div class="settings-field"><label class="settings-label">Phone</label><input class="settings-input" placeholder="07..."/></div>
+          <div style="margin:24px 0 16px;font-family:var(--font-d);font-weight:700;font-size:15px;color:var(--navy);">Notifications</div>
+          <div class="toggle-row"><div><div class="toggle-lbl">Email alerts for new leads</div><div class="toggle-desc">Get an email each time APTO finds a relevant lead</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-row"><div><div class="toggle-lbl">Urgent lead SMS alerts</div><div class="toggle-desc">Text when a high-urgency lead is found</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-row"><div><div class="toggle-lbl">Daily summary email</div><div class="toggle-desc">Morning digest of overnight leads</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+          <div style="margin-top:24px;">
+            <button class="btn-save" onclick="saveSettings()">Save changes</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ── PAGE: EMPTY (coming soon) ── -->
+    <!-- ── COMING SOON ── -->
     <div class="page-content" id="page-empty">
       <div class="empty-state">
-        <img src="/images/mascot.png" alt="Coming soon" />
-        <h3>Coming in Phase 3</h3>
-        <p>This section is being built. Check back soon — APTO Pro is growing fast.</p>
+        <img src="/images/mascot.png" alt="Coming soon"/>
+        <h3>Coming soon</h3>
+        <p>This section is in development. APTO Pro is growing fast — check back soon.</p>
       </div>
     </div>
 
   </div><!-- /main -->
 </div><!-- /app-screen -->
 
-<!-- TOAST -->
-<div class="toast" id="toast">
-  <span class="t-icon" id="toast-icon">✅</span>
-  <span id="toast-msg">Done!</span>
-</div>
+<div class="toast" id="toast"><span id="toast-msg"></span></div>
 
 <script>
-  function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-  }
+// ─── CONFIG ─── Replace with your real Supabase project values
+const SUPABASE_URL  = 'https://YOUR_PROJECT.supabase.co';
+const SUPABASE_ANON = 'YOUR_ANON_KEY';
 
-  function doLogin() {
-    const email = document.getElementById('login-email').value;
-    const pass  = document.getElementById('login-password').value;
-    if (email && pass) {
-      showScreen('screen-app');
-    } else {
-      showToast('⚠️ Please enter your email and password');
-    }
-  }
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-  function showPage(pageId, navEl) {
-    document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
-    document.getElementById(pageId).classList.add('active');
-    if (navEl) {
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      navEl.classList.add('active');
-    }
-    const titles = {
-      'page-dashboard': 'Dashboard',
-      'page-feed':      'Lead Feed',
-      'page-saved':     'Saved Leads',
-      'page-settings':  'Settings',
-      'page-empty':     'Coming Soon'
-    };
-    document.getElementById('topbar-title').textContent = titles[pageId] || 'APTO Pro';
-  }
+// ─── TRADE MASCOT MAP ───
+const TRADE_MASCOTS = {
+  plumbing:      '/images/trades/plumbing.png',
+  electrical:    '/images/trades/electrical.png',
+  decorating:    '/images/trades/decorating.png',
+  gardening:     '/images/trades/gardening.png',
+  building:      '/images/trades/building.png',
+  'dog-grooming':'/images/trades/dog-grooming.png',
+  cleaning:      '/images/trades/cleaning.png',
+  removals:      '/images/trades/removals.png',
+  hvac:          '/images/trades/hvac.png',
+  locksmith:     '/images/trades/locksmith.png',
+  catering:      '/images/trades/catering.png',
+  photography:   '/images/trades/photography.png',
+  'windows-doors':'/images/trades/windows-doors.png',
+  hairdressing:  '/images/trades/hairdressing.png',
+  default:       '/images/mascot.png',
+};
 
-  function selectPlan(el) {
-    document.querySelectorAll('.gate-plan').forEach(p => p.classList.remove('selected'));
-    el.classList.add('selected');
-  }
+function tradeMascot(trade) {
+  const key = (trade||'').toLowerCase().replace(/\s+/g,'-').replace(/\//g,'-').replace(/\s/g,'');
+  return TRADE_MASCOTS[key] || TRADE_MASCOTS.default;
+}
 
-  function logout() {
+// ─── SAMPLE LEADS ───
+const SAMPLE_LEADS = [
+  { trade:'Plumbing',   tradeKey:'plumbing',   loc:'Brighton, BN1', time:'2 mins ago',  score:94, urgency:'urgent', msg:'"Need an emergency plumber tonight — boiler\'s packed in and no hot water. Happy to pay call-out rate."', reply:'Hi! I\'m a local plumber in Brighton and I can help tonight. Give me a call and I\'ll get your boiler sorted — I have availability this evening.', chips:['🔴 Urgent','94% Intent','1.2 miles','£200–400 est.'] },
+  { trade:'Gardening',  tradeKey:'gardening',  loc:'Worthing',      time:'18 mins ago', score:87, urgency:'high',   msg:'"Looking for a reliable gardener for regular monthly maintenance. Large garden, about half an acre. Can start this month."', reply:'Hi! I\'m a local gardener in Worthing with availability this month. I\'d love to come and give you a free quote — what days work best?', chips:['🟡 High Intent','87% Intent','3.4 miles','£80–150/visit'] },
+  { trade:'Electrical', tradeKey:'electrical', loc:'Hove',          time:'34 mins ago', score:81, urgency:'high',   msg:'"Anyone recommend a good electrician in Hove? Need a full rewire quote for a 3-bed Victorian terrace."', reply:'Hi! I\'m a qualified electrician based in Hove and I specialise in rewires for older properties. Happy to come out this week for a free no-obligation quote.', chips:['🟡 High Value','81% Intent','2.1 miles','£2,000–4,000 est.'] },
+  { trade:'Decorating', tradeKey:'decorating', loc:'Lancing',       time:'1 hr ago',    score:65, urgency:'normal', msg:'"Looking for a decorator to repaint the whole house — 4 bed semi. Mainly walls and ceilings, some woodwork."', reply:'Hi! I\'m a local decorator covering Lancing and would love to help. I can come out for a free quote at your convenience — just drop me a message.', chips:['Medium Intent','65% Intent','4.2 miles','£1,500–3,000 est.'] },
+  { trade:'Dog Grooming',tradeKey:'dog-grooming',loc:'Shoreham',    time:'2 hrs ago',   score:58, urgency:'normal', msg:'"Need a dog groomer near Shoreham for my golden retriever — ideally a mobile groomer if possible."', reply:'Hi! I\'m a mobile dog groomer covering Shoreham and surrounding areas. I\'d love to help with your golden retriever — when would suit you?', chips:['Medium Intent','58% Intent','1.8 miles','£45–65 est.'] },
+];
+
+// ─── STATE ───
+let currentUser = null;
+let selectedPlan = 'professional';
+let currentAIReply = '';
+
+// ─── INIT ───
+async function init() {
+  // Check for existing session
+  const { data: { session } } = await supabase.auth.getSession();
+  document.getElementById('loading').style.display = 'none';
+
+  if (session) {
+    currentUser = session.user;
+    renderApp();
+  } else {
     showScreen('screen-login');
   }
 
-  let toastTimer;
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    document.getElementById('toast-msg').textContent = msg;
-    clearTimeout(toastTimer);
-    t.classList.add('show');
-    toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  // Listen for auth state changes
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      currentUser = session.user;
+      renderApp();
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      showScreen('screen-login');
+    }
+  });
+}
+
+// ─── AUTH FUNCTIONS ───
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  setAuthLoading('login-btn', true);
+  clearAuthMessages('login');
+
+  const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+  setAuthLoading('login-btn', false);
+
+  if (error) {
+    showAuthError('login', error.message === 'Invalid login credentials'
+      ? 'Incorrect email or password. Please try again.'
+      : error.message);
   }
+  // Success handled by onAuthStateChange
+}
+
+async function doSignup() {
+  const first = document.getElementById('signup-first').value.trim();
+  const last  = document.getElementById('signup-last').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const pass  = document.getElementById('signup-password').value;
+  const trade = document.getElementById('signup-trade').value;
+
+  if (!first || !email || !pass) { showAuthError('signup','Please fill in all required fields.'); return; }
+  if (pass.length < 8) { showAuthError('signup','Password must be at least 8 characters.'); return; }
+
+  setAuthLoading('signup-btn', true);
+  clearAuthMessages('signup');
+
+  const { error } = await supabase.auth.signUp({
+    email, password: pass,
+    options: { data: { full_name: `${first} ${last}`, trade } }
+  });
+
+  setAuthLoading('signup-btn', false);
+
+  if (error) {
+    showAuthError('signup', error.message);
+  } else {
+    showAuthSuccess('signup', '✅ Account created! Please check your email to verify your address, then sign in.');
+    setTimeout(() => showScreen('screen-login'), 3000);
+  }
+}
+
+async function doReset() {
+  const email = document.getElementById('reset-email').value.trim();
+  if (!email) { showAuthError('reset','Please enter your email address.'); return; }
+
+  setAuthLoading('reset-btn', true);
+  clearAuthMessages('reset');
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/app.html'
+  });
+
+  setAuthLoading('reset-btn', false);
+
+  if (error) {
+    showAuthError('reset', error.message);
+  } else {
+    showAuthSuccess('reset', '✅ Reset link sent! Check your email inbox.');
+  }
+}
+
+async function doLogout() {
+  await supabase.auth.signOut();
+  showScreen('screen-login');
+}
+
+// ─── PLAN SELECTION + CHECKOUT ───
+function selectPlan(plan) {
+  selectedPlan = plan;
+  document.querySelectorAll('.gate-plan').forEach(el => el.classList.remove('selected'));
+  document.getElementById('plan-' + plan).classList.add('selected');
+}
+
+async function doCheckout() {
+  const btn = document.getElementById('checkout-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span>Redirecting to Stripe...</span>';
+
+  try {
+    const res = await fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        planId: selectedPlan,
+        email: currentUser?.email,
+        successUrl: window.location.origin + '/app.html',
+        cancelUrl:  window.location.origin + '/app.html'
+      })
+    });
+
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      throw new Error(data.error || 'Checkout failed');
+    }
+  } catch (err) {
+    showToast('⚠️ ' + err.message);
+    btn.disabled = false;
+    btn.innerHTML = '<span>Start my free 14-day trial →</span>';
+  }
+}
+
+// ─── RENDER APP ───
+function renderApp() {
+  // For now show dashboard — in production verify subscription first
+  // then redirect to gate if no active sub
+  showScreen('screen-app');
+  populateUserInfo();
+  renderLeadRows();
+  renderLeadCards();
+}
+
+function populateUserInfo() {
+  if (!currentUser) return;
+  const name = currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'User';
+  const trade = currentUser.user_metadata?.trade || 'default';
+  const firstName = name.split(' ')[0];
+  const initial = firstName[0]?.toUpperCase() || 'U';
+
+  document.getElementById('sidebar-avatar').textContent = initial;
+  document.getElementById('sidebar-name').textContent = name;
+  document.getElementById('settings-email').value = currentUser.email || '';
+  document.getElementById('settings-first').value = name.split(' ')[0] || '';
+  document.getElementById('settings-last').value  = name.split(' ').slice(1).join(' ') || '';
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('welcome-msg').textContent = `${greeting}, ${firstName} 👋`;
+
+  // Set trade mascot in welcome bar
+  document.getElementById('welcome-mascot').src = tradeMascot(trade);
+}
+
+function renderLeadRows() {
+  const container = document.getElementById('dash-lead-rows');
+  container.innerHTML = SAMPLE_LEADS.slice(0,4).map(l => `
+    <div class="lead-row" onclick="showPage('page-feed',null)">
+      <img class="lead-trade-img" src="${tradeMascot(l.tradeKey)}" alt="${l.trade}"/>
+      <div class="lead-row-info">
+        <div class="lead-row-top">
+          <span class="lrt-trade">${l.trade}</span>
+          <span class="lrt-loc">📍 ${l.loc}</span>
+          <span class="lrt-time">${l.time}</span>
+        </div>
+        <div class="lead-row-msg">${l.msg}</div>
+        <div class="lead-row-badges">
+          <span class="mini-badge ${l.urgency==='urgent'?'mb-urgent':l.urgency==='high'?'mb-high':'mb-normal'}">${l.urgency==='urgent'?'🔴 Urgent':l.urgency==='high'?'🟡 High intent':'Normal'}</span>
+          <span class="mini-badge mb-trade">${l.trade}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderLeadCards() {
+  const container = document.getElementById('lead-cards-container');
+  container.innerHTML = SAMPLE_LEADS.map((l,i) => `
+    <div class="lead-card">
+      <div class="lc-header">
+        <div class="lc-meta">
+          <span class="lc-score">Score ${l.score}/100</span>
+          ${l.trade} · 📍 ${l.loc} · ${l.time}
+        </div>
+        <span class="mini-badge ${l.urgency==='urgent'?'mb-urgent':l.urgency==='high'?'mb-high':'mb-normal'}">${l.urgency==='urgent'?'🔴 Urgent':l.urgency==='high'?'🟡 High':'Normal'}</span>
+      </div>
+      <div class="lc-body">
+        <img class="lc-trade-mascot" src="${tradeMascot(l.tradeKey)}" alt="${l.trade}"/>
+        <div class="lc-body-text">
+          <div class="lc-msg">${l.msg}</div>
+          <div class="lc-chips">${l.chips.map(c=>`<span class="lc-chip">${c}</span>`).join('')}</div>
+          <div class="lc-reply">
+            <div class="lc-reply-label">🤖 AI Suggested Reply</div>
+            <div class="lc-reply-text">${l.reply}</div>
+          </div>
+        </div>
+      </div>
+      <div class="lc-actions">
+        <button class="btn-lc btn-lc-save" onclick="showToast('💾 Lead saved!')">💾 Save</button>
+        <button class="btn-lc btn-lc-copy" onclick="copyText('${l.reply.replace(/'/g,"\\'")}')">📋 Copy Reply</button>
+        <button class="btn-lc btn-lc-dismiss" onclick="this.closest('.lead-card').remove()">✕ Dismiss</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── AI ENGINE ───
+const AI_EXAMPLES = [
+  { text:"Need an emergency plumber in Brighton — boiler's packed in, no hot water. Happy to pay call-out rate, need someone today.", trade:'Plumbing' },
+  { text:"Can anyone recommend a good electrician in Hove? Need a full rewire quote for a 3-bed Victorian terrace. Getting a few quotes this week.", trade:'Electrical' },
+  { text:"Looking for a reliable gardener near Worthing for regular monthly maintenance. Large garden, about half an acre.", trade:'Gardening' },
+];
+
+function loadEx(i) {
+  document.getElementById('ai-input').value = AI_EXAMPLES[i].text;
+  document.getElementById('ai-trade').value = AI_EXAMPLES[i].trade;
+}
+
+async function runAI() {
+  const leadText = document.getElementById('ai-input').value.trim();
+  const trade    = document.getElementById('ai-trade').value;
+  const location = document.getElementById('ai-location').value.trim();
+  if (!leadText) { showToast('⚠️ Paste a lead message first'); return; }
+
+  const btn = document.getElementById('ai-btn');
+  btn.disabled = true; btn.innerHTML = '⏳ Analysing...';
+  document.getElementById('ai-empty').style.display = 'none';
+  document.getElementById('ai-result').style.display = 'none';
+
+  try {
+    const res = await fetch('/api/analyse-lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leadText, trade, location })
+    });
+    const r = await res.json();
+    renderAIResult(r);
+  } catch(err) {
+    showToast('⚠️ Analysis failed — try again');
+  }
+
+  btn.disabled = false; btn.innerHTML = '⚡ Analyse with AI';
+}
+
+function renderAIResult(r) {
+  const score = r.score || 75;
+  const c = score >= 80 ? '#4ADE80' : score >= 60 ? '#F5C518' : '#94A3B8';
+  const circ = 2 * Math.PI * 28;
+  const offset = circ - (score/100) * circ;
+  const urgClass = r.urgency === 'Urgent' || r.urgency === 'Very High' ? 'mb-urgent' : r.urgency === 'High' ? 'mb-high' : 'mb-normal';
+
+  document.getElementById('ai-score-header').innerHTML = `
+    <div style="position:relative;width:72px;height:72px;flex-shrink:0;">
+      <svg width="72" height="72" viewBox="0 0 72 72" style="transform:rotate(-90deg)">
+        <circle cx="36" cy="36" r="28" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="6"/>
+        <circle cx="36" cy="36" r="28" fill="none" stroke="${c}" stroke-width="6"
+          stroke-dasharray="${circ}" stroke-dashoffset="${offset}" stroke-linecap="round"/>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:20px;color:var(--white);">${score}</div>
+    </div>
+    <div>
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.5);margin-bottom:4px;">${r.trade} Lead</div>
+      <div style="font-family:var(--font-d);font-weight:800;font-size:16px;color:var(--white);margin-bottom:6px;">${r.headline||'Lead detected'}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <span class="mini-badge ${urgClass}">${r.urgency} Urgency</span>
+        <span class="mini-badge mb-normal">📍 ${r.detectedLocation||'Local'}</span>
+        <span class="mini-badge mb-normal">${r.estimatedValue||'Value TBC'}</span>
+      </div>
+    </div>`;
+
+  document.getElementById('ai-metrics').innerHTML = `
+    <div style="background:var(--slate);border-radius:var(--r-md);padding:12px;text-align:center;">
+      <div style="font-family:var(--font-d);font-weight:800;font-size:20px;color:var(--navy);">${r.intentScore||score}%</div>
+      <div style="font-size:10px;color:var(--grey);margin-top:4px;text-transform:uppercase;letter-spacing:0.05em;">Intent</div>
+    </div>
+    <div style="background:var(--slate);border-radius:var(--r-md);padding:12px;text-align:center;">
+      <div style="font-family:var(--font-d);font-weight:800;font-size:20px;color:var(--navy);">${r.confidence||score}</div>
+      <div style="font-size:10px;color:var(--grey);margin-top:4px;text-transform:uppercase;letter-spacing:0.05em;">Confidence</div>
+    </div>
+    <div style="background:var(--slate);border-radius:var(--r-md);padding:12px;text-align:center;">
+      <div style="font-family:var(--font-d);font-weight:800;font-size:16px;color:var(--navy);">${r.timeline||'Soon'}</div>
+      <div style="font-size:10px;color:var(--grey);margin-top:4px;text-transform:uppercase;letter-spacing:0.05em;">Timeline</div>
+    </div>`;
+
+  document.getElementById('ai-insight').textContent = r.insight || '';
+  document.getElementById('ai-reply').textContent = r.reply || '';
+  document.getElementById('ai-time').textContent = 'Analysed just now';
+  currentAIReply = r.reply || '';
+  document.getElementById('ai-result').style.display = 'block';
+}
+
+function copyAIReply() { copyText(currentAIReply); }
+function saveAILead() { showToast('💾 Lead saved to Saved Leads'); }
+
+function copyText(txt) {
+  navigator.clipboard.writeText(txt).then(()=>showToast('📋 Copied to clipboard!')).catch(()=>showToast('📋 Copy the text above'));
+}
+
+function openStripePortal() {
+  showToast('🔗 Opening Stripe billing portal...');
+  // In production: fetch /api/create-portal-session and redirect
+}
+
+function saveSettings() { showToast('✅ Settings saved!'); }
+
+// ─── UI HELPERS ───
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showPage(pageId, navEl) {
+  document.querySelectorAll('.page-content').forEach(p=>p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  if (navEl) {
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    navEl.classList.add('active');
+  }
+  const titles = { 'page-dashboard':'Dashboard','page-feed':'Lead Feed','page-saved':'Saved Leads','page-ai':'AI Engine','page-billing':'Billing','page-settings':'Settings','page-empty':'Coming Soon' };
+  document.getElementById('topbar-title').textContent = titles[pageId] || 'APTO Pro';
+}
+
+function setAuthLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  btn.disabled = loading;
+  if (loading) btn.innerHTML = '<span style="opacity:0.7">Please wait...</span>';
+  else btn.innerHTML = btnId === 'login-btn' ? 'Sign in to APTO Pro' : btnId === 'signup-btn' ? 'Create my account →' : 'Send reset link';
+}
+
+function showAuthError(screen, msg) {
+  const el = document.getElementById(screen+'-error');
+  el.textContent = msg; el.classList.add('show');
+}
+
+function showAuthSuccess(screen, msg) {
+  const el = document.getElementById(screen+'-success');
+  el.textContent = msg; el.classList.add('show');
+}
+
+function clearAuthMessages(screen) {
+  const err = document.getElementById(screen+'-error');
+  const suc = document.getElementById(screen+'-success');
+  if (err) { err.textContent=''; err.classList.remove('show'); }
+  if (suc) { suc.textContent=''; suc.classList.remove('show'); }
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  clearTimeout(toastTimer);
+  t.classList.add('show');
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ─── KEYBOARD SHORTCUTS ───
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const active = document.querySelector('.screen.active');
+    if (active?.id === 'screen-login')  doLogin();
+    if (active?.id === 'screen-signup') doSignup();
+    if (active?.id === 'screen-reset')  doReset();
+  }
+});
+
+// ─── START ───
+init();
 </script>
 </body>
 </html>
