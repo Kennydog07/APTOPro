@@ -1,0 +1,17 @@
+{
+  "name": "aptopro",
+  "version": "1.0.0",
+  "description": "APTO Pro — AI Business Intelligence for Local Businesses",
+  "private": true,
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'Static site — no build step required'",
+    "deploy": "netlify deploy --prod"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
