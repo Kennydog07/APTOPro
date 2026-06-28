@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>404 — Page Not Found | APTO Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root { --navy:#1B2B5E; --yellow:#F5C518; --orange:#C4541A; --slate:#F4F6FA; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      font-family:'Inter',sans-serif; background:var(--navy);
+      min-height:100vh; display:flex; align-items:center; justify-content:center;
+      text-align:center; padding:24px;
+    }
+    .wrap { max-width:480px; }
+    img { width:160px; margin:0 auto 24px; animation:float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+    h1 {
+      font-family:'Plus Jakarta Sans',sans-serif; font-size:80px; font-weight:800;
+      color:var(--yellow); letter-spacing:-0.04em; line-height:1; margin-bottom:8px;
+    }
+    h2 {
+      font-family:'Plus Jakarta Sans',sans-serif; font-size:22px; font-weight:700;
+      color:#fff; margin-bottom:12px;
+    }
+    p { font-size:15px; color:rgba(255,255,255,0.6); line-height:1.7; margin-bottom:32px; }
+    .btn {
+      display:inline-block; background:var(--yellow); color:var(--navy);
+      font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; font-size:15px;
+      padding:13px 28px; border-radius:10px; text-decoration:none;
+      box-shadow:0 4px 16px rgba(245,197,24,0.35);
+      transition:background 0.2s,transform 0.15s;
+    }
+    .btn:hover { background:#FDE96B; transform:translateY(-2px); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <img src="/images/mascot.png" alt="APTO Pro"/>
+    <h1>404</h1>
+    <h2>Hmm, that page doesn't exist</h2>
+    <p>Even the AI couldn't find it. Let's get you back on track — there are leads waiting for you.</p>
+    <a class="btn" href="/">Back to APTO Pro →</a>
+  </div>
+</body>
+</html>
