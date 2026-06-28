@@ -48,3 +48,9 @@
   for = "/app*"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
+
+# Stripe webhook (raw body needed)
+[[redirects]]
+  from = "/api/stripe-webhook"
+  to = "/.netlify/functions/stripe-webhook"
+  status = 200
