@@ -1009,34 +1009,24 @@ function selectPlan(plan) {
   document.getElementById('plan-' + plan).classList.add('selected');
 }
 
-async function doCheckout() {
+function doCheckout() {
+  const links = {
+    starter:      'https://buy.stripe.com/aFaeVee0ye968qC2yJ3sI02',
+    professional: 'https://buy.stripe.com/8x200k09Ic0Y4amgpz3sI01',
+    ultimate:     'https://buy.stripe.com/fZuaEY7Ca5CA7my8X73sI00'
+  };
+
+  const url = links[selectedPlan];
+  if (!url) { showToast('⚠️ Please select a plan'); return; }
+
   const btn = document.getElementById('checkout-btn');
   btn.disabled = true;
   btn.innerHTML = '<span>Redirecting to Stripe...</span>';
 
-  try {
-    const res = await fetch('/api/create-checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        planId: selectedPlan,
-        email: currentUser?.email,
-        successUrl: window.location.origin + '/app.html',
-        cancelUrl:  window.location.origin + '/app.html'
-      })
-    });
-
-    const data = await res.json();
-    if (data.url) {
-      window.location.href = data.url;
-    } else {
-      throw new Error(data.error || 'Checkout failed');
-    }
-  } catch (err) {
-    showToast('⚠️ ' + err.message);
-    btn.disabled = false;
-    btn.innerHTML = '<span>Start my free 14-day trial →</span>';
-  }
+  // Pass email to Stripe so checkout is pre-filled
+  const email = currentUser?.email;
+  const finalUrl = email ? url + '?prefilled_email=' + encodeURIComponent(email) : url;
+  window.location.href = finalUrl;
 }
 
 // ─── RENDER APP ───
