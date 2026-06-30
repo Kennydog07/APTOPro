@@ -36,10 +36,17 @@ exports.handler = async (event) => {
   try {
     const params = event.queryStringParameters || {};
     const trade = params.trade || 'plumbing';
-    const location = params.location || 'UK';
+    const mode = params.mode || 'local';
+    const radius = params.radius || '10';
+    const location = mode === 'national' ? 'UK' : (params.location || 'UK');
 
     const keywords = TRADE_KEYWORDS[trade] || TRADE_KEYWORDS.plumbing;
-    const query = `"${keywords[0]}" ${location}`;
+
+    // Build search query — national mode searches broadly across the UK,
+    // local mode includes the specific location plus nearby-area language
+    const query = mode === 'national'
+      ? `"${keywords[0]}" UK`
+      : `"${keywords[0]}" ${location} OR near ${location}`;
 
     // ── Step 1: Search via Google Custom Search API ──
     const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_SEARCH_API_KEY}&cx=${process.env.GOOGLE_SEARCH_ENGINE_ID}&q=${encodeURIComponent(query)}&num=10`;
@@ -62,7 +69,11 @@ exports.handler = async (event) => {
       source: new URL(item.link).hostname
     }));
 
-    const analysisPrompt = `You are the APTO Pro Lead Filter. Below are real search results that may or may not be genuine leads for a ${trade} business serving ${location}.
+    const areaContext = mode === 'national'
+      ? `a UK-wide search (the business covers the whole country)`
+      : `a ${radius}-mile radius around ${location}`;
+
+    const analysisPrompt = `You are the APTO Pro Lead Filter. Below are real search results that may or may not be genuine leads for a ${trade} business covering ${areaContext}.
 
 For EACH result, determine if it's a genuine person asking for this service (not a business advert, directory listing, or unrelated content). Respond ONLY with a JSON array, no markdown:
 

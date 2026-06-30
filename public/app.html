@@ -715,13 +715,51 @@
 
     <!-- ── LEAD FEED ── -->
     <div class="page-content" id="page-feed">
-      <div class="feed-toolbar">
-        <select class="filter-select"><option>All trades</option><option>Plumbing</option><option>Electrical</option><option>Gardening</option><option>Decorating</option></select>
-        <select class="filter-select"><option>All areas</option><option>Brighton</option><option>Hove</option><option>Worthing</option><option>Shoreham</option></select>
-        <select class="filter-select"><option>All urgency</option><option>🔴 Urgent</option><option>🟡 High</option><option>Normal</option></select>
-        <select class="filter-select"><option>Score: High first</option><option>Newest first</option></select>
-        <button class="btn-sm btn-navy" onclick="scanForRealLeads()" id="scan-btn">🔍 Scan for New Leads</button>
-        <button class="btn-sm btn-outline" onclick="renderLeadCards()">🔄 Reset to demo</button>
+      <div style="background:var(--white);border-radius:var(--r-md);border:1px solid var(--slate-mid);padding:18px 20px;margin-bottom:16px;">
+        <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:160px;">
+            <label class="settings-label" style="margin-bottom:5px;">Trade</label>
+            <select class="filter-select" id="scan-trade" style="width:100%;">
+              <option value="plumbing">🔧 Plumbing</option>
+              <option value="electrical">⚡ Electrical</option>
+              <option value="decorating">🏠 Decorating</option>
+              <option value="gardening">🌿 Gardening</option>
+              <option value="building">🏗️ Building</option>
+              <option value="dog-grooming">🐕 Dog Grooming</option>
+              <option value="cleaning">🧹 Cleaning</option>
+              <option value="removals">🚚 Removals</option>
+              <option value="hvac">❄️ HVAC</option>
+              <option value="locksmith">🔒 Locksmith</option>
+              <option value="catering">🍕 Catering</option>
+              <option value="photography">📸 Photography</option>
+              <option value="windows-doors">🪟 Windows & Doors</option>
+              <option value="hairdressing">💇 Hair & Beauty</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:160px;">
+            <label class="settings-label" style="margin-bottom:5px;">Search mode</label>
+            <select class="filter-select" id="scan-mode" style="width:100%;" onchange="toggleScanMode()">
+              <option value="local">📍 Specific location + radius</option>
+              <option value="national">🇬🇧 UK-wide</option>
+            </select>
+          </div>
+          <div id="scan-location-wrap" style="flex:1;min-width:160px;">
+            <label class="settings-label" style="margin-bottom:5px;">Location</label>
+            <input type="text" class="settings-input" id="scan-location" placeholder="e.g. Brighton, Hove, BN1" value="Brighton"/>
+          </div>
+          <div id="scan-radius-wrap" style="min-width:140px;">
+            <label class="settings-label" style="margin-bottom:5px;">Radius</label>
+            <select class="filter-select" id="scan-radius" style="width:100%;">
+              <option value="5">5 miles</option>
+              <option value="10" selected>10 miles</option>
+              <option value="20">20 miles</option>
+              <option value="50">50 miles</option>
+              <option value="100">100 miles</option>
+            </select>
+          </div>
+          <button class="btn-sm btn-navy" onclick="scanForRealLeads()" id="scan-btn" style="height:38px;">🔍 Scan for Leads</button>
+          <button class="btn-sm btn-outline" onclick="renderLeadCards()" style="height:38px;">📋 View example</button>
+        </div>
       </div>
       <div id="scan-status" style="display:none;background:var(--slate);border-radius:var(--r-md);padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--grey);"></div>
       <div id="lead-cards-container"></div>
@@ -1060,6 +1098,12 @@ function populateUserInfo() {
 
   // Set trade mascot in welcome bar
   document.getElementById('welcome-mascot').src = tradeMascot(trade);
+
+  // Pre-fill scan trade dropdown with user's signup trade
+  const scanTradeEl = document.getElementById('scan-trade');
+  if (scanTradeEl && trade !== 'default') {
+    scanTradeEl.value = trade;
+  }
 }
 
 function renderLeadRows() {
@@ -1083,37 +1127,56 @@ function renderLeadRows() {
   `).join('');
 }
 
+function toggleScanMode() {
+  const mode = document.getElementById('scan-mode').value;
+  const locWrap = document.getElementById('scan-location-wrap');
+  const radWrap = document.getElementById('scan-radius-wrap');
+  if (mode === 'national') {
+    locWrap.style.display = 'none';
+    radWrap.style.display = 'none';
+  } else {
+    locWrap.style.display = 'block';
+    radWrap.style.display = 'block';
+  }
+}
+
 async function scanForRealLeads() {
   const btn = document.getElementById('scan-btn');
   const status = document.getElementById('scan-status');
-  const trade = currentUser?.user_metadata?.trade || 'plumbing';
-  const location = 'Brighton'; // TODO: pull from user settings once saved
+  const trade = document.getElementById('scan-trade').value;
+  const mode = document.getElementById('scan-mode').value;
+  const location = mode === 'national' ? 'UK' : (document.getElementById('scan-location').value.trim() || 'UK');
+  const radius = document.getElementById('scan-radius').value;
 
   btn.disabled = true;
   btn.innerHTML = '⏳ Scanning...';
   status.style.display = 'block';
-  status.textContent = `🔍 Searching real public sources for ${trade} leads near ${location}...`;
+  status.textContent = mode === 'national'
+    ? `🔍 Searching real public sources UK-wide for ${trade} leads...`
+    : `🔍 Searching real public sources within ${radius} miles of ${location} for ${trade} leads...`;
 
   try {
-    const res = await fetch(`/api/scan-leads?trade=${encodeURIComponent(trade)}&location=${encodeURIComponent(location)}`);
+    const res = await fetch(`/api/scan-leads?trade=${encodeURIComponent(trade)}&location=${encodeURIComponent(location)}&radius=${radius}&mode=${mode}`);
     const data = await res.json();
 
     if (data.error) throw new Error(data.error);
 
     if (!data.leads || data.leads.length === 0) {
-      status.innerHTML = `No genuine leads found right now for <strong>${trade}</strong> in <strong>${location}</strong>. APTO searched ${data.totalSearched || 0} real result(s) across your approved sites and found no matching requests at this moment. Try a different trade or area, or check back later — new posts appear throughout the day.`;
+      const areaText = mode === 'national' ? 'across the UK' : `within ${radius} miles of ${location}`;
+      status.innerHTML = `No genuine leads found right now for <strong>${trade}</strong> ${areaText}. APTO searched ${data.totalSearched || 0} real result(s) across approved sites and found no matching requests at this moment. Try widening your radius, switching to UK-wide, or check back later.`;
       document.getElementById('lead-cards-container').innerHTML = `
         <div class="empty-state" style="background:var(--white);border-radius:var(--r-md);border:1px solid var(--slate-mid);">
           <img src="/images/mascot.png" alt="No leads"/>
           <h3>No live leads right now</h3>
-          <p>APTO just searched real public sources and found nothing matching at this moment. This is normal — genuine posts appear sporadically throughout the day. Try scanning again in a few hours.</p>
+          <p>APTO just searched real public sources ${areaText} and found nothing matching at this moment. Try a wider radius or UK-wide search, or check back later — new posts appear throughout the day.</p>
         </div>`;
       btn.disabled = false;
-      btn.innerHTML = '🔍 Scan for New Leads';
+      btn.innerHTML = '🔍 Scan for Leads';
       return;
     }
 
-    status.textContent = `✅ Found ${data.leads.length} genuine lead(s) out of ${data.totalSearched} results scanned.`;
+    const areaText = mode === 'national' ? 'across the UK' : `within ${radius} miles of ${location}`;
+    status.textContent = `✅ Found ${data.leads.length} genuine lead(s) ${areaText}, out of ${data.totalSearched} results scanned.`;
     renderRealLeadCards(data.leads);
 
   } catch (err) {
