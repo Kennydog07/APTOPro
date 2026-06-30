@@ -720,8 +720,10 @@
         <select class="filter-select"><option>All areas</option><option>Brighton</option><option>Hove</option><option>Worthing</option><option>Shoreham</option></select>
         <select class="filter-select"><option>All urgency</option><option>🔴 Urgent</option><option>🟡 High</option><option>Normal</option></select>
         <select class="filter-select"><option>Score: High first</option><option>Newest first</option></select>
-        <button class="btn-sm btn-navy">🔄 Refresh</button>
+        <button class="btn-sm btn-navy" onclick="scanForRealLeads()" id="scan-btn">🔍 Scan for New Leads</button>
+        <button class="btn-sm btn-outline" onclick="renderLeadCards()">🔄 Reset to demo</button>
       </div>
+      <div id="scan-status" style="display:none;background:var(--slate);border-radius:var(--r-md);padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--grey);"></div>
       <div id="lead-cards-container"></div>
     </div>
 
@@ -1076,6 +1078,72 @@ function renderLeadRows() {
           <span class="mini-badge ${l.urgency==='urgent'?'mb-urgent':l.urgency==='high'?'mb-high':'mb-normal'}">${l.urgency==='urgent'?'🔴 Urgent':l.urgency==='high'?'🟡 High intent':'Normal'}</span>
           <span class="mini-badge mb-trade">${l.trade}</span>
         </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function scanForRealLeads() {
+  const btn = document.getElementById('scan-btn');
+  const status = document.getElementById('scan-status');
+  const trade = currentUser?.user_metadata?.trade || 'plumbing';
+  const location = 'Brighton'; // TODO: pull from user settings once saved
+
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Scanning...';
+  status.style.display = 'block';
+  status.textContent = `🔍 Searching real public sources for ${trade} leads near ${location}...`;
+
+  try {
+    const res = await fetch(`/api/scan-leads?trade=${encodeURIComponent(trade)}&location=${encodeURIComponent(location)}`);
+    const data = await res.json();
+
+    if (data.error) throw new Error(data.error);
+
+    if (!data.leads || data.leads.length === 0) {
+      status.textContent = `No genuine leads found right now for ${trade} in ${location}. Try again later, or widen your search area in Settings.`;
+      btn.disabled = false;
+      btn.innerHTML = '🔍 Scan for New Leads';
+      return;
+    }
+
+    status.textContent = `✅ Found ${data.leads.length} genuine lead(s) out of ${data.totalSearched} results scanned.`;
+    renderRealLeadCards(data.leads);
+
+  } catch (err) {
+    status.textContent = '⚠️ Scan failed: ' + err.message + '. Make sure GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_ENGINE_ID are set in Netlify.';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '🔍 Scan for New Leads';
+}
+
+function renderRealLeadCards(leads) {
+  const container = document.getElementById('lead-cards-container');
+  container.innerHTML = leads.map(l => `
+    <div class="lead-card">
+      <div class="lc-header">
+        <div class="lc-meta">
+          <span class="lc-score">Score ${l.score}/100</span>
+          📍 ${l.detectedLocation || 'Local'} · 🌐 ${l.sourceName || 'Web'}
+        </div>
+        <span class="mini-badge ${l.urgency==='High'||l.urgency==='Urgent'?'mb-urgent':'mb-normal'}">${l.urgency} Urgency</span>
+      </div>
+      <div class="lc-body">
+        <img class="lc-trade-mascot" src="/images/mascot.png" alt=""/>
+        <div class="lc-body-text">
+          <div class="lc-msg">${l.headline}</div>
+          <div class="lc-chips"><span class="lc-chip">🔗 Real result</span><span class="lc-chip">${l.sourceName||'web'}</span></div>
+          <div class="lc-reply">
+            <div class="lc-reply-label">🤖 AI Suggested Reply</div>
+            <div class="lc-reply-text">${l.reply}</div>
+          </div>
+        </div>
+      </div>
+      <div class="lc-actions">
+        <button class="btn-lc btn-lc-save" onclick="showToast('💾 Lead saved!')">💾 Save</button>
+        <button class="btn-lc btn-lc-copy" onclick="copyText('${(l.reply||'').replace(/'/g,"\\'")}')">📋 Copy Reply</button>
+        <a class="btn-lc btn-lc-dismiss" href="${l.sourceUrl}" target="_blank" style="text-align:center;">🔗 View Source</a>
       </div>
     </div>
   `).join('');
