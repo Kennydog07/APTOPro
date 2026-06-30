@@ -1101,7 +1101,13 @@ async function scanForRealLeads() {
     if (data.error) throw new Error(data.error);
 
     if (!data.leads || data.leads.length === 0) {
-      status.textContent = `No genuine leads found right now for ${trade} in ${location}. Try again later, or widen your search area in Settings.`;
+      status.innerHTML = `No genuine leads found right now for <strong>${trade}</strong> in <strong>${location}</strong>. APTO searched ${data.totalSearched || 0} real result(s) across your approved sites and found no matching requests at this moment. Try a different trade or area, or check back later — new posts appear throughout the day.`;
+      document.getElementById('lead-cards-container').innerHTML = `
+        <div class="empty-state" style="background:var(--white);border-radius:var(--r-md);border:1px solid var(--slate-mid);">
+          <img src="/images/mascot.png" alt="No leads"/>
+          <h3>No live leads right now</h3>
+          <p>APTO just searched real public sources and found nothing matching at this moment. This is normal — genuine posts appear sporadically throughout the day. Try scanning again in a few hours.</p>
+        </div>`;
       btn.disabled = false;
       btn.innerHTML = '🔍 Scan for New Leads';
       return;
@@ -1120,12 +1126,16 @@ async function scanForRealLeads() {
 
 function renderRealLeadCards(leads) {
   const container = document.getElementById('lead-cards-container');
-  container.innerHTML = leads.map(l => `
+  container.innerHTML = `
+    <div style="background:rgba(27,43,94,0.04);border:1px solid rgba(27,43,94,0.1);border-radius:var(--r-md);padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--navy);">
+      💡 <strong>How to respond:</strong> Click "View Original Post" to open the real post on its source website, then paste the AI reply as a comment or message there.
+    </div>` +
+  leads.map(l => `
     <div class="lead-card">
       <div class="lc-header">
         <div class="lc-meta">
           <span class="lc-score">Score ${l.score}/100</span>
-          📍 ${l.detectedLocation || 'Local'} · 🌐 ${l.sourceName || 'Web'}
+          📍 ${l.detectedLocation || 'Local'}
         </div>
         <span class="mini-badge ${l.urgency==='High'||l.urgency==='Urgent'?'mb-urgent':'mb-normal'}">${l.urgency} Urgency</span>
       </div>
@@ -1133,7 +1143,9 @@ function renderRealLeadCards(leads) {
         <img class="lc-trade-mascot" src="/images/mascot.png" alt=""/>
         <div class="lc-body-text">
           <div class="lc-msg">${l.headline}</div>
-          <div class="lc-chips"><span class="lc-chip">🔗 Real result</span><span class="lc-chip">${l.sourceName||'web'}</span></div>
+          <div class="lc-chips">
+            <a href="${l.sourceUrl}" target="_blank" class="lc-chip" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px;">🌐 Found on <strong>${l.sourceName||'web'}</strong> ↗</a>
+          </div>
           <div class="lc-reply">
             <div class="lc-reply-label">🤖 AI Suggested Reply</div>
             <div class="lc-reply-text">${l.reply}</div>
@@ -1141,9 +1153,9 @@ function renderRealLeadCards(leads) {
         </div>
       </div>
       <div class="lc-actions">
-        <button class="btn-lc btn-lc-save" onclick="showToast('💾 Lead saved!')">💾 Save</button>
+        <a class="btn-lc btn-lc-save" href="${l.sourceUrl}" target="_blank" style="text-align:center;text-decoration:none;">🔗 View Original Post</a>
         <button class="btn-lc btn-lc-copy" onclick="copyText('${(l.reply||'').replace(/'/g,"\\'")}')">📋 Copy Reply</button>
-        <a class="btn-lc btn-lc-dismiss" href="${l.sourceUrl}" target="_blank" style="text-align:center;">🔗 View Source</a>
+        <button class="btn-lc btn-lc-dismiss" onclick="showToast('💾 Lead saved!')">💾 Save</button>
       </div>
     </div>
   `).join('');
@@ -1151,11 +1163,14 @@ function renderRealLeadCards(leads) {
 
 function renderLeadCards() {
   const container = document.getElementById('lead-cards-container');
+  document.getElementById('scan-status').style.display = 'block';
+  document.getElementById('scan-status').innerHTML = '📋 Showing example leads to demonstrate the format. Click "Scan for New Leads" above to search real public sources.';
   container.innerHTML = SAMPLE_LEADS.map((l,i) => `
     <div class="lead-card">
       <div class="lc-header">
         <div class="lc-meta">
           <span class="lc-score">Score ${l.score}/100</span>
+          <span style="opacity:0.6;font-style:italic;">(Example)</span>
           ${l.trade} · 📍 ${l.loc} · ${l.time}
         </div>
         <span class="mini-badge ${l.urgency==='urgent'?'mb-urgent':l.urgency==='high'?'mb-high':'mb-normal'}">${l.urgency==='urgent'?'🔴 Urgent':l.urgency==='high'?'🟡 High':'Normal'}</span>
