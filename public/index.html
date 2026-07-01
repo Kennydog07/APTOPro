@@ -836,14 +836,12 @@
       const { data: { session } } = await supabase.auth.getSession();
 
       if (session) {
-        const email = session.user.email;
-        // Update desktop nav
         document.getElementById('nav-cta').innerHTML = `
-          <span style="font-size:13px;color:rgba(255,255,255,0.6);margin-right:4px;">👋 ${email}</span>
+          <a class="btn-ghost" href="/app.html">Log in</a>
           <a class="btn-primary" href="/app.html">Go to Dashboard →</a>
         `;
         // Update mobile menu
-        document.getElementById('mobile-cta-1').outerHTML = `<div style="padding:12px 0;color:rgba(255,255,255,0.6);font-size:13px;border-bottom:1px solid rgba(255,255,255,0.08);">👋 Signed in as ${email}</div>`;
+        document.getElementById('mobile-cta-1').textContent = 'Log in';
         document.getElementById('mobile-cta-2').textContent = 'Go to Dashboard →';
       }
     } catch (err) {
