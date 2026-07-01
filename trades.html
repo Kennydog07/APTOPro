@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Find Local Tradespeople | APTO Pro Directory</title>
+  <meta name="description" content="Find trusted, verified local tradespeople across the UK. Plumbers, electricians, gardeners, decorators and more. All APTO Pro verified."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --navy:#1B2B5E; --navy-mid:#243579; --navy-dark:#111C3E;
+      --yellow:#F5C518; --yellow-lt:#FDE96B;
+      --orange:#C4541A; --orange-lt:#E8722E;
+      --white:#FFFFFF; --slate:#F4F6FA; --slate-mid:#E8ECF4;
+      --grey:#6B7280; --dark:#1A1A2E;
+      --success:#16A34A; --success-lt:#DCFCE7;
+      --font-d:'Plus Jakarta Sans',sans-serif;
+      --font-b:'Inter',sans-serif;
+      --r-sm:6px; --r-md:12px; --r-lg:20px;
+      --sh-sm:0 1px 3px rgba(27,43,94,0.08);
+      --sh-md:0 4px 16px rgba(27,43,94,0.12);
+      --sh-lg:0 12px 40px rgba(27,43,94,0.16);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{font-family:var(--font-b);color:var(--dark);background:var(--white);overflow-x:hidden;}
+    img{max-width:100%;display:block;}
+    a{text-decoration:none;color:inherit;}
+    button{cursor:pointer;border:none;font-family:inherit;}
+
+    /* NAV */
+    nav{
+      position:fixed;top:0;left:0;right:0;z-index:100;
+      background:rgba(27,43,94,0.97);backdrop-filter:blur(12px);
+      border-bottom:1px solid rgba(245,197,24,0.15);
+    }
+    .nav-inner{
+      display:flex;align-items:center;justify-content:space-between;
+      height:68px;max-width:1200px;margin:0 auto;padding:0 24px;
+    }
+    .nav-logo{display:flex;align-items:center;gap:10px;}
+    .nav-logo img{width:36px;}
+    .nav-logo-text{font-family:var(--font-d);font-weight:800;font-size:19px;color:var(--white);letter-spacing:-0.02em;}
+    .nav-logo-text span{color:var(--yellow);}
+    .nav-links{display:flex;align-items:center;gap:28px;list-style:none;}
+    .nav-links a{color:rgba(255,255,255,0.75);font-size:14px;font-weight:500;transition:color 0.2s;}
+    .nav-links a:hover{color:var(--white);}
+    .nav-links a.active{color:var(--yellow);}
+    .btn-nav{
+      background:var(--yellow);color:var(--navy-dark);
+      font-family:var(--font-d);font-weight:700;font-size:14px;
+      padding:9px 20px;border-radius:var(--r-sm);
+      transition:background 0.2s;
+    }
+    .btn-nav:hover{background:var(--yellow-lt);}
+
+    /* HERO */
+    .hero{
+      background:var(--navy);padding:120px 0 60px;
+      position:relative;overflow:hidden;
+    }
+    .hero::before{
+      content:'';position:absolute;inset:0;
+      background-image:linear-gradient(rgba(245,197,24,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(245,197,24,0.04) 1px,transparent 1px);
+      background-size:56px 56px;
+    }
+    .hero-inner{
+      max-width:1200px;margin:0 auto;padding:0 24px;
+      display:grid;grid-template-columns:1fr auto;align-items:center;gap:40px;
+      position:relative;z-index:1;
+    }
+    .hero h1{
+      font-family:var(--font-d);font-weight:800;font-size:clamp(32px,4vw,50px);
+      color:var(--white);letter-spacing:-0.03em;line-height:1.1;margin-bottom:16px;
+    }
+    .hero h1 span{color:var(--yellow);}
+    .hero p{font-size:17px;color:rgba(255,255,255,0.7);line-height:1.7;max-width:520px;margin-bottom:32px;}
+    .hero-mascot img{width:160px;filter:drop-shadow(0 12px 40px rgba(196,84,26,0.4));}
+
+    /* SEARCH BAR */
+    .search-section{
+      background:var(--white);border-top:none;
+      box-shadow:var(--sh-md);position:relative;z-index:2;
+    }
+    .search-bar{
+      max-width:1200px;margin:0 auto;padding:24px;
+      display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;
+    }
+    .search-field label{
+      display:block;font-size:12px;font-weight:600;color:var(--navy);
+      text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;
+    }
+    .search-input{
+      width:100%;padding:12px 16px;
+      border:1.5px solid var(--slate-mid);border-radius:var(--r-md);
+      font-size:15px;color:var(--dark);outline:none;
+      transition:border-color 0.2s,box-shadow 0.2s;
+    }
+    .search-input:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,43,94,0.08);}
+    .btn-search{
+      background:var(--navy);color:var(--white);
+      font-family:var(--font-d);font-weight:700;font-size:15px;
+      padding:12px 28px;border-radius:var(--r-md);
+      display:flex;align-items:center;gap:8px;
+      transition:background 0.2s;white-space:nowrap;
+    }
+    .btn-search:hover{background:var(--navy-mid);}
+
+    /* MAIN CONTENT */
+    .main{max-width:1200px;margin:0 auto;padding:40px 24px;display:grid;grid-template-columns:260px 1fr;gap:32px;}
+
+    /* FILTERS SIDEBAR */
+    .filters{}
+    .filter-panel{
+      background:var(--white);border:1px solid var(--slate-mid);
+      border-radius:var(--r-lg);padding:20px;margin-bottom:16px;
+    }
+    .filter-panel h3{
+      font-family:var(--font-d);font-weight:700;font-size:14px;
+      color:var(--navy);margin-bottom:14px;text-transform:uppercase;
+      letter-spacing:0.06em;
+    }
+    .filter-item{
+      display:flex;align-items:center;gap:10px;
+      padding:8px 0;cursor:pointer;border-bottom:1px solid var(--slate-mid);
+      font-size:14px;color:var(--dark);transition:color 0.15s;
+    }
+    .filter-item:last-child{border-bottom:none;}
+    .filter-item:hover{color:var(--navy);}
+    .filter-item.active{color:var(--navy);font-weight:600;}
+    .filter-item .fi-icon{font-size:16px;width:20px;text-align:center;}
+    .filter-item .fi-count{
+      margin-left:auto;font-size:11px;color:var(--grey);
+      background:var(--slate);padding:2px 7px;border-radius:100px;
+    }
+    .filter-item.active .fi-count{background:var(--navy);color:var(--white);}
+
+    /* RESULTS */
+    .results{}
+    .results-header{
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:20px;flex-wrap:wrap;gap:12px;
+    }
+    .results-count{
+      font-family:var(--font-d);font-weight:700;font-size:18px;color:var(--navy);
+    }
+    .results-sort{
+      padding:8px 12px;border:1.5px solid var(--slate-mid);border-radius:var(--r-sm);
+      font-size:13px;color:var(--dark);outline:none;
+    }
+
+    /* TRADE CARD */
+    .trade-card{
+      background:var(--white);border:1px solid var(--slate-mid);
+      border-radius:var(--r-lg);padding:24px;margin-bottom:16px;
+      display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:start;
+      transition:box-shadow 0.2s,border-color 0.2s;
+    }
+    .trade-card:hover{box-shadow:var(--sh-md);border-color:rgba(27,43,94,0.15);}
+    .trade-card.featured{border-color:var(--yellow);background:rgba(245,197,24,0.02);}
+
+    .tc-avatar{
+      width:64px;height:64px;border-radius:var(--r-md);
+      background:var(--navy);color:var(--yellow);
+      font-family:var(--font-d);font-weight:800;font-size:24px;
+      display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;
+    }
+    .tc-featured-badge{
+      background:var(--yellow);color:var(--navy-dark);
+      font-family:var(--font-d);font-weight:700;font-size:10px;
+      padding:2px 8px;border-radius:100px;text-transform:uppercase;
+      letter-spacing:0.06em;margin-bottom:6px;display:inline-block;
+    }
+    .tc-name{
+      font-family:var(--font-d);font-weight:700;font-size:18px;
+      color:var(--navy);margin-bottom:4px;
+    }
+    .tc-trade{
+      display:inline-flex;align-items:center;gap:6px;
+      font-size:13px;color:var(--grey);margin-bottom:8px;
+    }
+    .tc-trade .badge{
+      background:rgba(27,43,94,0.08);color:var(--navy);
+      font-size:11px;font-weight:600;padding:2px 8px;border-radius:100px;
+    }
+    .tc-desc{font-size:14px;color:var(--grey);line-height:1.6;margin-bottom:12px;}
+    .tc-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+    .tc-tag{
+      background:var(--slate);border-radius:100px;
+      padding:3px 10px;font-size:12px;color:var(--navy);font-weight:500;
+    }
+    .tc-meta{
+      display:flex;align-items:center;gap:16px;font-size:13px;color:var(--grey);
+    }
+    .tc-meta span{display:flex;align-items:center;gap:4px;}
+    .tc-stars{color:var(--yellow);letter-spacing:1px;font-size:13px;}
+    .tc-actions{display:flex;flex-direction:column;gap:8px;min-width:140px;}
+    .btn-contact{
+      background:var(--navy);color:var(--white);
+      font-family:var(--font-d);font-weight:700;font-size:13px;
+      padding:10px 16px;border-radius:var(--r-sm);text-align:center;
+      transition:background 0.15s;
+    }
+    .btn-contact:hover{background:var(--navy-mid);}
+    .btn-view{
+      background:var(--slate);color:var(--navy);
+      font-family:var(--font-d);font-weight:600;font-size:13px;
+      padding:10px 16px;border-radius:var(--r-sm);text-align:center;
+      border:1.5px solid var(--slate-mid);transition:border-color 0.15s;
+    }
+    .btn-view:hover{border-color:var(--navy);}
+    .verified-badge{
+      display:flex;align-items:center;gap:4px;
+      font-size:11px;font-weight:600;color:var(--success);
+      background:var(--success-lt);padding:3px 10px;border-radius:100px;
+      justify-content:center;
+    }
+
+    /* CTA BANNER */
+    .cta-banner{
+      background:var(--navy);border-radius:var(--r-lg);
+      padding:32px;margin-bottom:24px;
+      display:flex;align-items:center;justify-content:space-between;gap:24px;
+      position:relative;overflow:hidden;
+    }
+    .cta-banner::before{
+      content:'';position:absolute;inset:0;
+      background-image:linear-gradient(rgba(245,197,24,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(245,197,24,0.04) 1px,transparent 1px);
+      background-size:40px 40px;
+    }
+    .cta-banner-text{position:relative;z-index:1;}
+    .cta-banner-text h3{
+      font-family:var(--font-d);font-weight:800;font-size:20px;
+      color:var(--white);margin-bottom:6px;letter-spacing:-0.02em;
+    }
+    .cta-banner-text h3 span{color:var(--yellow);}
+    .cta-banner-text p{font-size:14px;color:rgba(255,255,255,0.65);line-height:1.6;}
+    .btn-cta-banner{
+      position:relative;z-index:1;flex-shrink:0;
+      background:var(--yellow);color:var(--navy-dark);
+      font-family:var(--font-d);font-weight:800;font-size:14px;
+      padding:12px 24px;border-radius:var(--r-md);
+      box-shadow:0 4px 16px rgba(245,197,24,0.4);
+      transition:background 0.2s;white-space:nowrap;
+    }
+    .btn-cta-banner:hover{background:var(--yellow-lt);}
+
+    /* PAGINATION */
+    .pagination{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:32px;}
+    .page-btn{
+      width:36px;height:36px;border-radius:var(--r-sm);
+      display:flex;align-items:center;justify-content:center;
+      font-size:14px;font-weight:600;cursor:pointer;
+      border:1.5px solid var(--slate-mid);color:var(--navy);
+      background:var(--white);transition:all 0.15s;
+    }
+    .page-btn:hover{border-color:var(--navy);}
+    .page-btn.active{background:var(--navy);color:var(--white);border-color:var(--navy);}
+
+    /* MODAL */
+    .modal-overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;
+      display:flex;align-items:center;justify-content:center;padding:24px;
+      display:none;
+    }
+    .modal-overlay.open{display:flex;}
+    .modal{
+      background:var(--white);border-radius:var(--r-lg);
+      max-width:520px;width:100%;padding:36px;
+      box-shadow:var(--sh-lg);position:relative;
+    }
+    .modal-close{
+      position:absolute;top:16px;right:16px;
+      background:var(--slate);border:none;border-radius:var(--r-sm);
+      width:32px;height:32px;font-size:18px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;color:var(--grey);
+    }
+    .modal-close:hover{background:var(--slate-mid);}
+    .modal h2{font-family:var(--font-d);font-weight:800;font-size:22px;color:var(--navy);margin-bottom:6px;}
+    .modal p{font-size:14px;color:var(--grey);margin-bottom:24px;line-height:1.6;}
+    .form-group{margin-bottom:14px;}
+    .form-label{display:block;font-size:13px;font-weight:600;color:var(--navy);margin-bottom:5px;}
+    .form-input{width:100%;padding:10px 14px;border:1.5px solid var(--slate-mid);border-radius:var(--r-sm);font-size:14px;color:var(--dark);outline:none;transition:border-color 0.2s;}
+    .form-input:focus{border-color:var(--navy);}
+    .btn-submit{
+      width:100%;padding:13px;background:var(--yellow);color:var(--navy-dark);
+      font-family:var(--font-d);font-weight:800;font-size:15px;border-radius:var(--r-sm);
+      box-shadow:0 3px 12px rgba(245,197,24,0.4);transition:background 0.2s;margin-top:8px;
+    }
+    .btn-submit:hover{background:var(--yellow-lt);}
+
+    /* RESPONSIVE */
+    @media(max-width:900px){
+      .hero-inner{grid-template-columns:1fr;}
+      .hero-mascot{display:none;}
+      .search-bar{grid-template-columns:1fr 1fr;}
+      .main{grid-template-columns:1fr;}
+      .filters{display:none;}
+      .trade-card{grid-template-columns:auto 1fr;}
+      .tc-actions{display:none;}
+    }
+    @media(max-width:560px){
+      .search-bar{grid-template-columns:1fr;}
+      .trade-card{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="/index.html">
+      <img src="/images/mascot.png" alt="APTO Pro"/>
+      <span class="nav-logo-text">APTO <span>Pro</span></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="/index.html">Home</a></li>
+      <li><a href="/index.html#features">Features</a></li>
+      <li><a href="/trades.html" class="active">Find a Trade</a></li>
+      <li><a href="/index.html#pricing">Pricing</a></li>
+    </ul>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <a href="/app.html" style="color:rgba(255,255,255,0.75);font-size:14px;font-weight:500;">Log in</a>
+      <a href="/app.html?action=signup" class="btn-nav">List your business →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--success-lt);border:1px solid rgba(22,163,74,0.25);border-radius:100px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--success);margin-bottom:20px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--success);display:inline-block;"></span>
+        APTO Pro Verified Tradespeople
+      </div>
+      <h1>Find trusted local<br><span>tradespeople near you</span></h1>
+      <p>Every tradesperson in our directory is an APTO Pro subscriber — vetted, active, and ready to help. Search by trade and location to find reliable local professionals.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <a href="#directory" class="btn-nav" style="padding:13px 28px;font-size:15px;border-radius:var(--r-md);">Browse directory ↓</a>
+        <a href="/app.html?action=signup" style="background:transparent;color:var(--white);font-family:var(--font-d);font-weight:700;font-size:15px;padding:13px 28px;border-radius:var(--r-md);border:2px solid rgba(255,255,255,0.3);transition:border-color 0.2s;">List your business →</a>
+      </div>
+    </div>
+    <div class="hero-mascot">
+      <img src="/images/mascot.png" alt="APTO Pro"/>
+    </div>
+  </div>
+</section>
+
+<!-- SEARCH BAR -->
+<section class="search-section">
+  <div class="search-bar">
+    <div class="search-field">
+      <label>Trade or service</label>
+      <select class="search-input" id="search-trade" onchange="filterListings()">
+        <option value="">All trades</option>
+        <option value="Plumbing">🔧 Plumbing</option>
+        <option value="Electrical">⚡ Electrical</option>
+        <option value="Decorating">🏠 Decorating</option>
+        <option value="Gardening">🌿 Gardening</option>
+        <option value="Building">🏗️ Building</option>
+        <option value="Dog Grooming">🐕 Dog Grooming</option>
+        <option value="Cleaning">🧹 Cleaning</option>
+        <option value="Removals">🚚 Removals</option>
+        <option value="HVAC">❄️ HVAC</option>
+        <option value="Locksmith">🔒 Locksmith</option>
+        <option value="Catering">🍕 Catering</option>
+        <option value="Photography">📸 Photography</option>
+        <option value="Windows & Doors">🪟 Windows & Doors</option>
+        <option value="Hair & Beauty">💇 Hair & Beauty</option>
+        <option value="Roofing">🏘️ Roofing</option>
+        <option value="Plastering">🪣 Plastering</option>
+        <option value="Tiling">🔲 Tiling</option>
+        <option value="Handyman">🔨 Handyman</option>
+        <option value="Clearance">🗑️ Clearance</option>
+      </select>
+    </div>
+    <div class="search-field">
+      <label>Location</label>
+      <input type="text" class="search-input" id="search-location" placeholder="e.g. Brighton, BN1, Sussex" oninput="filterListings()"/>
+    </div>
+    <div class="search-field">
+      <label>Keyword</label>
+      <input type="text" class="search-input" id="search-keyword" placeholder="e.g. emergency, insured, free quote" oninput="filterListings()"/>
+    </div>
+    <button class="btn-search" onclick="filterListings()">
+      🔍 Search
+    </button>
+  </div>
+</section>
+
+<!-- MAIN DIRECTORY -->
+<div class="main" id="directory">
+
+  <!-- SIDEBAR FILTERS -->
+  <aside class="filters">
+    <div class="filter-panel">
+      <h3>Trade Category</h3>
+      <div class="filter-item active" onclick="setFilter('')">
+        <span class="fi-icon">✨</span> All trades <span class="fi-count" id="count-all">0</span>
+      </div>
+      <div class="filter-item" onclick="setFilter('Plumbing')"><span class="fi-icon">🔧</span> Plumbing <span class="fi-count" id="count-plumbing">0</span></div>
+      <div class="filter-item" onclick="setFilter('Electrical')"><span class="fi-icon">⚡</span> Electrical <span class="fi-count" id="count-electrical">0</span></div>
+      <div class="filter-item" onclick="setFilter('Decorating')"><span class="fi-icon">🏠</span> Decorating <span class="fi-count" id="count-decorating">0</span></div>
+      <div class="filter-item" onclick="setFilter('Gardening')"><span class="fi-icon">🌿</span> Gardening <span class="fi-count" id="count-gardening">0</span></div>
+      <div class="filter-item" onclick="setFilter('Building')"><span class="fi-icon">🏗️</span> Building <span class="fi-count" id="count-building">0</span></div>
+      <div class="filter-item" onclick="setFilter('Cleaning')"><span class="fi-icon">🧹</span> Cleaning <span class="fi-count" id="count-cleaning">0</span></div>
+      <div class="filter-item" onclick="setFilter('Removals')"><span class="fi-icon">🚚</span> Removals <span class="fi-count" id="count-removals">0</span></div>
+      <div class="filter-item" onclick="setFilter('Roofing')"><span class="fi-icon">🏘️</span> Roofing <span class="fi-count" id="count-roofing">0</span></div>
+    </div>
+    <div class="filter-panel">
+      <h3>Options</h3>
+      <div class="filter-item" onclick="toggleFeatured(this)"><span class="fi-icon">⭐</span> Featured only</div>
+      <div class="filter-item" onclick="toggleVerified(this)"><span class="fi-icon">✅</span> Verified only</div>
+    </div>
+    <div class="cta-banner" style="padding:20px;">
+      <div class="cta-banner-text">
+        <h3 style="font-size:16px;">Are you a <span>tradesperson?</span></h3>
+        <p style="font-size:13px;margin-bottom:12px;">Get listed for free when you join APTO Pro.</p>
+        <a href="/app.html?action=signup" class="btn-cta-banner" style="font-size:13px;padding:10px 16px;">Get listed free →</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- RESULTS -->
+  <div class="results">
+
+    <!-- CTA for tradespeople -->
+    <div class="cta-banner">
+      <div class="cta-banner-text">
+        <h3>Are you a tradesperson? <span>Get listed free</span></h3>
+        <p>APTO Pro subscribers get a free listing in this directory — visible to thousands of homeowners searching for local trades. Join today and start getting found.</p>
+      </div>
+      <a href="/app.html?action=signup" class="btn-cta-banner">List my business free →</a>
+    </div>
+
+    <div class="results-header">
+      <div class="results-count" id="results-count">Loading listings...</div>
+      <select class="results-sort" onchange="sortListings(this.value)">
+        <option value="featured">Featured first</option>
+        <option value="rating">Highest rated</option>
+        <option value="name">A–Z</option>
+        <option value="newest">Newest first</option>
+      </select>
+    </div>
+
+    <div id="listings-container"></div>
+
+    <div class="pagination" id="pagination"></div>
+
+  </div>
+</div>
+
+<!-- CONTACT MODAL -->
+<div class="modal-overlay" id="contact-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2>Contact <span id="modal-name">this tradesperson</span></h2>
+    <p>Send them a message and they'll get back to you directly. No commission, no middleman.</p>
+    <div class="form-group">
+      <label class="form-label">Your name</label>
+      <input class="form-input" type="text" placeholder="John Smith"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Your email</label>
+      <input class="form-input" type="email" placeholder="you@example.com"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Your phone (optional)</label>
+      <input class="form-input" type="tel" placeholder="07..."/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">What do you need?</label>
+      <textarea class="form-input" rows="3" placeholder="Briefly describe what you need help with..." style="resize:none;"></textarea>
+    </div>
+    <button class="btn-submit" onclick="sendEnquiry()">Send enquiry →</button>
+    <p style="font-size:11px;color:var(--grey);text-align:center;margin-top:12px;">Your details are shared only with this tradesperson, not stored or sold.</p>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" style="position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--navy-dark);color:var(--white);padding:12px 20px;border-radius:var(--r-md);font-size:14px;font-weight:500;box-shadow:var(--sh-lg);transform:translateY(80px);opacity:0;transition:transform 0.3s,opacity 0.3s;"></div>
+
+<script>
+// ── SAMPLE LISTINGS ──
+// In production these would come from Supabase
+// Any APTO Pro subscriber can have a listing — populated from their profile
+const ALL_LISTINGS = [
+  {
+    id:11, name:'Whites Storage & Removals', trade:'Removals', location:'West Sussex',
+    desc:'Professional removal and storage solutions across West Sussex and beyond. Secure storage facilities, house moves, and commercial relocations handled with care.',
+    tags:['House removals','Secure storage','Commercial moves','West Sussex'],
+    rating:5.0, reviews:0, avatar:'WR', featured:true, verified:true, phone:''
+  },
+  {
+    id:12, name:'Whites Storage Solutions', trade:'Removals', location:'West Sussex',
+    desc:'Short and long term storage solutions in West Sussex. Clean, secure, accessible units available for household and business storage.',
+    tags:['Short term storage','Long term storage','Business storage','Household storage'],
+    rating:5.0, reviews:0, avatar:'WS', featured:false, verified:true, phone:''
+  },
+  {
+    id:13, name:'JP Lea Installations', trade:'Building', location:'West Sussex',
+    desc:'Kitchen and bathroom fitting specialists covering West Sussex. Quality installations with attention to detail from start to finish.',
+    tags:['Kitchen fitting','Bathroom fitting','West Sussex','Free quotes'],
+    rating:5.0, reviews:0, avatar:'JP', featured:true, verified:true, phone:''
+  },
+  {
+    id:14, name:'ROSCO Painters & Decorators', trade:'Decorating', location:'West Sussex',
+    desc:'Professional painting and decorating service across West Sussex. Interior and exterior work, residential and commercial. High quality finish guaranteed.',
+    tags:['Interior painting','Exterior painting','Residential','Commercial'],
+    rating:5.0, reviews:0, avatar:'RP', featured:true, verified:true, phone:''
+  },
+];
+
+let filtered = [...ALL_LISTINGS];
+let currentPage = 1;
+const PER_PAGE = 6;
+let showFeaturedOnly = false;
+let showVerifiedOnly = false;
+let currentTradeFilter = '';
+
+function init() {
+  updateCounts();
+  filterListings();
+}
+
+function updateCounts() {
+  document.getElementById('count-all').textContent = ALL_LISTINGS.length;
+  ['Plumbing','Electrical','Decorating','Gardening','Building','Cleaning','Removals','Roofing'].forEach(t => {
+    const el = document.getElementById('count-' + t.toLowerCase());
+    if (el) el.textContent = ALL_LISTINGS.filter(l => l.trade === t).length;
+  });
+}
+
+function setFilter(trade) {
+  currentTradeFilter = trade;
+  document.getElementById('search-trade').value = trade;
+  document.querySelectorAll('.filter-item').forEach(el => el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  filterListings();
+}
+
+function toggleFeatured(el) {
+  showFeaturedOnly = !showFeaturedOnly;
+  el.classList.toggle('active', showFeaturedOnly);
+  filterListings();
+}
+
+function toggleVerified(el) {
+  showVerifiedOnly = !showVerifiedOnly;
+  el.classList.toggle('active', showVerifiedOnly);
+  filterListings();
+}
+
+function filterListings() {
+  const trade    = currentTradeFilter || document.getElementById('search-trade').value;
+  const location = document.getElementById('search-location').value.toLowerCase();
+  const keyword  = document.getElementById('search-keyword').value.toLowerCase();
+
+  filtered = ALL_LISTINGS.filter(l => {
+    if (trade && l.trade !== trade) return false;
+    if (location && !l.location.toLowerCase().includes(location)) return false;
+    if (keyword && !l.name.toLowerCase().includes(keyword) && !l.desc.toLowerCase().includes(keyword) && !l.tags.some(t => t.toLowerCase().includes(keyword))) return false;
+    if (showFeaturedOnly && !l.featured) return false;
+    if (showVerifiedOnly && !l.verified) return false;
+    return true;
+  });
+
+  currentPage = 1;
+  renderListings();
+}
+
+function sortListings(method) {
+  if (method === 'featured') filtered.sort((a,b) => b.featured - a.featured);
+  else if (method === 'rating') filtered.sort((a,b) => b.rating - a.rating);
+  else if (method === 'name') filtered.sort((a,b) => a.name.localeCompare(b.name));
+  renderListings();
+}
+
+function renderListings() {
+  const container = document.getElementById('listings-container');
+  const start = (currentPage - 1) * PER_PAGE;
+  const page  = filtered.slice(start, start + PER_PAGE);
+
+  document.getElementById('results-count').textContent =
+    filtered.length === 0 ? 'No listings found' :
+    `${filtered.length} tradesperson${filtered.length === 1 ? '' : 's'} found`;
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:60px 24px;">
+        <img src="/images/mascot.png" style="width:80px;margin:0 auto 16px;opacity:0.6;" alt=""/>
+        <h3 style="font-family:var(--font-d);font-weight:700;font-size:18px;color:var(--navy);margin-bottom:8px;">No listings found</h3>
+        <p style="font-size:14px;color:var(--grey);margin-bottom:20px;">Try widening your search, or be the first to list your trade in this area.</p>
+        <a href="/app.html?action=signup" style="display:inline-block;background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:700;padding:11px 24px;border-radius:var(--r-sm);">List your business free →</a>
+      </div>`;
+    document.getElementById('pagination').innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = page.map(l => `
+    <div class="trade-card ${l.featured ? 'featured' : ''}">
+      <div class="tc-avatar">${l.avatar}</div>
+      <div>
+        ${l.featured ? '<span class="tc-featured-badge">⭐ Featured</span>' : ''}
+        <div class="tc-name">${l.name}</div>
+        <div class="tc-trade">
+          <span class="badge">${l.trade}</span>
+          📍 ${l.location}
+        </div>
+        <div class="tc-desc">${l.desc}</div>
+        <div class="tc-tags">${l.tags.map(t => `<span class="tc-tag">${t}</span>`).join('')}</div>
+        <div class="tc-meta">
+          <span><span class="tc-stars">${'★'.repeat(Math.floor(l.rating))}</span> ${l.rating} (${l.reviews} reviews)</span>
+          ${l.verified ? '<span style="color:var(--success);font-weight:600;">✅ APTO Verified</span>' : ''}
+        </div>
+      </div>
+      <div class="tc-actions">
+        <button class="btn-contact" onclick="openModal('${l.name}')">📞 Contact</button>
+        <div class="verified-badge">✅ Verified</div>
+      </div>
+    </div>
+  `).join('');
+
+  renderPagination();
+}
+
+function renderPagination() {
+  const total = Math.ceil(filtered.length / PER_PAGE);
+  if (total <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+  let html = '';
+  for (let i = 1; i <= total; i++) {
+    html += `<div class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goPage(${i})">${i}</div>`;
+  }
+  document.getElementById('pagination').innerHTML = html;
+}
+
+function goPage(n) { currentPage = n; renderListings(); window.scrollTo({top:400,behavior:'smooth'}); }
+
+function openModal(name) {
+  document.getElementById('modal-name').textContent = name;
+  document.getElementById('contact-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('contact-modal').classList.remove('open');
+}
+
+function sendEnquiry() {
+  closeModal();
+  showToast('✅ Enquiry sent! They will contact you shortly.');
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.transform = 'translateY(0)'; t.style.opacity = '1';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.style.transform = 'translateY(80px)'; t.style.opacity = '0'; }, 3500);
+}
+
+document.getElementById('contact-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('contact-modal')) closeModal();
+});
+
+init();
+</script>
+</body>
+</html>
