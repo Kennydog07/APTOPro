@@ -818,7 +818,6 @@
   </div>
 </nav>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
 <script>
   // Toggle mobile hamburger menu
   function toggleMobileMenu() {
@@ -826,28 +825,8 @@
     menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
   }
 
-  // Check if user already has a session — if so, show "Go to Dashboard" instead of "Start Free Trial"
-  (async function checkSession() {
-    try {
-      const SUPABASE_URL  = 'https://gsahuqwmstnzejnoyfic.supabase.co';
-      const SUPABASE_ANON = 'sb_publishable_wYMMhxVA7noyBwUYFogGRQ_HOBw4-t8';
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  // No session check needed — marketing site always shows same buttons
 
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (session) {
-        document.getElementById('nav-cta').innerHTML = `
-          <a class="btn-ghost" href="/app.html">Log in</a>
-          <a class="btn-primary" href="/app.html">Go to Dashboard →</a>
-        `;
-        // Update mobile menu
-        document.getElementById('mobile-cta-1').textContent = 'Log in';
-        document.getElementById('mobile-cta-2').textContent = 'Go to Dashboard →';
-      }
-    } catch (err) {
-      console.log('Session check skipped:', err.message);
-    }
-  })();
 </script>
 
 <!-- ═══════════════════════════════════════
