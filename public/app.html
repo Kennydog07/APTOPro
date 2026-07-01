@@ -803,6 +803,17 @@
               <option value="100">100 miles</option>
             </select>
           </div>
+          <div style="min-width:140px;">
+            <label class="settings-label" style="margin-bottom:5px;">Posted within</label>
+            <select class="filter-select" id="scan-days" style="width:100%;">
+              <option value="1">Last 24 hours</option>
+              <option value="3">Last 3 days</option>
+              <option value="5" selected>Last 5 days</option>
+              <option value="7">Last week</option>
+              <option value="30">Last month</option>
+              <option value="0">Any time</option>
+            </select>
+          </div>
           <button class="btn-sm btn-navy" onclick="scanForRealLeads()" id="scan-btn" style="height:38px;">🔍 Scan for Leads</button>
           <button class="btn-sm btn-outline" onclick="renderLeadCards()" style="height:38px;">📋 View example</button>
         </div>
@@ -1361,15 +1372,18 @@ async function scanForRealLeads() {
   const radius = document.getElementById('scan-radius').value;
   const typeLabel = searchType === 'jobs' ? 'job/gig opportunities' : 'customer leads';
 
+  const days = document.getElementById('scan-days').value;
+  const daysLabel = days === '0' ? 'any time' : days === '1' ? 'last 24 hours' : `last ${days} days`;
+
   btn.disabled = true;
   btn.innerHTML = '⏳ Scanning...';
   status.style.display = 'block';
   status.textContent = mode === 'national'
-    ? `🔍 Searching real public sources UK-wide for ${trade} ${typeLabel}...`
-    : `🔍 Searching real public sources within ${radius} miles of ${location} for ${trade} ${typeLabel}...`;
+    ? `🔍 Searching UK-wide for ${trade} ${typeLabel} posted in the ${daysLabel}...`
+    : `🔍 Searching within ${radius} miles of ${location} for ${trade} ${typeLabel} posted in the ${daysLabel}...`;
 
   try {
-    const res = await fetch(`/api/scan-leads?trade=${encodeURIComponent(trade)}&location=${encodeURIComponent(location)}&radius=${radius}&mode=${mode}&searchType=${searchType}`);
+    const res = await fetch(`/api/scan-leads?trade=${encodeURIComponent(trade)}&location=${encodeURIComponent(location)}&radius=${radius}&mode=${mode}&searchType=${searchType}&days=${days}`);
     const data = await res.json();
 
     if (data.error) throw new Error(data.error);
