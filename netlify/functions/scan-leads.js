@@ -7,73 +7,99 @@ const TRADE_KEYWORDS = {
   plumbing: [
     'need a plumber', 'looking for a plumber', 'plumber recommendation',
     'emergency plumber', 'can anyone recommend a plumber', 'boiler broken need help',
-    'burst pipe need plumber', 'no hot water plumber', 'toilet leaking need plumber',
-    'plumbing problem help'
+    'burst pipe need plumber', 'no hot water plumber', 'plumber help wanted',
+    'anyone know a good plumber', 'recommendations please plumber',
+    'plumber needed urgently', 'seeking a plumber', 'plumber wanted',
+    'does anyone know a plumber', 'after a plumber'
   ],
   electrical: [
     'need an electrician', 'looking for an electrician', 'electrician recommendation',
-    'can anyone recommend electrician', 'electrical fault help', 'power cut house electrician',
-    'need rewire electrician', 'fuse box problem electrician', 'lights not working electrician'
+    'can anyone recommend electrician', 'electrician help wanted',
+    'anyone know a good electrician', 'recommendations please electrician',
+    'electrician needed urgently', 'seeking an electrician',
+    'does anyone know an electrician', 'after an electrician', 'fuse box problem'
   ],
   decorating: [
     'need a decorator', 'looking for a painter decorator', 'decorator recommendation',
-    'can anyone recommend decorator', 'need painting done', 'looking for painter',
-    'house needs decorating', 'interior decorator needed', 'painting and decorating quote'
+    'can anyone recommend decorator', 'decorator help wanted',
+    'anyone know a good decorator', 'recommendations please decorator',
+    'painter needed', 'seeking a decorator', 'after a decorator',
+    'does anyone know a painter', 'decorating quote needed'
   ],
   gardening: [
     'need a gardener', 'looking for a gardener', 'gardener recommendation',
-    'can anyone recommend gardener', 'garden needs tidying', 'lawn care needed',
-    'hedge trimming needed', 'garden clearance', 'landscaper needed', 'garden maintenance'
+    'can anyone recommend gardener', 'gardener help wanted',
+    'anyone know a good gardener', 'recommendations please gardener',
+    'garden clearance needed', 'seeking a gardener', 'after a gardener',
+    'does anyone know a gardener', 'lawn mowing needed'
   ],
   building: [
     'need a builder', 'looking for a builder', 'builder recommendation',
-    'can anyone recommend builder', 'extension builder needed', 'building work quote',
-    'brickwork needed', 'wall repair builder', 'loft conversion builder'
+    'can anyone recommend builder', 'builder help wanted',
+    'anyone know a good builder', 'recommendations please builder',
+    'building work needed', 'seeking a builder', 'after a builder',
+    'does anyone know a builder', 'extension quote needed'
   ],
   'dog-grooming': [
     'need a dog groomer', 'looking for dog groomer', 'dog groomer recommendation',
-    'can anyone recommend dog groomer', 'mobile dog grooming', 'dog needs grooming',
-    'puppy grooming needed', 'dog wash trim needed'
+    'can anyone recommend dog groomer', 'dog groomer help wanted',
+    'anyone know a good dog groomer', 'mobile dog grooming needed',
+    'dog needs grooming', 'seeking a dog groomer', 'after a dog groomer'
   ],
   cleaning: [
     'need a cleaner', 'looking for a cleaner', 'cleaner recommendation',
-    'can anyone recommend cleaner', 'house cleaning needed', 'end of tenancy cleaner',
-    'domestic cleaner needed', 'office cleaner wanted', 'carpet cleaning needed'
+    'can anyone recommend cleaner', 'cleaner help wanted',
+    'anyone know a good cleaner', 'house cleaner needed',
+    'seeking a cleaner', 'after a cleaner', 'domestic cleaning needed',
+    'end of tenancy clean needed', 'recommendations please cleaner'
   ],
   removals: [
     'need a removal company', 'looking for removal firm', 'removal company recommendation',
     'can anyone recommend removals', 'man and van needed', 'moving house need help',
-    'furniture removal needed', 'house move help', 'van hire with driver'
+    'removals help wanted', 'anyone know a good removal firm',
+    'seeking removal company', 'after a man and van', 'house move help needed'
   ],
   hvac: [
-    'boiler engineer needed', 'need HVAC engineer', 'air conditioning installation',
-    'boiler service needed', 'central heating problem', 'gas engineer recommendation',
-    'boiler not working', 'heating engineer needed', 'air con unit installation'
+    'boiler engineer needed', 'need HVAC engineer', 'boiler service needed',
+    'central heating problem', 'gas engineer recommendation', 'boiler not working',
+    'heating engineer help wanted', 'anyone know a good gas engineer',
+    'air conditioning installation needed', 'after a boiler engineer',
+    'does anyone know a heating engineer', 'boiler repair needed'
   ],
   locksmith: [
     'need a locksmith', 'locked out of house', 'locksmith recommendation',
-    'can anyone recommend locksmith', 'lost keys locksmith', 'lock change needed',
-    'locked out help', 'new locks fitted needed'
+    'can anyone recommend locksmith', 'locksmith help wanted',
+    'anyone know a good locksmith', 'lost keys need locksmith',
+    'lock change needed', 'seeking a locksmith', 'after a locksmith',
+    'does anyone know a locksmith', 'locked out help'
   ],
   catering: [
     'need a caterer', 'looking for catering', 'catering recommendation',
-    'can anyone recommend caterer', 'wedding catering needed', 'party catering quote',
-    'event catering needed', 'buffet catering needed'
+    'can anyone recommend caterer', 'caterer help wanted',
+    'anyone know a good caterer', 'wedding catering needed',
+    'party catering wanted', 'seeking a caterer', 'after a caterer',
+    'event catering needed', 'buffet catering recommendation'
   ],
   photography: [
     'need a photographer', 'looking for a photographer', 'photographer recommendation',
-    'can anyone recommend photographer', 'wedding photographer needed', 'family photos photographer',
-    'event photographer needed', 'portrait photographer local'
+    'can anyone recommend photographer', 'photographer help wanted',
+    'anyone know a good photographer', 'wedding photographer needed',
+    'seeking a photographer', 'after a photographer',
+    'does anyone know a photographer', 'family photographer needed'
   ],
   'windows-doors': [
     'need new windows', 'window fitter recommendation', 'double glazing quote',
-    'can anyone recommend window fitter', 'new front door needed', 'window replacement quote',
-    'UPVC windows needed', 'bifold doors installation', 'patio doors fitting'
+    'can anyone recommend window fitter', 'window fitter help wanted',
+    'anyone know a good window fitter', 'new front door needed',
+    'seeking window fitter', 'after a window fitter',
+    'UPVC windows needed', 'bifold doors quote needed'
   ],
   hairdressing: [
     'need a hairdresser', 'looking for mobile hairdresser', 'hairdresser recommendation',
-    'can anyone recommend hairdresser', 'mobile hair stylist needed', 'home visit hairdresser',
-    'hair cut at home needed', 'local hairdresser recommendation'
+    'can anyone recommend hairdresser', 'hairdresser help wanted',
+    'anyone know a good hairdresser', 'mobile hairdresser needed',
+    'seeking a hairdresser', 'after a hairdresser',
+    'home visit hairdresser needed', 'hair stylist recommendation'
   ],
 };
 
