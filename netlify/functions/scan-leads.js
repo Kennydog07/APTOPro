@@ -24,6 +24,27 @@ const TRADE_KEYWORDS = {
   hairdressing:   ['need a hairdresser', 'mobile hairdresser', 'hair stylist recommendation'],
 };
 
+// Job/gig ad keywords — for finding work opportunities posted by businesses
+// or homeowners hiring a tradesperson for a specific job (subcontract work,
+// one-off jobs, gig postings) rather than casual "does anyone know a..." asks
+const JOB_KEYWORDS = {
+  plumbing:       ['plumber wanted', 'subcontractor plumber needed', 'plumbing job vacancy', 'hiring plumber'],
+  electrical:     ['electrician wanted', 'subcontractor electrician needed', 'electrical job vacancy', 'hiring electrician'],
+  decorating:     ['decorator wanted', 'painter wanted', 'decorating job vacancy', 'hiring decorator'],
+  gardening:      ['gardener wanted', 'landscaper wanted', 'gardening job vacancy', 'hiring gardener'],
+  building:       ['builder wanted', 'subcontractor builder needed', 'building job vacancy', 'hiring builder'],
+  'dog-grooming': ['dog groomer wanted', 'groomer job vacancy', 'hiring dog groomer'],
+  cleaning:       ['cleaner wanted', 'cleaning job vacancy', 'hiring cleaner'],
+  removals:       ['removal driver wanted', 'man and van wanted', 'hiring movers'],
+  hvac:           ['hvac engineer wanted', 'gas engineer wanted', 'hiring hvac engineer'],
+  locksmith:      ['locksmith wanted', 'hiring locksmith'],
+  catering:       ['caterer wanted', 'catering staff wanted', 'hiring caterer'],
+  photography:    ['photographer wanted', 'hiring photographer'],
+  'windows-doors':['window fitter wanted', 'glazier wanted', 'hiring window fitter'],
+  hairdressing:   ['hairdresser wanted', 'stylist wanted', 'hiring hairdresser'],
+};
+
+
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGIN || '*',
@@ -39,25 +60,60 @@ exports.handler = async (event) => {
     const mode = params.mode || 'local';
     const radius = params.radius || '10';
     const location = mode === 'national' ? 'UK' : (params.location || 'UK');
+    const searchType = params.searchType || 'customer'; // 'customer' or 'jobs'
 
-    const keywords = TRADE_KEYWORDS[trade] || TRADE_KEYWORDS.plumbing;
+    // "All Industries" — search across multiple trades by picking a broad
+    // generic phrase covering tradespeople rather than one specific trade
+    const isAllTrades = trade === 'all';
 
-    // Build search query — national mode searches broadly across the UK,
-    // local mode includes the specific location plus nearby-area language
-    const query = mode === 'national'
-      ? `"${keywords[0]}" UK`
-      : `"${keywords[0]}" ${location} OR near ${location}`;
+    let keywords;
+    if (isAllTrades) {
+      keywords = searchType === 'jobs'
+        ? ['tradesperson wanted', 'subcontractor needed', 'hiring tradesman']
+        : ['need a tradesperson', 'looking for a local tradesman', 'can anyone recommend a tradesperson'];
+    } else {
+      const sourceMap = searchType === 'jobs' ? JOB_KEYWORDS : TRADE_KEYWORDS;
+      keywords = sourceMap[trade] || sourceMap.plumbing;
+    }
 
-    // ── Step 1: Search via Google Custom Search API ──
-    const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_SEARCH_API_KEY}&cx=${process.env.GOOGLE_SEARCH_ENGINE_ID}&q=${encodeURIComponent(query)}&num=10`;
+    const tradeLabel = isAllTrades ? 'any trade' : trade;
 
-    const searchRes = await fetch(searchUrl);
-    const searchData = await searchRes.json();
+    // Build search query — try the phrase without forcing exact quotes on
+    // the whole thing (too restrictive against a 50-domain set), and run
+    // multiple keyword variants if the first one returns nothing
+    function buildQuery(keyword) {
+      if (mode === 'national') {
+        return `${keyword} UK`;
+      }
+      return `${keyword} ${location}`;
+    }
 
-    if (!searchData.items || searchData.items.length === 0) {
+    // ── Step 1: Search via Google Custom Search API — try each keyword variant until results are found ──
+    let searchData = null;
+    let usedQuery = '';
+
+    for (const kw of keywords) {
+      const query = buildQuery(kw);
+      const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_SEARCH_API_KEY}&cx=${process.env.GOOGLE_SEARCH_ENGINE_ID}&q=${encodeURIComponent(query)}&num=10`;
+      const searchRes = await fetch(searchUrl);
+      const data = await searchRes.json();
+
+      if (data.items && data.items.length > 0) {
+        searchData = data;
+        usedQuery = query;
+        break;
+      }
+    }
+
+    if (!searchData) {
       return {
         statusCode: 200, headers,
-        body: JSON.stringify({ leads: [], message: 'No results found for this search' })
+        body: JSON.stringify({
+          leads: [],
+          totalSearched: 0,
+          message: 'No results found across any keyword variant for this search',
+          queriesTriedCount: keywords.length
+        })
       };
     }
 
@@ -73,7 +129,32 @@ exports.handler = async (event) => {
       ? `a UK-wide search (the business covers the whole country)`
       : `a ${radius}-mile radius around ${location}`;
 
-    const analysisPrompt = `You are the APTO Pro Lead Filter. Below are real search results that may or may not be genuine leads for a ${trade} business covering ${areaContext}.
+    const isJobSearch = searchType === 'jobs';
+
+    const analysisPrompt = isJobSearch
+      ? `You are the APTO Pro Job Finder. Below are real search results that may be genuine job/gig opportunities for a ${tradeLabel} tradesperson covering ${areaContext}.${isAllTrades ? ' This search covers ALL trades, so identify the specific trade needed for each job and include it as "detectedTrade" in your response.' : ''}
+
+For EACH result, determine if it's a genuine work opportunity (a homeowner, business, or agency hiring a tradesperson for a specific job or subcontract work) — not a generic recruitment agency listing, unrelated content, or a permanent employee job description requiring an employment contract. Respond ONLY with a JSON array, no markdown:
+
+[
+  {
+    "isGenuineLead": true,
+    "score": 85,
+    "headline": "short summary of the job",
+    "urgency": "High",
+    "detectedLocation": "Brighton",
+    "detectedTrade": "Plumbing",
+    "reply": "a natural professional message expressing interest in the job, under 50 words",
+    "sourceUrl": "the link",
+    "sourceName": "the site name"
+  }
+]
+
+Set isGenuineLead to false for permanent salaried job listings, recruitment agency spam, or irrelevant results — only include genuine one-off job/gig/subcontract opportunities suitable for an independent tradesperson.
+
+SEARCH RESULTS:
+${JSON.stringify(candidates, null, 2)}`
+      : `You are the APTO Pro Lead Filter. Below are real search results that may or may not be genuine leads for a ${tradeLabel} business covering ${areaContext}.${isAllTrades ? ' This search covers ALL trades, so identify the specific trade needed for each lead (plumbing, electrical, gardening, etc.) and include it as "detectedTrade" in your response.' : ''}
 
 For EACH result, determine if it's a genuine person asking for this service (not a business advert, directory listing, or unrelated content). Respond ONLY with a JSON array, no markdown:
 
@@ -84,6 +165,7 @@ For EACH result, determine if it's a genuine person asking for this service (not
     "headline": "short summary",
     "urgency": "High",
     "detectedLocation": "Brighton",
+    "detectedTrade": "Plumbing",
     "reply": "a natural personalised reply under 50 words",
     "sourceUrl": "the link",
     "sourceName": "the site name"
@@ -122,7 +204,8 @@ ${JSON.stringify(candidates, null, 2)}`;
         leads: genuineLeads,
         totalSearched: candidates.length,
         totalGenuine: genuineLeads.length,
-        trade, location
+        trade, location, searchType,
+        searchQueryUsed: usedQuery
       })
     };
 

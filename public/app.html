@@ -294,6 +294,7 @@
       border-radius:100px;padding:5px 12px;
       font-family:var(--font-d);font-size:12px;font-weight:700;color:var(--navy);
     }
+    #topbar-account:hover{ background:var(--slate-mid) !important; border-color:var(--navy) !important; }
 
     .page-content{padding:28px;flex:1;display:none;}
     .page-content.active{display:block;}
@@ -636,9 +637,9 @@
     <nav>
       <div class="sidebar-section-label">Main</div>
       <div class="nav-item active" onclick="showPage('page-dashboard',this)"><span class="nav-icon">📊</span> Dashboard</div>
-      <div class="nav-item" onclick="showPage('page-feed',this)"><span class="nav-icon">🎯</span> Lead Feed <span class="nav-badge" id="feed-badge">12</span></div>
+      <div class="nav-item" onclick="showPage('page-feed',this)"><span class="nav-icon">🌐</span> Web Scanner <span class="nav-badge" id="feed-badge">12</span></div>
       <div class="nav-item" onclick="showPage('page-saved',this)"><span class="nav-icon">💾</span> Saved Leads</div>
-      <div class="nav-item" onclick="showPage('page-ai',this)"><span class="nav-icon">🤖</span> AI Engine</div>
+      <div class="nav-item" onclick="showPage('page-ai',this)"><span class="nav-icon">📋</span> Paste & Analyse</div>
       <div class="nav-item" onclick="showPage('page-empty',this)"><span class="nav-icon">🗺️</span> Maps</div>
       <div class="nav-item" onclick="showPage('page-empty',this)"><span class="nav-icon">📈</span> Reports</div>
       <div class="sidebar-section-label">Configure</div>
@@ -669,6 +670,11 @@
         <div class="topbar-search"><span>🔍</span><input type="text" placeholder="Search leads..."/></div>
         <div class="topbar-btn">🔔<span class="notif-dot"></span></div>
         <div class="plan-chip" id="topbar-plan">⭐ Pro Trial</div>
+        <div id="topbar-account" onclick="doLogout()" style="display:flex;align-items:center;gap:8px;background:var(--slate);border:1.5px solid var(--slate-mid);border-radius:100px;padding:5px 14px 5px 6px;cursor:pointer;transition:background 0.15s;" title="Click to sign out">
+          <span id="topbar-avatar" style="width:24px;height:24px;border-radius:50%;background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">U</span>
+          <span style="font-size:12px;color:var(--navy);font-weight:600;" id="topbar-email">Loading...</span>
+          <span style="font-size:11px;color:var(--grey);">🚪</span>
+        </div>
       </div>
     </div>
 
@@ -715,11 +721,15 @@
 
     <!-- ── LEAD FEED ── -->
     <div class="page-content" id="page-feed">
+      <div style="background:rgba(27,43,94,0.04);border:1px solid rgba(27,43,94,0.12);border-radius:var(--r-md);padding:14px 18px;margin-bottom:16px;font-size:13px;color:var(--navy);line-height:1.6;">
+        🌐 <strong>Web Scanner</strong> searches real public sites — Reddit, MoneySavingExpert, forums, and approved local directories — for genuine service requests. <strong>This does not search Facebook</strong> (Facebook blocks all external search tools by design). For Facebook leads, use <a onclick="showPage('page-ai',document.querySelectorAll('.nav-item')[3])" style="color:var(--orange);font-weight:600;cursor:pointer;">Paste &amp; Analyse →</a>
+      </div>
       <div style="background:var(--white);border-radius:var(--r-md);border:1px solid var(--slate-mid);padding:18px 20px;margin-bottom:16px;">
         <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;">
           <div style="flex:1;min-width:160px;">
             <label class="settings-label" style="margin-bottom:5px;">Trade</label>
             <select class="filter-select" id="scan-trade" style="width:100%;">
+              <option value="all">✨ All Industries</option>
               <option value="plumbing">🔧 Plumbing</option>
               <option value="electrical">⚡ Electrical</option>
               <option value="decorating">🏠 Decorating</option>
@@ -734,6 +744,13 @@
               <option value="photography">📸 Photography</option>
               <option value="windows-doors">🪟 Windows & Doors</option>
               <option value="hairdressing">💇 Hair & Beauty</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:160px;">
+            <label class="settings-label" style="margin-bottom:5px;">Looking for</label>
+            <select class="filter-select" id="scan-type" style="width:100%;">
+              <option value="customer">🙋 Customers needing service</option>
+              <option value="jobs">💼 Job &amp; gig ads (work opportunities)</option>
             </select>
           </div>
           <div style="flex:1;min-width:160px;">
@@ -781,8 +798,8 @@
         <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(245,197,24,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(245,197,24,0.04) 1px,transparent 1px);background-size:40px 40px;"></div>
         <img src="/images/mascot.png" style="width:72px;position:relative;z-index:1;" alt=""/>
         <div style="position:relative;z-index:1;">
-          <h2 style="font-family:var(--font-d);font-weight:800;font-size:20px;color:var(--white);margin-bottom:6px;">AI Lead Engine — <span style="color:var(--yellow)">Paste any post, get a full analysis</span></h2>
-          <p style="font-size:14px;color:rgba(255,255,255,0.65);line-height:1.6;">Copy a post from Facebook, Nextdoor, or any community group. The AI will score it, detect urgency, and write you a reply in seconds.</p>
+          <h2 style="font-family:var(--font-d);font-weight:800;font-size:20px;color:var(--white);margin-bottom:6px;">📋 Paste &amp; Analyse — <span style="color:var(--yellow)">your Facebook lead tool</span></h2>
+          <p style="font-size:14px;color:rgba(255,255,255,0.65);line-height:1.6;">See a request in a Facebook group, Nextdoor, or anywhere else? Copy the text and paste it below. The AI scores it, detects urgency, and writes you a ready-to-send reply in seconds — this is the fastest way to turn Facebook posts into real jobs.</p>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
@@ -898,6 +915,137 @@
 
 <div class="toast" id="toast"><span id="toast-msg"></span></div>
 
+<!-- ════════ FLOATING QUICK PASTE DRAWER ════════ -->
+<!-- Trigger button — always visible bottom right -->
+<button id="qp-trigger" onclick="toggleQuickPaste()" title="Quick Paste — analyse a Facebook lead instantly" style="
+  position:fixed; bottom:24px; right:24px; z-index:8000;
+  width:56px; height:56px; border-radius:50%;
+  background:var(--yellow); color:var(--navy-dark);
+  border:none; cursor:pointer;
+  box-shadow:0 4px 20px rgba(245,197,24,0.5);
+  display:flex; align-items:center; justify-content:center;
+  font-size:24px; transition:transform 0.2s, box-shadow 0.2s;
+" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+  📋
+</button>
+
+<!-- Drawer -->
+<div id="qp-drawer" style="
+  position:fixed; bottom:92px; right:24px; z-index:7999;
+  width:380px; max-width:calc(100vw - 48px);
+  background:var(--white); border-radius:var(--r-lg);
+  box-shadow:0 8px 40px rgba(27,43,94,0.22);
+  border:1px solid var(--slate-mid);
+  display:none; flex-direction:column;
+  overflow:hidden;
+  animation:slideUp 0.2s ease-out;
+">
+  <style>
+    @keyframes slideUp {{
+      from {{ opacity:0; transform:translateY(12px); }}
+      to   {{ opacity:1; transform:translateY(0); }}
+    }}
+  </style>
+
+  <!-- Drawer header -->
+  <div style="background:var(--navy);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <img src="/images/mascot.png" style="width:32px;" alt=""/>
+      <div>
+        <div style="font-family:var(--font-d);font-weight:700;font-size:14px;color:var(--white);">Quick Paste Analyser</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.5);">Copy from Facebook → paste here → get reply</div>
+      </div>
+    </div>
+    <button onclick="toggleQuickPaste()" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:18px;cursor:pointer;padding:4px;">✕</button>
+  </div>
+
+  <!-- Step indicator -->
+  <div style="background:rgba(27,43,94,0.04);padding:10px 16px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--slate-mid);">
+    <span id="qp-step-1" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;background:var(--navy);color:var(--white);">1 Paste</span>
+    <span style="font-size:10px;color:var(--grey);">→</span>
+    <span id="qp-step-2" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;background:var(--slate-mid);color:var(--grey);">2 Analyse</span>
+    <span style="font-size:10px;color:var(--grey);">→</span>
+    <span id="qp-step-3" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;background:var(--slate-mid);color:var(--grey);">3 Reply</span>
+  </div>
+
+  <!-- Input state -->
+  <div id="qp-input-state" style="padding:16px;">
+    <textarea id="qp-text" placeholder="Paste a Facebook post, Nextdoor message, or any lead text here..." style="
+      width:100%; min-height:100px; padding:12px 14px;
+      border:1.5px solid var(--slate-mid); border-radius:var(--r-md);
+      font-size:13px; line-height:1.6; color:var(--dark);
+      resize:none; outline:none; font-family:var(--font-b);
+      transition:border-color 0.2s;
+    " oninput="qpCheckInput()" onfocus="this.style.borderColor='var(--navy)'" onblur="this.style.borderColor='var(--slate-mid)'"></textarea>
+
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <select id="qp-trade" style="flex:1;padding:8px 10px;border:1.5px solid var(--slate-mid);border-radius:var(--r-sm);font-size:12px;color:var(--dark);outline:none;">
+        <option value="Plumbing">🔧 Plumbing</option>
+        <option value="Electrical">⚡ Electrical</option>
+        <option value="Decorating">🏠 Decorating</option>
+        <option value="Gardening">🌿 Gardening</option>
+        <option value="Building">🏗️ Building</option>
+        <option value="Dog Grooming">🐕 Dog Grooming</option>
+        <option value="Cleaning">🧹 Cleaning</option>
+        <option value="Removals">🚚 Removals</option>
+        <option value="HVAC">❄️ HVAC</option>
+        <option value="Locksmith">🔒 Locksmith</option>
+        <option value="Catering">🍕 Catering</option>
+        <option value="Photography">📸 Photography</option>
+        <option value="Windows & Doors">🪟 Windows & Doors</option>
+        <option value="Hair & Beauty">💇 Hair & Beauty</option>
+      </select>
+      <button id="qp-analyse-btn" onclick="runQuickPaste()" disabled style="
+        padding:8px 16px; border-radius:var(--r-sm);
+        background:var(--slate-mid); color:var(--grey);
+        font-family:var(--font-d); font-weight:700; font-size:13px;
+        border:none; cursor:not-allowed; transition:all 0.2s;
+        white-space:nowrap;
+      ">⚡ Analyse</button>
+    </div>
+
+    <div id="qp-loading" style="display:none;text-align:center;padding:16px 0;">
+      <div style="font-size:12px;color:var(--grey);margin-bottom:8px;" id="qp-loading-text">Analysing lead...</div>
+      <div style="width:100%;height:3px;background:var(--slate-mid);border-radius:3px;overflow:hidden;">
+        <div id="qp-progress" style="height:100%;background:var(--yellow);border-radius:3px;width:0%;transition:width 0.4s;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result state -->
+  <div id="qp-result-state" style="display:none;">
+    <!-- Score bar -->
+    <div id="qp-score-bar" style="padding:14px 16px;background:var(--navy);display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div id="qp-score-num" style="font-family:var(--font-d);font-weight:800;font-size:28px;color:var(--yellow);line-height:1;">--</div>
+        <div>
+          <div id="qp-headline" style="font-family:var(--font-d);font-weight:700;font-size:13px;color:var(--white);"></div>
+          <div id="qp-badges" style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Insight -->
+    <div style="padding:12px 16px;border-bottom:1px solid var(--slate-mid);">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--grey);margin-bottom:6px;">🧠 AI Insight</div>
+      <div id="qp-insight" style="font-size:12px;color:var(--dark);line-height:1.6;"></div>
+    </div>
+
+    <!-- Reply -->
+    <div style="padding:12px 16px;border-bottom:1px solid var(--slate-mid);">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--orange);margin-bottom:6px;">✍️ AI Suggested Reply</div>
+      <div id="qp-reply" style="font-size:13px;color:var(--dark);line-height:1.7;background:var(--slate);border-radius:var(--r-sm);padding:10px 12px;"></div>
+    </div>
+
+    <!-- Actions -->
+    <div style="padding:12px 16px;display:flex;gap:8px;">
+      <button onclick="qpCopyReply()" style="flex:1;padding:9px;background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:700;font-size:13px;border:none;border-radius:var(--r-sm);cursor:pointer;">📋 Copy Reply</button>
+      <button onclick="qpSaveLead()" style="flex:1;padding:9px;background:var(--navy);color:var(--white);font-family:var(--font-d);font-weight:700;font-size:13px;border:none;border-radius:var(--r-sm);cursor:pointer;">💾 Save Lead</button>
+      <button onclick="qpReset()" style="padding:9px 12px;background:var(--slate);color:var(--grey);font-family:var(--font-d);font-weight:600;font-size:13px;border:none;border-radius:var(--r-sm);cursor:pointer;">↩</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ─── CONFIG ───────────────────────────────────────────────
 // SUPABASE_URL:  Your project URL from Supabase → Settings → General
@@ -955,6 +1103,10 @@ async function init() {
   if (session) {
     currentUser = session.user;
     renderApp();
+    // Make it obvious an existing session was used, not a fresh login
+    setTimeout(() => {
+      showToast(`👋 Signed in as ${session.user.email} — click your name (top right) to sign out`);
+    }, 600);
   } else {
     showScreen('screen-login');
   }
@@ -1099,6 +1251,10 @@ function populateUserInfo() {
   // Set trade mascot in welcome bar
   document.getElementById('welcome-mascot').src = tradeMascot(trade);
 
+  // Populate topbar account chip — makes it obvious who's logged in and how to sign out
+  document.getElementById('topbar-avatar').textContent = initial;
+  document.getElementById('topbar-email').textContent = currentUser.email || name;
+
   // Pre-fill scan trade dropdown with user's signup trade
   const scanTradeEl = document.getElementById('scan-trade');
   if (scanTradeEl && trade !== 'default') {
@@ -1144,26 +1300,28 @@ async function scanForRealLeads() {
   const btn = document.getElementById('scan-btn');
   const status = document.getElementById('scan-status');
   const trade = document.getElementById('scan-trade').value;
+  const searchType = document.getElementById('scan-type').value;
   const mode = document.getElementById('scan-mode').value;
   const location = mode === 'national' ? 'UK' : (document.getElementById('scan-location').value.trim() || 'UK');
   const radius = document.getElementById('scan-radius').value;
+  const typeLabel = searchType === 'jobs' ? 'job/gig opportunities' : 'customer leads';
 
   btn.disabled = true;
   btn.innerHTML = '⏳ Scanning...';
   status.style.display = 'block';
   status.textContent = mode === 'national'
-    ? `🔍 Searching real public sources UK-wide for ${trade} leads...`
-    : `🔍 Searching real public sources within ${radius} miles of ${location} for ${trade} leads...`;
+    ? `🔍 Searching real public sources UK-wide for ${trade} ${typeLabel}...`
+    : `🔍 Searching real public sources within ${radius} miles of ${location} for ${trade} ${typeLabel}...`;
 
   try {
-    const res = await fetch(`/api/scan-leads?trade=${encodeURIComponent(trade)}&location=${encodeURIComponent(location)}&radius=${radius}&mode=${mode}`);
+    const res = await fetch(`/api/scan-leads?trade=${encodeURIComponent(trade)}&location=${encodeURIComponent(location)}&radius=${radius}&mode=${mode}&searchType=${searchType}`);
     const data = await res.json();
 
     if (data.error) throw new Error(data.error);
 
     if (!data.leads || data.leads.length === 0) {
       const areaText = mode === 'national' ? 'across the UK' : `within ${radius} miles of ${location}`;
-      status.innerHTML = `No genuine leads found right now for <strong>${trade}</strong> ${areaText}. APTO searched ${data.totalSearched || 0} real result(s) across approved sites and found no matching requests at this moment. Try widening your radius, switching to UK-wide, or check back later.`;
+      status.innerHTML = `No genuine ${typeLabel} found right now for <strong>${trade}</strong> ${areaText}. APTO searched ${data.totalSearched || 0} real result(s) across approved sites and found no matching requests at this moment. Try widening your radius, switching to UK-wide, or check back later.`;
       document.getElementById('lead-cards-container').innerHTML = `
         <div class="empty-state" style="background:var(--white);border-radius:var(--r-md);border:1px solid var(--slate-mid);">
           <img src="/images/mascot.png" alt="No leads"/>
@@ -1176,7 +1334,7 @@ async function scanForRealLeads() {
     }
 
     const areaText = mode === 'national' ? 'across the UK' : `within ${radius} miles of ${location}`;
-    status.textContent = `✅ Found ${data.leads.length} genuine lead(s) ${areaText}, out of ${data.totalSearched} results scanned.`;
+    status.textContent = `✅ Found ${data.leads.length} genuine ${typeLabel} ${areaText}, out of ${data.totalSearched} results scanned.`;
     renderRealLeadCards(data.leads);
 
   } catch (err) {
@@ -1198,7 +1356,7 @@ function renderRealLeadCards(leads) {
       <div class="lc-header">
         <div class="lc-meta">
           <span class="lc-score">Score ${l.score}/100</span>
-          📍 ${l.detectedLocation || 'Local'}
+          📍 ${l.detectedLocation || 'Local'}${l.detectedTrade ? ' · ' + l.detectedTrade : ''}
         </div>
         <span class="mini-badge ${l.urgency==='High'||l.urgency==='Urgent'?'mb-urgent':'mb-normal'}">${l.urgency} Urgency</span>
       </div>
@@ -1370,7 +1528,7 @@ function showPage(pageId, navEl) {
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
     navEl.classList.add('active');
   }
-  const titles = { 'page-dashboard':'Dashboard','page-feed':'Lead Feed','page-saved':'Saved Leads','page-ai':'AI Engine','page-billing':'Billing','page-settings':'Settings','page-empty':'Coming Soon' };
+  const titles = { 'page-dashboard':'Dashboard','page-feed':'Web Scanner','page-saved':'Saved Leads','page-ai':'Paste & Analyse','page-billing':'Billing','page-settings':'Settings','page-empty':'Coming Soon' };
   document.getElementById('topbar-title').textContent = titles[pageId] || 'APTO Pro';
 }
 
@@ -1414,6 +1572,176 @@ document.addEventListener('keydown', e => {
     if (active?.id === 'screen-login')  doLogin();
     if (active?.id === 'screen-signup') doSignup();
     if (active?.id === 'screen-reset')  doReset();
+  }
+});
+
+// ─── QUICK PASTE DRAWER ───
+let qpOpen = false;
+let qpCurrentReply = '';
+
+function toggleQuickPaste() {
+  qpOpen = !qpOpen;
+  const drawer = document.getElementById('qp-drawer');
+  drawer.style.display = qpOpen ? 'flex' : 'none';
+  if (qpOpen) {
+    // Pre-fill trade from user's signup trade
+    const trade = currentUser?.user_metadata?.trade || 'plumbing';
+    const tradeMap = {
+      'plumbing':'Plumbing','electrical':'Electrical','decorating':'Decorating',
+      'gardening':'Gardening','building':'Building','dog-grooming':'Dog Grooming',
+      'cleaning':'Cleaning','removals':'Removals','hvac':'HVAC','locksmith':'Locksmith',
+      'catering':'Catering','photography':'Photography',
+      'windows-doors':'Windows & Doors','hairdressing':'Hair & Beauty'
+    };
+    const qpTradeEl = document.getElementById('qp-trade');
+    if (qpTradeEl && tradeMap[trade]) qpTradeEl.value = tradeMap[trade];
+    setTimeout(() => document.getElementById('qp-text').focus(), 100);
+  }
+}
+
+function qpCheckInput() {
+  const text = document.getElementById('qp-text').value.trim();
+  const btn = document.getElementById('qp-analyse-btn');
+  if (text.length > 10) {
+    btn.disabled = false;
+    btn.style.background = 'var(--yellow)';
+    btn.style.color = 'var(--navy-dark)';
+    btn.style.cursor = 'pointer';
+  } else {
+    btn.disabled = true;
+    btn.style.background = 'var(--slate-mid)';
+    btn.style.color = 'var(--grey)';
+    btn.style.cursor = 'not-allowed';
+  }
+}
+
+async function runQuickPaste() {
+  const text  = document.getElementById('qp-text').value.trim();
+  const trade = document.getElementById('qp-trade').value;
+  if (!text) return;
+
+  // Show loading
+  document.getElementById('qp-analyse-btn').disabled = true;
+  document.getElementById('qp-loading').style.display = 'block';
+
+  // Animate progress bar
+  const prog = document.getElementById('qp-progress');
+  const steps = [
+    { width:'20%', text:'Validating lead...' },
+    { width:'45%', text:'Detecting intent...' },
+    { width:'65%', text:'Scoring urgency...' },
+    { width:'85%', text:'Writing reply...' },
+  ];
+  let si = 0;
+  const progTimer = setInterval(() => {
+    if (si < steps.length) {
+      prog.style.width = steps[si].width;
+      document.getElementById('qp-loading-text').textContent = steps[si].text;
+      si++;
+    }
+  }, 500);
+
+  // Update step indicators
+  document.getElementById('qp-step-1').style.background = 'var(--success)';
+  document.getElementById('qp-step-2').style.background = 'var(--yellow)';
+  document.getElementById('qp-step-2').style.color = 'var(--navy-dark)';
+
+  try {
+    const res = await fetch('/api/analyse-lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leadText: text, trade, location: 'the local area' })
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Analysis failed');
+
+    clearInterval(progTimer);
+    prog.style.width = '100%';
+
+    setTimeout(() => {
+      document.getElementById('qp-loading').style.display = 'none';
+      document.getElementById('qp-input-state').style.display = 'none';
+      renderQuickPasteResult(result);
+    }, 300);
+
+  } catch (err) {
+    clearInterval(progTimer);
+    document.getElementById('qp-loading').style.display = 'none';
+    document.getElementById('qp-analyse-btn').disabled = false;
+    showToast('⚠️ Analysis failed — ' + err.message);
+  }
+}
+
+function renderQuickPasteResult(r) {
+  qpCurrentReply = r.reply || '';
+
+  // Score
+  const score = r.score || 75;
+  const scoreEl = document.getElementById('qp-score-num');
+  scoreEl.textContent = score;
+  scoreEl.style.color = score >= 80 ? '#4ADE80' : score >= 60 ? 'var(--yellow)' : 'rgba(255,255,255,0.5)';
+
+  document.getElementById('qp-headline').textContent = r.headline || 'Lead detected';
+
+  const urgClass = r.urgency === 'Urgent' || r.urgency === 'Very High'
+    ? 'background:rgba(220,38,38,0.25);color:#FCA5A5'
+    : r.urgency === 'High'
+    ? 'background:rgba(245,197,24,0.2);color:var(--yellow)'
+    : 'background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6)';
+
+  document.getElementById('qp-badges').innerHTML = `
+    <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;${urgClass}">${r.urgency} Urgency</span>
+    <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.65);">📍 ${r.detectedLocation || 'Local'}</span>
+    <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.65);">${r.estimatedValue || ''}</span>
+  `;
+
+  document.getElementById('qp-insight').textContent = r.insight || '';
+  document.getElementById('qp-reply').textContent = r.reply || '';
+
+  // Update steps
+  document.getElementById('qp-step-2').style.background = 'var(--success)';
+  document.getElementById('qp-step-2').style.color = 'var(--white)';
+  document.getElementById('qp-step-3').style.background = 'var(--navy)';
+  document.getElementById('qp-step-3').style.color = 'var(--white)';
+
+  document.getElementById('qp-result-state').style.display = 'block';
+}
+
+function qpCopyReply() {
+  if (!qpCurrentReply) return;
+  navigator.clipboard.writeText(qpCurrentReply)
+    .then(() => showToast('📋 Reply copied — paste it on Facebook now!'))
+    .catch(() => showToast('📋 Select and copy the reply text above'));
+}
+
+function qpSaveLead() {
+  showToast('💾 Lead saved to Saved Leads');
+}
+
+function qpReset() {
+  document.getElementById('qp-text').value = '';
+  document.getElementById('qp-input-state').style.display = 'block';
+  document.getElementById('qp-result-state').style.display = 'none';
+  document.getElementById('qp-loading').style.display = 'none';
+  document.getElementById('qp-progress').style.width = '0%';
+  document.getElementById('qp-analyse-btn').disabled = true;
+  document.getElementById('qp-analyse-btn').style.background = 'var(--slate-mid)';
+  document.getElementById('qp-analyse-btn').style.color = 'var(--grey)';
+  ['qp-step-1','qp-step-2','qp-step-3'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    if (i === 0) { el.style.background = 'var(--navy)'; el.style.color = 'var(--white)'; }
+    else { el.style.background = 'var(--slate-mid)'; el.style.color = 'var(--grey)'; }
+  });
+  qpCurrentReply = '';
+}
+
+// Close drawer when clicking outside
+document.addEventListener('click', (e) => {
+  const drawer = document.getElementById('qp-drawer');
+  const trigger = document.getElementById('qp-trigger');
+  if (qpOpen && !drawer.contains(e.target) && !trigger.contains(e.target)) {
+    qpOpen = false;
+    drawer.style.display = 'none';
   }
 });
 

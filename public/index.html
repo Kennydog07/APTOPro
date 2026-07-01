@@ -800,15 +800,57 @@
       <li><a href="#industries">Industries</a></li>
       <li><a href="#pricing">Pricing</a></li>
     </ul>
-    <div class="nav-cta">
+    <div class="nav-cta" id="nav-cta">
       <a class="btn-ghost" href="/app.html">Log in</a>
       <a class="btn-primary" href="/app.html">Start Free Trial</a>
     </div>
-    <button class="hamburger" aria-label="Menu">
+    <button class="hamburger" aria-label="Menu" onclick="toggleMobileMenu()" id="hamburger-btn">
       <span></span><span></span><span></span>
     </button>
   </div>
+  <div id="mobile-menu" style="display:none;background:var(--navy);border-top:1px solid rgba(245,197,24,0.15);padding:16px 24px;">
+    <a href="#features" style="display:block;padding:12px 0;color:rgba(255,255,255,0.85);font-size:15px;border-bottom:1px solid rgba(255,255,255,0.08);" onclick="toggleMobileMenu()">Features</a>
+    <a href="#how-it-works" style="display:block;padding:12px 0;color:rgba(255,255,255,0.85);font-size:15px;border-bottom:1px solid rgba(255,255,255,0.08);" onclick="toggleMobileMenu()">How It Works</a>
+    <a href="#industries" style="display:block;padding:12px 0;color:rgba(255,255,255,0.85);font-size:15px;border-bottom:1px solid rgba(255,255,255,0.08);" onclick="toggleMobileMenu()">Industries</a>
+    <a href="#pricing" style="display:block;padding:12px 0;color:rgba(255,255,255,0.85);font-size:15px;border-bottom:1px solid rgba(255,255,255,0.08);" onclick="toggleMobileMenu()">Pricing</a>
+    <a id="mobile-cta-1" href="/app.html" style="display:block;padding:12px 0;color:rgba(255,255,255,0.85);font-size:15px;border-bottom:1px solid rgba(255,255,255,0.08);">Log in</a>
+    <a id="mobile-cta-2" href="/app.html" style="display:block;margin-top:12px;background:var(--yellow);color:var(--navy-dark);text-align:center;padding:12px;border-radius:8px;font-family:var(--font-display);font-weight:700;">Start Free Trial</a>
+  </div>
 </nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+<script>
+  // Toggle mobile hamburger menu
+  function toggleMobileMenu() {
+    const menu = document.getElementById('mobile-menu');
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  }
+
+  // Check if user already has a session — if so, show "Go to Dashboard" instead of "Start Free Trial"
+  (async function checkSession() {
+    try {
+      const SUPABASE_URL  = 'https://gsahuqwmstnzejnoyfic.supabase.co';
+      const SUPABASE_ANON = 'sb_publishable_wYMMhxVA7noyBwUYFogGRQ_HOBw4-t8';
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session) {
+        const email = session.user.email;
+        // Update desktop nav
+        document.getElementById('nav-cta').innerHTML = `
+          <span style="font-size:13px;color:rgba(255,255,255,0.6);margin-right:4px;">👋 ${email}</span>
+          <a class="btn-primary" href="/app.html">Go to Dashboard →</a>
+        `;
+        // Update mobile menu
+        document.getElementById('mobile-cta-1').outerHTML = `<div style="padding:12px 0;color:rgba(255,255,255,0.6);font-size:13px;border-bottom:1px solid rgba(255,255,255,0.08);">👋 Signed in as ${email}</div>`;
+        document.getElementById('mobile-cta-2').textContent = 'Go to Dashboard →';
+      }
+    } catch (err) {
+      console.log('Session check skipped:', err.message);
+    }
+  })();
+</script>
 
 <!-- ═══════════════════════════════════════
      HERO
