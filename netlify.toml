@@ -54,3 +54,8 @@
   from = "/api/stripe-webhook"
   to = "/.netlify/functions/stripe-webhook"
   status = 200
+
+[[redirects]]
+  from = "/trades"
+  to = "/trades.html"
+  status = 200
