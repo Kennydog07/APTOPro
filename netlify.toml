@@ -59,3 +59,7 @@
   from = "/trades"
   to = "/trades.html"
   status = 200
+
+# Hourly scheduled lead scanner
+[functions.scheduled-scan]
+  schedule = "0 * * * *"
