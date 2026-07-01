@@ -1128,9 +1128,19 @@ async function init() {
   const { data: { session } } = await supabase.auth.getSession();
   document.getElementById('loading').style.display = 'none';
 
+  // Check URL params to see how user arrived
+  const urlParams = new URLSearchParams(window.location.search);
+  const action = urlParams.get('action'); // 'signup' or null
+
+  if (action === 'signup') {
+    // Came from "Start Free Trial" — always show signup regardless of session
+    showScreen('screen-signup');
+    return;
+  }
+
   if (session) {
     currentUser = session.user;
-    // Show "Continue as" screen instead of bypassing login silently
+    // Came from "Log in" — show Continue As screen
     const name = session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User';
     const firstName = name.split(' ')[0];
     const initial = firstName[0]?.toUpperCase() || 'U';
