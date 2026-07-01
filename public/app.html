@@ -571,6 +571,35 @@
 </div>
 
 <!-- ════════ SCREEN: PASSWORD RESET ════════ -->
+<!-- ════════ SCREEN: CONTINUE AS ════════ -->
+<div class="screen auth-screen" id="screen-continue">
+  <div class="auth-bg"></div>
+  <div class="auth-glow glow-tl"></div>
+  <div class="auth-glow glow-br"></div>
+  <div class="auth-card" style="text-align:center;">
+    <div class="auth-logo">
+      <img src="/images/mascot.png" alt="APTO Pro"/>
+      <span class="auth-logo-text">APTO <span>Pro</span></span>
+    </div>
+    <div style="width:56px;height:56px;border-radius:50%;background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:800;font-size:22px;display:flex;align-items:center;justify-content:center;margin:16px auto 12px;" id="continue-avatar">J</div>
+    <div class="auth-title" style="font-size:18px;" id="continue-name">Welcome back</div>
+    <div class="auth-sub" id="continue-email">you@example.com</div>
+    <button class="btn-auth yellow" onclick="continueSession()" style="margin-bottom:12px;">
+      Continue as <span id="continue-firstname">User</span> →
+    </button>
+    <div style="position:relative;text-align:center;margin:8px 0;">
+      <div style="border-top:1px solid var(--slate-mid);position:absolute;top:50%;left:0;right:0;"></div>
+      <span style="background:var(--white);padding:0 12px;position:relative;font-size:12px;color:var(--grey);">or</span>
+    </div>
+    <button class="btn-auth" onclick="switchAccount()" style="margin-top:8px;background:var(--slate);color:var(--navy);">
+      Sign in with a different account
+    </button>
+    <div class="auth-switch" style="margin-top:16px;">
+      <a onclick="switchAccount()" style="color:var(--grey);font-size:12px;">Not you? Sign out</a>
+    </div>
+  </div>
+</div>
+
 <div class="screen auth-screen" id="screen-reset">
   <div class="auth-bg"></div>
   <div class="auth-glow glow-tl"></div>
@@ -1096,22 +1125,26 @@ let currentAIReply = '';
 
 // ─── INIT ───
 async function init() {
-  // Check for existing session
   const { data: { session } } = await supabase.auth.getSession();
   document.getElementById('loading').style.display = 'none';
 
   if (session) {
     currentUser = session.user;
-    renderApp();
-    // Make it obvious an existing session was used, not a fresh login
-    setTimeout(() => {
-      showToast(`👋 Signed in as ${session.user.email} — click your name (top right) to sign out`);
-    }, 600);
+    // Show "Continue as" screen instead of bypassing login silently
+    const name = session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User';
+    const firstName = name.split(' ')[0];
+    const initial = firstName[0]?.toUpperCase() || 'U';
+    const email = session.user.email || '';
+
+    document.getElementById('continue-avatar').textContent = initial;
+    document.getElementById('continue-name').textContent = `Welcome back, ${firstName}`;
+    document.getElementById('continue-email').textContent = email;
+    document.getElementById('continue-firstname').textContent = firstName;
+    showScreen('screen-continue');
   } else {
     showScreen('screen-login');
   }
 
-  // Listen for auth state changes
   supabase.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' && session) {
       currentUser = session.user;
@@ -1121,6 +1154,18 @@ async function init() {
       showScreen('screen-login');
     }
   });
+}
+
+function continueSession() {
+  // User confirmed they want to continue with the existing session
+  renderApp();
+}
+
+async function switchAccount() {
+  // Sign out the current session and show login
+  await supabase.auth.signOut();
+  currentUser = null;
+  showScreen('screen-login');
 }
 
 // ─── AUTH FUNCTIONS ───
@@ -1321,7 +1366,8 @@ async function scanForRealLeads() {
 
     if (!data.leads || data.leads.length === 0) {
       const areaText = mode === 'national' ? 'across the UK' : `within ${radius} miles of ${location}`;
-      status.innerHTML = `No genuine ${typeLabel} found right now for <strong>${trade}</strong> ${areaText}. APTO searched ${data.totalSearched || 0} real result(s) across approved sites and found no matching requests at this moment. Try widening your radius, switching to UK-wide, or check back later.`;
+      const debugMsg = data.debugInfo ? ` <small style="color:var(--danger)">[${data.message}] ${data.debugInfo}</small>` : '';
+      status.innerHTML = `No genuine ${typeLabel} found right now for <strong>${trade}</strong> ${areaText}. APTO searched ${data.totalSearched || 0} real result(s) across approved sites and found no matching requests at this moment. Try widening your radius, switching to UK-wide, or check back later.${debugMsg}`;
       document.getElementById('lead-cards-container').innerHTML = `
         <div class="empty-state" style="background:var(--white);border-radius:var(--r-md);border:1px solid var(--slate-mid);">
           <img src="/images/mascot.png" alt="No leads"/>

@@ -91,17 +91,32 @@ exports.handler = async (event) => {
     // ── Step 1: Search via Google Custom Search API — try each keyword variant until results are found ──
     let searchData = null;
     let usedQuery = '';
+    let lastApiError = null;
 
     for (const kw of keywords) {
       const query = buildQuery(kw);
       const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_SEARCH_API_KEY}&cx=${process.env.GOOGLE_SEARCH_ENGINE_ID}&q=${encodeURIComponent(query)}&num=10`;
+      
+      console.log('Searching:', searchUrl.replace(process.env.GOOGLE_SEARCH_API_KEY, 'KEY_HIDDEN'));
+      
       const searchRes = await fetch(searchUrl);
       const data = await searchRes.json();
+
+      console.log('API response status:', searchRes.status);
+      
+      if (data.error) {
+        lastApiError = `Google API Error ${data.error.code}: ${data.error.message}`;
+        console.error('Google API error:', JSON.stringify(data.error));
+        continue;
+      }
 
       if (data.items && data.items.length > 0) {
         searchData = data;
         usedQuery = query;
+        console.log(`Found ${data.items.length} results for query: ${query}`);
         break;
+      } else {
+        console.log(`No results for query: ${query}`);
       }
     }
 
@@ -111,8 +126,9 @@ exports.handler = async (event) => {
         body: JSON.stringify({
           leads: [],
           totalSearched: 0,
-          message: 'No results found across any keyword variant for this search',
-          queriesTriedCount: keywords.length
+          message: lastApiError || 'No results found across any keyword variant for this search',
+          queriesTriedCount: keywords.length,
+          debugInfo: `API Key present: ${!!process.env.GOOGLE_SEARCH_API_KEY}, Engine ID present: ${!!process.env.GOOGLE_SEARCH_ENGINE_ID}`
         })
       };
     }
