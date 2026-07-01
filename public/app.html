@@ -674,7 +674,7 @@
       <div class="sidebar-section-label">Configure</div>
       <div class="nav-item" onclick="showPage('page-empty',this)"><span class="nav-icon">🔑</span> Keywords</div>
       <div class="nav-item" onclick="showPage('page-empty',this)"><span class="nav-icon">🏗️</span> Industries</div>
-      <div class="nav-item" onclick="showPage('page-empty',this)"><span class="nav-icon">🔔</span> Notifications <span class="nav-badge">3</span></div>
+      <div class="nav-item" onclick="showPage('page-notifications',this)"><span class="nav-icon">🔔</span> Notifications <span class="nav-badge" id="notif-badge" style="display:none;">ON</span></div>
       <div class="sidebar-section-label">Account</div>
       <div class="nav-item" onclick="showPage('page-billing',this)"><span class="nav-icon">💳</span> Billing</div>
       <div class="nav-item" onclick="showPage('page-settings',this)"><span class="nav-icon">⚙️</span> Settings</div>
@@ -697,7 +697,26 @@
       <div class="topbar-title" id="topbar-title">Dashboard</div>
       <div class="topbar-right">
         <div class="topbar-search"><span>🔍</span><input type="text" placeholder="Search leads..."/></div>
-        <div class="topbar-btn">🔔<span class="notif-dot"></span></div>
+        <div style="position:relative;">
+          <div class="topbar-btn" id="bell-btn" onclick="toggleBellPanel()" title="Lead alerts" style="position:relative;transition:background 0.2s;">
+            <span id="bell-icon">🔔</span>
+            <span id="bell-dot" style="position:absolute;top:4px;right:4px;background:var(--orange);color:var(--white);border-radius:100px;min-width:16px;height:16px;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--white);"></span>
+          </div>
+          <!-- Bell dropdown panel -->
+          <div id="bell-panel" style="display:none;position:absolute;top:44px;right:0;width:340px;background:var(--white);border-radius:var(--r-lg);box-shadow:var(--sh-lg);border:1px solid var(--slate-mid);z-index:200;overflow:hidden;max-height:480px;overflow-y:auto;">
+            <div style="padding:14px 16px;border-bottom:1px solid var(--slate-mid);display:flex;align-items:center;justify-content:space-between;background:var(--navy);">
+              <div style="font-family:var(--font-d);font-weight:700;font-size:14px;color:var(--white);">🔔 Lead Alerts</div>
+              <button onclick="showPage('page-notifications',null);toggleBellPanel();" style="font-size:11px;font-weight:600;color:var(--yellow);background:none;border:none;cursor:pointer;">Settings →</button>
+            </div>
+            <div id="bell-panel-content">
+              <div style="text-align:center;padding:32px 16px;">
+                <div style="font-size:32px;margin-bottom:12px;">🔔</div>
+                <div style="font-family:var(--font-d);font-weight:700;font-size:15px;color:var(--navy);margin-bottom:6px;">No new leads yet</div>
+                <div style="font-size:13px;color:var(--grey);line-height:1.6;">Enable alerts in Notifications settings and APTO will scan every hour.</div>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="plan-chip" id="topbar-plan">⭐ Pro Trial</div>
         <div id="topbar-account" onclick="doLogout()" style="display:flex;align-items:center;gap:8px;background:var(--slate);border:1.5px solid var(--slate-mid);border-radius:100px;padding:5px 14px 5px 6px;cursor:pointer;transition:background 0.15s;" title="Click to sign out">
           <span id="topbar-avatar" style="width:24px;height:24px;border-radius:50%;background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">U</span>
@@ -904,6 +923,85 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ── NOTIFICATIONS ── -->
+    <div class="page-content" id="page-notifications">
+      <div style="max-width:600px;">
+
+        <!-- Alert status card -->
+        <div id="alerts-card" style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--slate-mid);padding:32px;margin-bottom:20px;box-shadow:var(--sh-sm);">
+          <div style="display:flex;align-items:center;gap:20px;margin-bottom:24px;">
+            <div id="bell-visual" style="width:64px;height:64px;border-radius:50%;background:var(--slate);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;transition:background 0.3s;">🔔</div>
+            <div>
+              <div style="font-family:var(--font-d);font-weight:800;font-size:20px;color:var(--navy);margin-bottom:4px;">Lead Alert Notifications</div>
+              <div id="alerts-status-text" style="font-size:14px;color:var(--grey);line-height:1.5;">Get an email every time APTO finds a new lead matching your trade and location.</div>
+            </div>
+          </div>
+
+          <!-- Big toggle -->
+          <div style="background:var(--slate);border-radius:var(--r-md);padding:20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+            <div>
+              <div style="font-family:var(--font-d);font-weight:700;font-size:16px;color:var(--navy);margin-bottom:4px;" id="alerts-toggle-label">Email alerts: OFF</div>
+              <div style="font-size:13px;color:var(--grey);" id="alerts-toggle-sub">Click to turn on lead alerts</div>
+            </div>
+            <div id="alerts-toggle" onclick="toggleAlerts()" style="width:56px;height:30px;border-radius:100px;background:var(--slate-mid);position:relative;cursor:pointer;transition:background 0.3s;flex-shrink:0;">
+              <div id="alerts-toggle-knob" style="position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--white);transition:transform 0.3s;box-shadow:0 1px 4px rgba(0,0,0,0.2);"></div>
+            </div>
+          </div>
+
+          <!-- Alert settings -->
+          <div id="alert-settings" style="display:none;">
+            <div style="font-family:var(--font-d);font-weight:700;font-size:14px;color:var(--navy);margin-bottom:14px;">Alert preferences</div>
+
+            <div style="margin-bottom:14px;">
+              <label class="settings-label">Alert frequency</label>
+              <select class="settings-input" id="alert-frequency">
+                <option value="instant">Instant — email me the moment a lead is found</option>
+                <option value="hourly">Hourly digest — one email per hour with all new leads</option>
+                <option value="daily">Daily digest — one email each morning at 8am</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom:14px;">
+              <label class="settings-label">Minimum lead score</label>
+              <select class="settings-input" id="alert-min-score">
+                <option value="50">Any lead (score 50+)</option>
+                <option value="70" selected>Good leads only (score 70+)</option>
+                <option value="85">High quality only (score 85+)</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom:14px;">
+              <label class="settings-label">Alert email address</label>
+              <input type="email" class="settings-input" id="alert-email" placeholder="your@email.com"/>
+              <div style="font-size:12px;color:var(--grey);margin-top:4px;">Leave blank to use your account email</div>
+            </div>
+
+            <button onclick="saveAlertSettings()" class="btn-save" style="margin-top:8px;">Save alert settings</button>
+          </div>
+        </div>
+
+        <!-- How it works -->
+        <div style="background:var(--navy);border-radius:var(--r-lg);padding:24px;">
+          <div style="font-family:var(--font-d);font-weight:700;font-size:15px;color:var(--white);margin-bottom:16px;">How lead alerts work</div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;gap:14px;align-items:flex-start;">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
+              <div style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;">APTO's AI scans approved public sites every hour for new service requests matching your trade.</div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:flex-start;">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
+              <div style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;">Each result is scored and filtered — you only get alerted about genuine leads above your minimum score threshold.</div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:flex-start;">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
+              <div style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;">You receive an email with the lead details, score, and an AI-written reply — ready to copy and send immediately.</div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -1313,13 +1411,22 @@ function doCheckout() {
 
 // ─── RENDER APP ───
 function renderApp() {
-  // For now show dashboard — in production verify subscription first
-  // then redirect to gate if no active sub
   showScreen('screen-app');
   populateUserInfo();
   renderLeadRows();
   renderLeadCards();
+  setTimeout(loadAlertSettings, 500);
 }
+
+// Close bell panel when clicking outside
+document.addEventListener('click', (e) => {
+  const panel   = document.getElementById('bell-panel');
+  const bellBtn = document.getElementById('bell-btn');
+  if (bellOpen && panel && !panel.contains(e.target) && !bellBtn?.contains(e.target)) {
+    bellOpen = false;
+    panel.style.display = 'none';
+  }
+});
 
 function populateUserInfo() {
   if (!currentUser) return;
@@ -1622,7 +1729,7 @@ function showPage(pageId, navEl) {
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
     navEl.classList.add('active');
   }
-  const titles = { 'page-dashboard':'Dashboard','page-feed':'Web Scanner','page-saved':'Saved Leads','page-ai':'Paste & Analyse','page-billing':'Billing','page-settings':'Settings','page-empty':'Coming Soon' };
+  const titles = { 'page-dashboard':'Dashboard','page-feed':'Web Scanner','page-saved':'Saved Leads','page-ai':'Paste & Analyse','page-notifications':'Notifications','page-billing':'Billing','page-settings':'Settings','page-empty':'Coming Soon' };
   document.getElementById('topbar-title').textContent = titles[pageId] || 'APTO Pro';
 }
 
@@ -1668,6 +1775,300 @@ document.addEventListener('keydown', e => {
     if (active?.id === 'screen-reset')  doReset();
   }
 });
+
+// ─── LEAD ALERTS & BELL ───
+let alertsEnabled = false;
+let unreadLeads   = [];
+let bellOpen      = false;
+
+// Poll for new leads every 5 minutes while dashboard is open
+function startLeadPolling() {
+  checkForNewLeads();
+  setInterval(checkForNewLeads, 5 * 60 * 1000);
+}
+
+async function checkForNewLeads() {
+  if (!currentUser) return;
+  try {
+    const session = await supabase.auth.getSession();
+    const token   = session.data.session?.access_token;
+    if (!token) return;
+
+    const res  = await fetch('/api/get-unread-leads', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+
+    if (data.leads && data.leads.length > 0) {
+      const newCount = data.leads.length;
+      unreadLeads    = data.leads;
+      ringBell(newCount);
+    }
+  } catch (err) {
+    console.log('Lead poll error:', err.message);
+  }
+}
+
+function ringBell(count) {
+  const bellBtn  = document.getElementById('bell-btn');
+  const bellIcon = document.getElementById('bell-icon');
+  const bellDot  = document.getElementById('bell-dot');
+
+  // Animate bell
+  if (bellIcon) {
+    bellIcon.style.transition = 'transform 0.1s';
+    let i = 0;
+    const ring = setInterval(() => {
+      bellIcon.style.transform = i % 2 === 0 ? 'rotate(15deg)' : 'rotate(-15deg)';
+      i++;
+      if (i > 6) { clearInterval(ring); bellIcon.style.transform = 'rotate(0)'; }
+    }, 80);
+  }
+
+  // Show count badge
+  if (bellDot) {
+    bellDot.style.display = 'block';
+    bellDot.textContent   = count > 9 ? '9+' : count;
+    bellDot.style.width   = 'auto';
+    bellDot.style.padding = '0 4px';
+    bellDot.style.minWidth = '16px';
+    bellDot.style.height  = '16px';
+    bellDot.style.fontSize = '10px';
+    bellDot.style.fontWeight = '700';
+    bellDot.style.display = 'flex';
+    bellDot.style.alignItems = 'center';
+    bellDot.style.justifyContent = 'center';
+    bellDot.style.top  = '4px';
+    bellDot.style.right = '4px';
+    bellDot.style.borderRadius = '100px';
+  }
+
+  // Show toast notification
+  showToast(`🔔 ${count} new lead${count > 1 ? 's' : ''} found — click the bell to view`);
+}
+
+function toggleBellPanel() {
+  const panel = document.getElementById('bell-panel');
+  bellOpen = !bellOpen;
+
+  if (bellOpen) {
+    renderBellPanel();
+    panel.style.display = 'block';
+    // Mark leads as read after viewing
+    setTimeout(markLeadsRead, 3000);
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+function renderBellPanel() {
+  const panel = document.getElementById('bell-panel-content');
+  if (!panel) return;
+
+  if (unreadLeads.length === 0) {
+    panel.innerHTML = `
+      <div style="text-align:center;padding:32px 16px;">
+        <div style="font-size:32px;margin-bottom:12px;">🔔</div>
+        <div style="font-family:var(--font-d);font-weight:700;font-size:15px;color:var(--navy);margin-bottom:6px;">No new leads</div>
+        <div style="font-size:13px;color:var(--grey);line-height:1.6;">APTO scans every hour. New leads appear here automatically when found.</div>
+        <div style="margin-top:16px;font-size:12px;color:var(--grey);">Make sure alerts are enabled in Notifications settings.</div>
+      </div>`;
+    return;
+  }
+
+  panel.innerHTML = unreadLeads.map(l => `
+    <div style="padding:14px 16px;border-bottom:1px solid var(--slate-mid);cursor:pointer;" onclick="window.open('${l.source_url || '#'}','_blank')">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="background:var(--navy);color:var(--yellow);font-family:var(--font-d);font-weight:800;font-size:12px;padding:2px 8px;border-radius:100px;">${l.score}</span>
+          <span style="font-size:13px;font-weight:600;color:var(--navy);">${l.trade || 'Trade'}</span>
+          <span style="font-size:12px;color:var(--grey);">📍 ${l.location || 'Local'}</span>
+        </div>
+        <span style="font-size:10px;color:var(--grey);">${new Date(l.found_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</span>
+      </div>
+      <div style="font-size:13px;color:var(--dark);line-height:1.5;margin-bottom:8px;">${l.headline || 'New lead found'}</div>
+      <div style="font-size:11px;color:var(--grey);background:var(--slate);border-radius:var(--r-sm);padding:8px 10px;line-height:1.6;">${l.reply || ''}</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--orange);font-weight:600;">🔗 Tap to view original post →</div>
+    </div>
+  `).join('');
+}
+
+async function markLeadsRead() {
+  if (!currentUser || !unreadLeads.length) return;
+  try {
+    const session = await supabase.auth.getSession();
+    const token   = session.data.session?.access_token;
+    if (!token) return;
+
+    // Mark all as read in Supabase
+    await fetch(
+      `${process.env.SUPABASE_URL}/rest/v1/leads?user_id=eq.${currentUser.id}&is_read=eq.false`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'apikey': 'sb_publishable_wYMMhxVA7noyBwUYFogGRQ_HOBw4-t8'
+        },
+        body: JSON.stringify({ is_read: true })
+      }
+    );
+
+    // Clear badge
+    const bellDot = document.getElementById('bell-dot');
+    if (bellDot) bellDot.style.display = 'none';
+    unreadLeads = [];
+  } catch (err) {
+    console.log('markLeadsRead error:', err.message);
+  }
+}
+
+function toggleAlerts() {
+  alertsEnabled = !alertsEnabled;
+  updateAlertUI();
+  saveAlertsToSupabase(alertsEnabled);
+  showToast(alertsEnabled ? '🔔 Lead alerts ON — APTO will scan every hour' : '🔕 Lead alerts turned off');
+}
+
+function updateAlertUI() {
+  const bellIcon = document.getElementById('bell-icon');
+  const bellBtn  = document.getElementById('bell-btn');
+  const badge    = document.getElementById('notif-badge');
+  const toggle   = document.getElementById('alerts-toggle');
+  const knob     = document.getElementById('alerts-toggle-knob');
+  const label    = document.getElementById('alerts-toggle-label');
+  const sub      = document.getElementById('alerts-toggle-sub');
+  const settings = document.getElementById('alert-settings');
+  const bellVisual = document.getElementById('bell-visual');
+
+  if (bellIcon) bellIcon.textContent = alertsEnabled ? '🔔' : '🔕';
+  if (bellBtn)  bellBtn.style.background = alertsEnabled ? 'rgba(22,163,74,0.1)' : '';
+  if (badge)    badge.style.display = alertsEnabled ? 'inline-flex' : 'none';
+  if (toggle)   toggle.style.background = alertsEnabled ? 'var(--success)' : 'var(--slate-mid)';
+  if (knob)     knob.style.transform    = alertsEnabled ? 'translateX(26px)' : 'translateX(0)';
+  if (label)    label.textContent = alertsEnabled ? 'Alerts ON ✅ — scanning every hour' : 'Email alerts: OFF';
+  if (sub)      sub.textContent   = alertsEnabled ? 'APTO will scan for leads every hour and ring the bell when found' : 'Click to turn on lead alerts';
+  if (settings) settings.style.display = alertsEnabled ? 'block' : 'none';
+  if (bellVisual) bellVisual.style.background = alertsEnabled ? 'var(--success-lt)' : 'var(--slate)';
+}
+
+async function saveAlertsToSupabase(enabled) {
+  if (!currentUser) return;
+  try {
+    await supabase.from('user_settings').upsert({
+      user_id:         currentUser.id,
+      alerts_enabled:  enabled,
+      alert_email:     currentUser.email,
+      alert_frequency: document.getElementById('alert-frequency')?.value || 'instant',
+      alert_min_score: parseInt(document.getElementById('alert-min-score')?.value || '70'),
+      trade:           currentUser.user_metadata?.trade || 'plumbing',
+      updated_at:      new Date().toISOString()
+    }, { onConflict: 'user_id' });
+  } catch (err) {
+    console.log('Supabase save skipped:', err.message);
+  }
+}
+
+async function loadAlertSettings() {
+  if (!currentUser) return;
+  try {
+    const { data } = await supabase
+      .from('user_settings')
+      .select('alerts_enabled,alert_frequency,alert_min_score,alert_email')
+      .eq('user_id', currentUser.id)
+      .single();
+    if (data) {
+      alertsEnabled = data.alerts_enabled || false;
+      updateAlertUI();
+    }
+  } catch (err) {
+    console.log('Alert settings not loaded yet');
+  }
+  // Start polling for new leads
+  if (alertsEnabled) startLeadPolling();
+}
+
+function saveAlertSettings() {
+  saveAlertsToSupabase(alertsEnabled);
+  if (alertsEnabled) startLeadPolling();
+  showToast('✅ Alert settings saved');
+}
+
+
+function updateAlertUI() {
+  // Bell button in topbar
+  const bellIcon = document.getElementById('bell-icon');
+  const bellDot  = document.getElementById('bell-dot');
+  const bellBtn  = document.getElementById('bell-btn');
+  if (bellIcon) bellIcon.textContent = alertsEnabled ? '🔔' : '🔕';
+  if (bellDot)  bellDot.style.display = alertsEnabled ? 'block' : 'none';
+  if (bellBtn)  bellBtn.style.background = alertsEnabled ? 'rgba(22,163,74,0.1)' : '';
+
+  // Notifications badge in sidebar
+  const badge = document.getElementById('notif-badge');
+  if (badge) badge.style.display = alertsEnabled ? 'inline-flex' : 'none';
+
+  // Notifications page toggle
+  const toggle     = document.getElementById('alerts-toggle');
+  const knob       = document.getElementById('alerts-toggle-knob');
+  const label      = document.getElementById('alerts-toggle-label');
+  const sub        = document.getElementById('alerts-toggle-sub');
+  const settings   = document.getElementById('alert-settings');
+  const bellVisual = document.getElementById('bell-visual');
+
+  if (toggle) toggle.style.background = alertsEnabled ? 'var(--success)' : 'var(--slate-mid)';
+  if (knob)   knob.style.transform    = alertsEnabled ? 'translateX(26px)' : 'translateX(0)';
+  if (label)  label.textContent       = alertsEnabled ? 'Email alerts: ON ✅' : 'Email alerts: OFF';
+  if (sub)    sub.textContent         = alertsEnabled ? 'You\'ll be emailed when new leads match your trade' : 'Click to turn on lead alerts';
+  if (settings) settings.style.display = alertsEnabled ? 'block' : 'none';
+  if (bellVisual) bellVisual.style.background = alertsEnabled ? 'var(--success-lt)' : 'var(--slate)';
+}
+
+async function saveAlertsToSupabase(enabled) {
+  if (!currentUser) return;
+  try {
+    await supabase.from('user_settings').upsert({
+      user_id: currentUser.id,
+      alerts_enabled: enabled,
+      alert_email: currentUser.email,
+      alert_frequency: document.getElementById('alert-frequency')?.value || 'instant',
+      alert_min_score: parseInt(document.getElementById('alert-min-score')?.value || '70'),
+      trade: currentUser.user_metadata?.trade || 'plumbing',
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+  } catch (err) {
+    console.log('Supabase save skipped (table may not exist yet):', err.message);
+  }
+}
+
+async function loadAlertSettings() {
+  if (!currentUser) return;
+  try {
+    const { data } = await supabase
+      .from('user_settings')
+      .select('alerts_enabled,alert_frequency,alert_min_score,alert_email')
+      .eq('user_id', currentUser.id)
+      .single();
+
+    if (data) {
+      alertsEnabled = data.alerts_enabled || false;
+      if (document.getElementById('alert-frequency') && data.alert_frequency)
+        document.getElementById('alert-frequency').value = data.alert_frequency;
+      if (document.getElementById('alert-min-score') && data.alert_min_score)
+        document.getElementById('alert-min-score').value = data.alert_min_score;
+      if (document.getElementById('alert-email') && data.alert_email)
+        document.getElementById('alert-email').value = data.alert_email;
+      updateAlertUI();
+    }
+  } catch (err) {
+    console.log('Alert settings not loaded yet:', err.message);
+  }
+}
+
+function saveAlertSettings() {
+  saveAlertsToSupabase(alertsEnabled);
+  showToast('✅ Alert settings saved');
+}
 
 // ─── QUICK PASTE DRAWER ───
 let qpOpen = false;
