@@ -799,6 +799,7 @@
       <li><a href="#how-it-works">How It Works</a></li>
       <li><a href="#industries">Industries</a></li>
       <li><a href="#pricing">Pricing</a></li>
+      <li><a href="/trades.html">Find a Trade</a></li>
     </ul>
     <div class="nav-cta" id="nav-cta">
       <a class="btn-ghost" href="/app.html">Log in</a>
@@ -866,38 +867,21 @@
           </a>
         </div>
 
-        <div class="hero-trust">
-          <div class="hero-trust-avatars">
-            <span class="av1">M</span>
-            <span class="av2">J</span>
-            <span class="av3">S</span>
-            <span class="av4">A</span>
-          </div>
-          <div class="hero-trust-text">
-            <strong>1,200+ tradespeople</strong> already use APTO Pro<br>
-            to win more local jobs
-          </div>
-        </div>
+
       </div>
 
       <div class="hero-mascot">
         <img src="/images/mascot.png" alt="APTO Pro — your AI business assistant" />
 
-        <div class="hero-badge">
+        <div class="hero-badge" id="hero-lead-badge">
           <div class="hero-badge-icon">🔔</div>
           <div class="hero-badge-text">
             <div class="label">New lead found</div>
-            <div class="value">Brighton · Plumbing · 🔥 Hot</div>
+            <div class="value" id="hero-lead-text">Brighton · Plumbing · 🔥 Hot</div>
           </div>
         </div>
 
-        <div class="hero-badge2">
-          <div class="b2-label">AI scanning</div>
-          <div class="b2-row">
-            <span class="b2-dot"></span>
-            <span class="b2-text">3 new leads in last hour</span>
-          </div>
-        </div>
+
       </div>
 
     </div>
@@ -1141,31 +1125,7 @@
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════
-     STATS BAR
-═══════════════════════════════════════ -->
-<section class="stats-bar">
-  <div class="container">
-    <div class="stats-grid">
-      <div class="stat-item">
-        <div class="stat-num">47K+</div>
-        <div class="stat-label">Leads found every month</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">1,200+</div>
-        <div class="stat-label">Active UK subscribers</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">94%</div>
-        <div class="stat-label">Lead relevance accuracy</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">£340</div>
-        <div class="stat-label">Average job value won</div>
-      </div>
-    </div>
-  </div>
-</section>
+
 
 <!-- ═══════════════════════════════════════
      PRICING
@@ -1367,5 +1327,58 @@
   </div>
 </footer>
 
+
+<script>
+// Rotating lead notification badge
+const LEADS = [
+  'Brighton · Plumbing · 🔥 Hot',
+  'Worthing · Gardening · ⚡ Urgent',
+  'Hove · Electrical · 🔥 Hot',
+  'Shoreham · Cleaning · 📍 Local',
+  'Lancing · Decorating · 💰 High value',
+  'Chichester · Roofing · ⚡ Urgent',
+  'Crawley · Removals · 📅 This week',
+  'Eastbourne · Dog Grooming · 📍 Local',
+  'Horsham · Building · 💰 High value',
+  'Bognor · Locksmith · 🔥 Hot',
+];
+
+const POSITIONS = [
+  { top:'60px', right:'0', left:'auto', bottom:'auto' },
+  { top:'auto', right:'auto', left:'-20px', bottom:'80px' },
+  { top:'30px', right:'20px', left:'auto', bottom:'auto' },
+  { top:'auto', right:'-10px', left:'auto', bottom:'60px' },
+];
+
+let leadIdx = 0;
+let posIdx  = 0;
+const badge = document.getElementById('hero-lead-badge');
+
+function rotateLead() {
+  if (!badge) return;
+
+  // Fade out
+  badge.style.transition = 'opacity 0.4s, transform 0.4s';
+  badge.style.opacity = '0';
+  badge.style.transform = 'translateY(-8px)';
+
+  setTimeout(() => {
+    // Update content
+    leadIdx = (leadIdx + 1) % LEADS.length;
+    posIdx  = (posIdx + 1) % POSITIONS.length;
+    document.getElementById('hero-lead-text').textContent = LEADS[leadIdx];
+
+    // Move position
+    const pos = POSITIONS[posIdx];
+    Object.assign(badge.style, pos);
+
+    // Fade in
+    badge.style.opacity = '1';
+    badge.style.transform = 'translateY(0)';
+  }, 450);
+}
+
+setInterval(rotateLead, 3500);
+</script>
 </body>
 </html>
