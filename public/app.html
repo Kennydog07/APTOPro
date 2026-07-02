@@ -1015,7 +1015,7 @@
           <div class="billing-detail" id="billing-detail">Your 14-day free trial is active. You will not be charged until your trial ends. Cancel anytime from the Stripe portal.</div>
           <div style="display:flex;gap:12px;flex-wrap:wrap;">
             <button class="btn-manage" onclick="openStripePortal()">💳 Manage Billing</button>
-            <button class="btn-danger" onclick="if(confirm('Are you sure you want to cancel?'))showToast('Please manage your subscription via the billing portal.')">Cancel subscription</button>
+            <button class="btn-danger" onclick="openStripePortal()">Cancel subscription</button>
           </div>
         </div>
       </div>
@@ -1711,7 +1711,9 @@ function copyText(txt) {
 
 function openStripePortal() {
   showToast('🔗 Opening Stripe billing portal...');
-  // In production: fetch /api/create-portal-session and redirect
+  setTimeout(() => {
+    window.open('https://billing.stripe.com/p/login/fZuaEY7Ca5CA7my8X73sI00', '_blank');
+  }, 400);
 }
 
 function saveSettings() { showToast('✅ Settings saved!'); }
