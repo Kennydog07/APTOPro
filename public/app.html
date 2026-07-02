@@ -666,14 +666,14 @@
     <nav>
       <div class="sidebar-section-label">Main</div>
       <div class="nav-item active" onclick="showPage('page-dashboard',this)"><span class="nav-icon">📊</span> Dashboard</div>
-      <div class="nav-item" onclick="showPage('page-feed',this)"><span class="nav-icon">🌐</span> Web Scanner <span class="nav-badge" id="feed-badge">12</span></div>
+      <div class="nav-item" onclick="showPage('page-feed',this)"><span class="nav-icon">🔍</span> Find Leads <span class="nav-badge" id="feed-badge">12</span></div>
       <div class="nav-item" onclick="showPage('page-saved',this)"><span class="nav-icon">💾</span> Saved Leads</div>
-      <div class="nav-item" onclick="showPage('page-ai',this)"><span class="nav-icon">📋</span> Paste & Analyse</div>
-      <div class="nav-item" onclick="showPage('page-empty',this)"><span class="nav-icon">🗺️</span> Maps</div>
-      <div class="nav-item" onclick="showPage('page-empty',this)"><span class="nav-icon">📈</span> Reports</div>
+      <div class="nav-item" onclick="showPage('page-ai',this)"><span class="nav-icon">📱</span> Facebook Leads</div>
+      <div class="nav-item" onclick="showPage('page-maps',this)"><span class="nav-icon">🗺️</span> Lead Map</div>
+      <div class="nav-item" onclick="showPage('page-reports',this)"><span class="nav-icon">📈</span> My Results</div>
       <div class="sidebar-section-label">Configure</div>
-      <div class="nav-item" onclick="showPage('page-empty',this)"><span class="nav-icon">🔑</span> Keywords</div>
-      <div class="nav-item" onclick="showPage('page-empty',this)"><span class="nav-icon">🏗️</span> Industries</div>
+      <div class="nav-item" onclick="showPage('page-empty',this)"><span class="nav-icon">⚙️</span> My Keywords</div>
+      <div class="nav-item" onclick="showPage('page-empty',this)"><span class="nav-icon">🔧</span> My Trade</div>
       <div class="nav-item" onclick="showPage('page-notifications',this)"><span class="nav-icon">🔔</span> Notifications <span class="nav-badge" id="notif-badge" style="display:none;">ON</span></div>
       <div class="sidebar-section-label">Account</div>
       <div class="nav-item" onclick="showPage('page-billing',this)"><span class="nav-icon">💳</span> Billing</div>
@@ -770,7 +770,7 @@
     <!-- ── LEAD FEED ── -->
     <div class="page-content" id="page-feed">
       <div style="background:rgba(27,43,94,0.04);border:1px solid rgba(27,43,94,0.12);border-radius:var(--r-md);padding:14px 18px;margin-bottom:16px;font-size:13px;color:var(--navy);line-height:1.6;">
-        🌐 <strong>Web Scanner</strong> searches real public sites — Reddit, MoneySavingExpert, forums, and approved local directories — for genuine service requests. <strong>This does not search Facebook</strong> (Facebook blocks all external search tools by design). For Facebook leads, use <a onclick="showPage('page-ai',document.querySelectorAll('.nav-item')[3])" style="color:var(--orange);font-weight:600;cursor:pointer;">Paste &amp; Analyse →</a>
+        🔍 <strong>Find Leads</strong> searches public websites — Reddit, forums, and local directories — for people asking for your trade. <strong>Facebook posts are not included here</strong> — use <a onclick="showPage('page-ai',document.querySelectorAll('.nav-item')[3])" style="color:var(--orange);font-weight:600;cursor:pointer;">Facebook Leads →</a> for those.
       </div>
       <div style="background:var(--white);border-radius:var(--r-md);border:1px solid var(--slate-mid);padding:18px 20px;margin-bottom:16px;">
         <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;">
@@ -863,8 +863,8 @@
         <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(245,197,24,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(245,197,24,0.04) 1px,transparent 1px);background-size:40px 40px;"></div>
         <img src="/images/mascot.png" style="width:72px;position:relative;z-index:1;" alt=""/>
         <div style="position:relative;z-index:1;">
-          <h2 style="font-family:var(--font-d);font-weight:800;font-size:20px;color:var(--white);margin-bottom:6px;">📋 Paste &amp; Analyse — <span style="color:var(--yellow)">your Facebook lead tool</span></h2>
-          <p style="font-size:14px;color:rgba(255,255,255,0.65);line-height:1.6;">See a request in a Facebook group, Nextdoor, or anywhere else? Copy the text and paste it below. The AI scores it, detects urgency, and writes you a ready-to-send reply in seconds — this is the fastest way to turn Facebook posts into real jobs.</p>
+          <h2 style="font-family:var(--font-d);font-weight:800;font-size:20px;color:var(--white);margin-bottom:6px;">📋 Facebook Leads — <span style="color:var(--yellow)">copy, paste, reply in seconds</span></h2>
+          <p style="font-size:14px;color:rgba(255,255,255,0.65);line-height:1.6;">Spotted someone in a Facebook group looking for your trade? Copy their post and paste it below. You'll get a lead score, urgency rating, and a ready-to-send reply — all in a few seconds.</p>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
@@ -936,7 +936,7 @@
             <div id="bell-visual" style="width:64px;height:64px;border-radius:50%;background:var(--slate);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;transition:background 0.3s;">🔔</div>
             <div>
               <div style="font-family:var(--font-d);font-weight:800;font-size:20px;color:var(--navy);margin-bottom:4px;">Lead Alert Notifications</div>
-              <div id="alerts-status-text" style="font-size:14px;color:var(--grey);line-height:1.5;">Get an email every time APTO finds a new lead matching your trade and location.</div>
+              <div id="alerts-status-text" style="font-size:14px;color:var(--grey);line-height:1.5;">Switch this on and APTO will ring the bell every time it finds a new job request matching your trade — you'll never miss a lead.</div>
             </div>
           </div>
 
@@ -944,7 +944,7 @@
           <div style="background:var(--slate);border-radius:var(--r-md);padding:20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
             <div>
               <div style="font-family:var(--font-d);font-weight:700;font-size:16px;color:var(--navy);margin-bottom:4px;" id="alerts-toggle-label">Email alerts: OFF</div>
-              <div style="font-size:13px;color:var(--grey);" id="alerts-toggle-sub">Click to turn on lead alerts</div>
+              <div style="font-size:13px;color:var(--grey);" id="alerts-toggle-sub">Turn on to get notified when new leads appear</div>
             </div>
             <div id="alerts-toggle" onclick="toggleAlerts()" style="width:56px;height:30px;border-radius:100px;background:var(--slate-mid);position:relative;cursor:pointer;transition:background 0.3s;flex-shrink:0;">
               <div id="alerts-toggle-knob" style="position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--white);transition:transform 0.3s;box-shadow:0 1px 4px rgba(0,0,0,0.2);"></div>
@@ -989,15 +989,15 @@
           <div style="display:flex;flex-direction:column;gap:14px;">
             <div style="display:flex;gap:14px;align-items:flex-start;">
               <div style="width:28px;height:28px;border-radius:50%;background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
-              <div style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;">APTO's AI scans approved public sites every hour for new service requests matching your trade.</div>
+              <div style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;">Every hour, APTO automatically searches the web for people asking for your type of work — plumbers, electricians, gardeners, whatever your trade is.</div>
             </div>
             <div style="display:flex;gap:14px;align-items:flex-start;">
               <div style="width:28px;height:28px;border-radius:50%;background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
-              <div style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;">Each result is scored and filtered — you only get alerted about genuine leads above your minimum score threshold.</div>
+              <div style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;">Each result is checked by AI to make sure it's a real job request, not an advert or directory listing. Only genuine leads come through.</div>
             </div>
             <div style="display:flex;gap:14px;align-items:flex-start;">
               <div style="width:28px;height:28px;border-radius:50%;background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
-              <div style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;">You receive an email with the lead details, score, and an AI-written reply — ready to copy and send immediately.</div>
+              <div style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;">The bell rings in your dashboard and shows you the lead — what they need, where they are, and a suggested reply you can copy and send straight away.</div>
             </div>
           </div>
         </div>
@@ -1048,7 +1048,7 @@
           <div class="settings-field"><label class="settings-label">Phone</label><input class="settings-input" placeholder="07..."/></div>
           <div style="margin:24px 0 16px;font-family:var(--font-d);font-weight:700;font-size:15px;color:var(--navy);">Notifications</div>
           <div class="toggle-row"><div><div class="toggle-lbl">Email alerts for new leads</div><div class="toggle-desc">Get an email each time APTO finds a relevant lead</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
-          <div class="toggle-row"><div><div class="toggle-lbl">Urgent lead SMS alerts</div><div class="toggle-desc">Text when a high-urgency lead is found</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-row"><div><div class="toggle-lbl">Text me for urgent leads</div><div class="toggle-desc">Get a text message when someone needs a job done today</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
           <div class="toggle-row"><div><div class="toggle-lbl">Daily summary email</div><div class="toggle-desc">Morning digest of overnight leads</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
           <div style="margin-top:24px;">
             <button class="btn-save" onclick="saveSettings()">Save changes</button>
@@ -1058,6 +1058,86 @@
     </div>
 
     <!-- ── COMING SOON ── -->
+    <!-- ── LEAD MAP ── -->
+    <div class="page-content" id="page-maps">
+      <div style="margin-bottom:20px;">
+        <div style="background:var(--white);border-radius:var(--r-md);border:1px solid var(--slate-mid);padding:14px 18px;margin-bottom:16px;font-size:13px;color:var(--navy);">
+          🗺️ <strong>Lead Map</strong> shows where your saved leads are coming from. Save leads from the Find Leads or Facebook Leads pages and they'll appear here as pins on the map.
+        </div>
+        <div id="map-container" style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--slate-mid);overflow:hidden;height:500px;position:relative;">
+          <!-- Map renders here -->
+          <div id="lead-map" style="width:100%;height:100%;"></div>
+          <div id="map-empty" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--slate);">
+            <img src="/images/mascot.png" style="width:64px;margin-bottom:16px;opacity:0.6;" alt=""/>
+            <div style="font-family:var(--font-d);font-weight:700;font-size:16px;color:var(--navy);margin-bottom:8px;">No saved leads to map yet</div>
+            <div style="font-size:13px;color:var(--grey);text-align:center;max-width:280px;line-height:1.6;">Save leads from Find Leads or Facebook Leads and they'll appear as pins here — showing you exactly where the demand is in your area.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lead location breakdown -->
+      <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--slate-mid);padding:24px;">
+        <div style="font-family:var(--font-d);font-weight:700;font-size:16px;color:var(--navy);margin-bottom:16px;">Where your leads are coming from</div>
+        <div id="location-breakdown">
+          <div style="text-align:center;padding:24px;color:var(--grey);font-size:14px;">Save some leads first and this will show a breakdown by town and area.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MY RESULTS ── -->
+    <div class="page-content" id="page-reports">
+
+      <!-- Summary cards -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;">
+        <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--slate-mid);padding:20px;">
+          <div style="font-size:12px;font-weight:600;color:var(--grey);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Leads Found</div>
+          <div style="font-family:var(--font-d);font-weight:800;font-size:32px;color:var(--navy);" id="stat-found">0</div>
+          <div style="font-size:12px;color:var(--grey);margin-top:4px;">Total leads discovered</div>
+        </div>
+        <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--slate-mid);padding:20px;">
+          <div style="font-size:12px;font-weight:600;color:var(--grey);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Leads Saved</div>
+          <div style="font-family:var(--font-d);font-weight:800;font-size:32px;color:var(--navy);" id="stat-saved">0</div>
+          <div style="font-size:12px;color:var(--grey);margin-top:4px;">Leads you saved to follow up</div>
+        </div>
+        <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--slate-mid);padding:20px;">
+          <div style="font-size:12px;font-weight:600;color:var(--grey);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Replies Copied</div>
+          <div style="font-family:var(--font-d);font-weight:800;font-size:32px;color:var(--navy);" id="stat-replied">0</div>
+          <div style="font-size:12px;color:var(--grey);margin-top:4px;">Times you copied an AI reply</div>
+        </div>
+        <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--slate-mid);padding:20px;">
+          <div style="font-size:12px;font-weight:600;color:var(--grey);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Avg Lead Score</div>
+          <div style="font-family:var(--font-d);font-weight:800;font-size:32px;color:var(--navy);" id="stat-avg-score">—</div>
+          <div style="font-size:12px;color:var(--grey);margin-top:4px;">Quality of leads found</div>
+        </div>
+      </div>
+
+      <!-- Activity chart -->
+      <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--slate-mid);padding:24px;margin-bottom:20px;">
+        <div style="font-family:var(--font-d);font-weight:700;font-size:16px;color:var(--navy);margin-bottom:20px;">Leads found this week</div>
+        <div id="weekly-chart" style="display:flex;align-items:flex-end;gap:8px;height:120px;padding-bottom:24px;position:relative;border-bottom:2px solid var(--slate-mid);">
+        </div>
+        <div id="weekly-labels" style="display:flex;gap:8px;margin-top:8px;"></div>
+      </div>
+
+      <!-- Trade breakdown -->
+      <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--slate-mid);padding:24px;margin-bottom:20px;">
+        <div style="font-family:var(--font-d);font-weight:700;font-size:16px;color:var(--navy);margin-bottom:16px;">Leads by trade</div>
+        <div id="trade-breakdown" style="display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+
+      <!-- Tips -->
+      <div style="background:var(--navy);border-radius:var(--r-lg);padding:24px;">
+        <div style="font-family:var(--font-d);font-weight:700;font-size:15px;color:var(--white);margin-bottom:12px;">💡 Tips to get more leads</div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;">
+          <div>🔍 <strong style="color:var(--yellow);">Scan more often</strong> — leads from Reddit and forums appear and disappear quickly. Check Find Leads at least once a day.</div>
+          <div>📱 <strong style="color:var(--yellow);">Use Facebook Leads daily</strong> — copy and paste posts from your local Facebook groups. This is where most trade requests happen.</div>
+          <div>⚡ <strong style="color:var(--yellow);">Reply within minutes</strong> — the first tradesperson to respond wins the job most of the time. Use the AI reply and send it straight away.</div>
+          <div>🔔 <strong style="color:var(--yellow);">Turn on alerts</strong> — go to Notifications and switch alerts on so APTO tells you the moment something new comes in.</div>
+        </div>
+      </div>
+
+    </div>
+
     <div class="page-content" id="page-empty">
       <div class="empty-state">
         <img src="/images/mascot.png" alt="Coming soon"/>
@@ -1703,8 +1783,8 @@ function renderAIResult(r) {
   document.getElementById('ai-result').style.display = 'block';
 }
 
-function copyAIReply() { copyText(currentAIReply); }
-function saveAILead() { showToast('💾 Lead saved to Saved Leads'); }
+function copyAIReply() { copyText(currentAIReply); trackStat('replied'); }
+function saveAILead() { showToast('💾 Lead saved to Saved Leads'); trackStat('saved'); }
 
 function copyText(txt) {
   navigator.clipboard.writeText(txt).then(()=>showToast('📋 Copied to clipboard!')).catch(()=>showToast('📋 Copy the text above'));
@@ -1732,8 +1812,12 @@ function showPage(pageId, navEl) {
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
     navEl.classList.add('active');
   }
-  const titles = { 'page-dashboard':'Dashboard','page-feed':'Web Scanner','page-saved':'Saved Leads','page-ai':'Paste & Analyse','page-notifications':'Notifications','page-billing':'Billing','page-settings':'Settings','page-empty':'Coming Soon' };
+  const titles = { 'page-dashboard':'Dashboard','page-feed':'Find Leads','page-saved':'Saved Leads','page-ai':'Facebook Leads','page-notifications':'Notifications','page-maps':'Lead Map','page-reports':'My Results','page-billing':'Billing','page-settings':'Settings','page-empty':'Coming Soon' };
   document.getElementById('topbar-title').textContent = titles[pageId] || 'APTO Pro';
+
+  // Load page-specific content
+  if (pageId === 'page-reports') renderReports();
+  if (pageId === 'page-maps')    renderMap();
 }
 
 function setAuthLoading(btnId, loading) {
@@ -1949,8 +2033,8 @@ function updateAlertUI() {
   if (badge)    badge.style.display = alertsEnabled ? 'inline-flex' : 'none';
   if (toggle)   toggle.style.background = alertsEnabled ? 'var(--success)' : 'var(--slate-mid)';
   if (knob)     knob.style.transform    = alertsEnabled ? 'translateX(26px)' : 'translateX(0)';
-  if (label)    label.textContent = alertsEnabled ? 'Alerts ON ✅ — scanning every hour' : 'Email alerts: OFF';
-  if (sub)      sub.textContent   = alertsEnabled ? 'APTO will scan for leads every hour and ring the bell when found' : 'Click to turn on lead alerts';
+  if (label)    label.textContent = alertsEnabled ? 'Alerts are ON ✅ — APTO checks for new leads every hour' : 'Email alerts: OFF';
+  if (sub)      sub.textContent   = alertsEnabled ? 'Every hour APTO scans for new job requests. When it finds one that matches your trade, the bell rings and the lead appears in your panel.' : 'Turn on to get notified when new leads appear';
   if (settings) settings.style.display = alertsEnabled ? 'block' : 'none';
   if (bellVisual) bellVisual.style.background = alertsEnabled ? 'var(--success-lt)' : 'var(--slate)';
 }
@@ -2022,7 +2106,7 @@ function updateAlertUI() {
   if (toggle) toggle.style.background = alertsEnabled ? 'var(--success)' : 'var(--slate-mid)';
   if (knob)   knob.style.transform    = alertsEnabled ? 'translateX(26px)' : 'translateX(0)';
   if (label)  label.textContent       = alertsEnabled ? 'Email alerts: ON ✅' : 'Email alerts: OFF';
-  if (sub)    sub.textContent         = alertsEnabled ? 'You\'ll be emailed when new leads match your trade' : 'Click to turn on lead alerts';
+  if (sub)    sub.textContent         = alertsEnabled ? 'You\'ll be emailed when new leads match your trade' : 'Turn on to get notified when new leads appear';
   if (settings) settings.style.display = alertsEnabled ? 'block' : 'none';
   if (bellVisual) bellVisual.style.background = alertsEnabled ? 'var(--success-lt)' : 'var(--slate)';
 }
@@ -2071,6 +2155,126 @@ async function loadAlertSettings() {
 function saveAlertSettings() {
   saveAlertsToSupabase(alertsEnabled);
   showToast('✅ Alert settings saved');
+}
+
+// ─── REPORTS ───
+function renderReports() {
+  const found   = parseInt(localStorage.getItem('apto_stat_found')   || '0');
+  const saved   = parseInt(localStorage.getItem('apto_stat_saved')   || '0');
+  const replied = parseInt(localStorage.getItem('apto_stat_replied') || '0');
+
+  if (document.getElementById('stat-found'))   document.getElementById('stat-found').textContent   = found;
+  if (document.getElementById('stat-saved'))   document.getElementById('stat-saved').textContent   = saved;
+  if (document.getElementById('stat-replied')) document.getElementById('stat-replied').textContent = replied;
+  if (document.getElementById('stat-avg-score')) document.getElementById('stat-avg-score').textContent = found > 0
+    ? Math.round(parseInt(localStorage.getItem('apto_stat_score_total') || '0') / found)
+    : '—';
+
+  const days    = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const today   = new Date().getDay(); // 0=Sun
+  const ordered = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const weekData = ordered.map(d => parseInt(localStorage.getItem(`apto_day_${d}`) || '0'));
+  const maxVal  = Math.max(...weekData, 1);
+
+  const chart = document.getElementById('weekly-chart');
+  const labels = document.getElementById('weekly-labels');
+
+  if (chart) chart.innerHTML = weekData.map((val, i) => {
+    const h = Math.max(Math.round((val / maxVal) * 100), 2);
+    const isToday = i === today;
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;">
+      <div style="font-size:11px;color:var(--grey);font-weight:600;margin-top:auto;">${val || ''}</div>
+      <div style="width:100%;background:${isToday?'var(--navy)':'var(--yellow)'};border-radius:4px 4px 0 0;height:${h}%;opacity:${isToday?1:0.55};"></div>
+    </div>`;
+  }).join('');
+
+  if (labels) labels.innerHTML = ordered.map((d, i) => `
+    <div style="flex:1;text-align:center;font-size:11px;color:${i===today?'var(--navy)':'var(--grey)'};font-weight:${i===today?700:400};">${d}</div>
+  `).join('');
+
+  const trades = JSON.parse(localStorage.getItem('apto_trades') || '{}');
+  const breakdown = document.getElementById('trade-breakdown');
+  const tradeEntries = Object.entries(trades).sort((a,b) => b[1]-a[1]);
+
+  if (breakdown) {
+    if (tradeEntries.length === 0) {
+      breakdown.innerHTML = '<div style="font-size:14px;color:var(--grey);text-align:center;padding:16px;">No leads saved yet — start scanning to see your breakdown here.</div>';
+    } else {
+      const max = tradeEntries[0][1];
+      breakdown.innerHTML = tradeEntries.map(([trade, count]) => `
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:120px;font-size:13px;color:var(--navy);font-weight:600;flex-shrink:0;">${trade}</div>
+          <div style="flex:1;background:var(--slate);border-radius:100px;height:8px;overflow:hidden;">
+            <div style="height:100%;background:var(--navy);border-radius:100px;width:${Math.round(count/max*100)}%;"></div>
+          </div>
+          <div style="font-size:13px;color:var(--grey);font-weight:600;width:24px;text-align:right;">${count}</div>
+        </div>
+      `).join('');
+    }
+  }
+}
+
+function trackStat(type, trade, score) {
+  if (type === 'found') {
+    const key = 'apto_stat_found';
+    localStorage.setItem(key, (parseInt(localStorage.getItem(key)||'0') + 1));
+    if (score) localStorage.setItem('apto_stat_score_total', parseInt(localStorage.getItem('apto_stat_score_total')||'0') + score);
+    const day = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date().getDay()];
+    localStorage.setItem(`apto_day_${day}`, parseInt(localStorage.getItem(`apto_day_${day}`)||'0') + 1);
+    if (trade) {
+      const trades = JSON.parse(localStorage.getItem('apto_trades') || '{}');
+      trades[trade] = (trades[trade] || 0) + 1;
+      localStorage.setItem('apto_trades', JSON.stringify(trades));
+    }
+  }
+  if (type === 'saved')   localStorage.setItem('apto_stat_saved',   parseInt(localStorage.getItem('apto_stat_saved')||'0')   + 1);
+  if (type === 'replied') localStorage.setItem('apto_stat_replied', parseInt(localStorage.getItem('apto_stat_replied')||'0') + 1);
+}
+
+// ─── MAP ───
+function renderMap() {
+  const saved = JSON.parse(localStorage.getItem('apto_saved_leads') || '[]');
+  const mapEmpty = document.getElementById('map-empty');
+  const locationBreakdown = document.getElementById('location-breakdown');
+
+  if (saved.length === 0) {
+    if (mapEmpty) mapEmpty.style.display = 'flex';
+    if (locationBreakdown) locationBreakdown.innerHTML =
+      '<div style="text-align:center;padding:24px;color:var(--grey);font-size:14px;">Save some leads first and this will show a breakdown by town and area.</div>';
+    return;
+  }
+
+  if (mapEmpty) mapEmpty.style.display = 'none';
+
+  const locationCounts = {};
+  saved.forEach(l => {
+    const loc = l.location || l.detectedLocation || 'Unknown';
+    locationCounts[loc] = (locationCounts[loc] || 0) + 1;
+  });
+
+  const sorted = Object.entries(locationCounts).sort((a,b) => b[1]-a[1]);
+  const maxCount = sorted[0]?.[1] || 1;
+
+  if (locationBreakdown) {
+    locationBreakdown.innerHTML = sorted.map(([loc, count]) => `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <div style="font-size:13px;color:var(--navy);font-weight:600;min-width:140px;">📍 ${loc}</div>
+        <div style="flex:1;background:var(--slate);border-radius:100px;height:8px;overflow:hidden;">
+          <div style="height:100%;background:var(--orange);border-radius:100px;width:${Math.round(count/maxCount*100)}%;"></div>
+        </div>
+        <div style="font-size:13px;color:var(--grey);font-weight:600;">${count} lead${count>1?'s':''}</div>
+      </div>
+    `).join('');
+  }
+
+  // Embed Google Maps centred on first location
+  const firstLoc = sorted[0]?.[0] || 'Brighton UK';
+  const mapEl = document.getElementById('lead-map');
+  if (mapEl && !mapEl.querySelector('iframe')) {
+    mapEl.innerHTML = `<iframe width="100%" height="100%" style="border:0;" loading="lazy" allowfullscreen
+      src="https://www.google.com/maps/embed/v1/search?key=AIzaSyBqwK0CVLiQ63fO-aCMYit6at88KuB1y-0&q=${encodeURIComponent(firstLoc+' UK')}&zoom=10">
+    </iframe>`;
+  }
 }
 
 // ─── QUICK PASTE DRAWER ───
