@@ -1416,6 +1416,7 @@ function renderApp() {
   renderLeadRows();
   renderLeadCards();
   setTimeout(loadAlertSettings, 500);
+  setTimeout(loadSubscription, 600);
 }
 
 // Close bell panel when clicking outside
@@ -2241,6 +2242,60 @@ document.addEventListener('click', (e) => {
     drawer.style.display = 'none';
   }
 });
+
+// ─── SUBSCRIPTION CHECK ───
+async function loadSubscription() {
+  if (!currentUser) return;
+
+  try {
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .select('plan, status, current_period_end')
+      .eq('email', currentUser.email)
+      .single();
+
+    const planChip    = document.getElementById('topbar-plan');
+    const planName    = document.getElementById('billing-plan-name');
+    const planDetail  = document.getElementById('billing-detail');
+
+    if (error || !data) {
+      // No subscription found — show free trial
+      if (planChip)   planChip.textContent  = '⭐ Free Trial';
+      if (planName)   planName.textContent  = 'Free Trial';
+      if (planDetail) planDetail.textContent = 'You are on a free trial. Upgrade to a paid plan to keep full access.';
+      return;
+    }
+
+    const plans = {
+      starter:      { label: '🥉 Starter',      chip: '🥉 Starter — £9.99/mo' },
+      professional: { label: '🥈 Professional', chip: '🥈 Pro — £14.99/mo' },
+      ultimate:     { label: '🥇 Ultimate',     chip: '🥇 Ultimate — £19.99/mo' },
+      free:         { label: 'Free Trial',       chip: '⭐ Free Trial' },
+    };
+
+    const p = plans[data.plan] || plans.free;
+
+    if (planChip) planChip.textContent = p.chip;
+    if (planName) planName.textContent = `${p.label} Plan`;
+
+    const endDate = data.current_period_end
+      ? new Date(data.current_period_end).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })
+      : null;
+
+    const statusMessages = {
+      active:     `Your ${p.label} plan is active${endDate ? ` and renews on ${endDate}` : ''}.`,
+      trialing:   `Your free trial is active${endDate ? ` until ${endDate}` : ''}. You will not be charged until it ends.`,
+      past_due:   '⚠️ Your last payment failed. Please update your payment method to keep access.',
+      canceled:   `Your subscription was cancelled${endDate ? ` and expires on ${endDate}` : ''}. Resubscribe to keep access.`,
+      incomplete: 'Your subscription is incomplete. Please complete payment to activate.',
+    };
+
+    if (planDetail) planDetail.textContent = statusMessages[data.status] || statusMessages.active;
+
+  } catch (err) {
+    console.log('Subscription check skipped:', err.message);
+  }
+}
 
 // ─── START ───
 init();
