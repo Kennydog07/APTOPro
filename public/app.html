@@ -1640,11 +1640,26 @@ function showLastResults() {
   }
 }
 
+function restoreLastResults() {
+  // When returning to Find Leads, auto-restore last results if they exist
+  if (!lastScanResults.length) return;
+  const container = document.getElementById('lead-cards-container');
+  if (!container || container.innerHTML.trim()) return; // already has content
+  renderRealLeadCards(lastScanResults);
+  const status = document.getElementById('scan-status');
+  if (status) {
+    status.style.display = 'block';
+    status.textContent = `Your last scan results — ${lastScanResults.length} lead${lastScanResults.length>1?'s':''}. Run a new scan to refresh.`;
+  }
+}
+
 // Store last scan results so user can return to them
-let lastScanResults = [];
+// Persist scan results across page navigation using sessionStorage
+let lastScanResults = JSON.parse(sessionStorage.getItem('apto_last_results') || '[]');
 
 function renderRealLeadCards(leads) {
-  lastScanResults = leads; // store for back button
+  lastScanResults = leads;
+  sessionStorage.setItem('apto_last_results', JSON.stringify(leads)); // persist across navigation
   const container = document.getElementById('lead-cards-container');
   container.innerHTML = `
     <div style="background:rgba(27,43,94,0.04);border:1px solid rgba(27,43,94,0.1);border-radius:var(--r-md);padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--navy);">
@@ -1865,6 +1880,7 @@ function showPage(pageId, navEl) {
   if (pageId === 'page-reports') renderReports();
   if (pageId === 'page-maps')    renderMap();
   if (pageId === 'page-saved')   renderSavedLeads();
+  if (pageId === 'page-feed')    restoreLastResults();
 
   // Show "back to results" bar when leaving Find Leads page if results exist
   const backBar = document.getElementById('back-to-results-bar');
@@ -2393,13 +2409,33 @@ function renderMap() {
     `).join('');
   }
 
-  // Embed Google Maps centred on first location
-  const firstLoc = sorted[0]?.[0] || 'Brighton UK';
+  // Use OpenStreetMap via Nominatim — no API key needed
+  const firstLoc = sorted[0]?.[0] || 'Brighton';
   const mapEl = document.getElementById('lead-map');
-  if (mapEl && !mapEl.querySelector('iframe')) {
-    mapEl.innerHTML = `<iframe width="100%" height="100%" style="border:0;" loading="lazy" allowfullscreen
-      src="https://www.google.com/maps/embed/v1/search?key=AIzaSyBqwK0CVLiQ63fO-aCMYit6at88KuB1y-0&q=${encodeURIComponent(firstLoc+' UK')}&zoom=10">
-    </iframe>`;
+  if (mapEl) {
+    // Geocode the location using Nominatim (free, no key needed)
+    fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(firstLoc + ' UK')}&format=json&limit=1`)
+      .then(r => r.json())
+      .then(data => {
+        const lat = data[0]?.lat || 50.8229;
+        const lon = data[0]?.lon || -0.1363;
+        const zoom = 10;
+        // Build OSM iframe with markers for each saved lead location
+        mapEl.innerHTML = `<iframe
+          width="100%" height="100%" style="border:0;border-radius:var(--r-lg);"
+          loading="lazy" allowfullscreen
+          src="https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(lon)-0.5},${parseFloat(lat)-0.3},${parseFloat(lon)+0.5},${parseFloat(lat)+0.3}&layer=mapnik&marker=${lat},${lon}">
+        </iframe>`;
+        // Add view full map link
+        const linkEl = document.createElement('div');
+        linkEl.style.cssText = 'text-align:center;padding:8px;background:var(--white);font-size:12px;';
+        linkEl.innerHTML = `<a href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=${zoom}" target="_blank" style="color:var(--navy);font-weight:600;">View full map on OpenStreetMap ↗</a>`;
+        mapEl.parentElement.appendChild(linkEl);
+      })
+      .catch(() => {
+        // Fallback — show static OSM for UK
+        mapEl.innerHTML = `<iframe width="100%" height="100%" style="border:0;" src="https://www.openstreetmap.org/export/embed.html?bbox=-5.7,49.9,1.8,55.8&layer=mapnik"></iframe>`;
+      });
   }
 }
 
