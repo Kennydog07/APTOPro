@@ -464,13 +464,95 @@
     @keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-12px)}}
     .full-loading p{font-family:var(--font-d);font-weight:700;font-size:16px;color:var(--white);}
 
-    @media(max-width:900px){
+    @media(max-width:768px){
+      /* Hide desktop sidebar */
       .sidebar{display:none;}
       .main{margin-left:0;}
-      .kpi-grid{grid-template-columns:repeat(2,1fr);}
+
+      /* Topbar mobile adjustments */
+      .topbar{padding:0 12px;height:52px;}
+      .topbar-search{display:none;}
+      .topbar-title{font-size:15px;}
+      #topbar-account span:not(:first-child){display:none;}
+      #topbar-account{padding:4px 8px;}
+
+      /* Page content padding */
+      .page-content{padding:12px;}
+
+      /* KPI grid — 2 col on mobile */
+      .kpi-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+      .kpi-card{padding:14px;}
+
+      /* Dashboard grid single col */
       .dash-grid{grid-template-columns:1fr;}
       .settings-grid{grid-template-columns:1fr;}
       .gate-plans{grid-template-columns:1fr;}
+
+      /* Lead cards */
+      .lead-card{padding:14px;}
+      .lc-body{flex-direction:column;gap:10px;}
+      .lc-trade-mascot{width:36px;height:36px;}
+      .lc-actions{flex-direction:column;gap:8px;}
+      .lc-actions .btn-lc{width:100%;text-align:center;}
+
+      /* Feed toolbar — stack on mobile */
+      .feed-toolbar-inner{flex-direction:column;gap:8px;}
+      .feed-toolbar-inner select,
+      .feed-toolbar-inner input,
+      .feed-toolbar-inner button{width:100%;}
+
+      /* Scan toolbar */
+      #scan-toolbar{flex-direction:column;gap:8px;}
+      #scan-toolbar > div{width:100% !important;min-width:unset !important;}
+      #scan-toolbar button{width:100%;}
+
+      /* Auth cards */
+      .auth-card{padding:24px 20px;margin:16px;}
+
+      /* Bell panel */
+      #bell-panel{width:calc(100vw - 24px);right:-60px;}
+
+      /* Quick paste drawer */
+      #qp-drawer{width:calc(100vw - 24px);right:12px;}
+      #qp-trigger{bottom:76px;right:16px;}
+
+      /* Bottom nav bar padding so content not hidden behind it */
+      .main{padding-bottom:64px;}
+
+      /* Billing page */
+      .billing-plans-grid{grid-template-columns:1fr !important;}
+    }
+
+    /* ── MOBILE BOTTOM NAV ── */
+    #mobile-nav{
+      display:none;
+      position:fixed;bottom:0;left:0;right:0;z-index:500;
+      background:var(--white);border-top:1px solid var(--slate-mid);
+      height:60px;
+      flex-direction:row;align-items:center;
+      padding:0 4px;
+      box-shadow:0 -4px 16px rgba(27,43,94,0.08);
+    }
+    .mob-nav-item{
+      flex:1;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;gap:3px;padding:6px 2px;
+      cursor:pointer;border-radius:var(--r-sm);
+      transition:background 0.15s;color:var(--grey);
+      font-size:10px;font-weight:600;font-family:var(--font-d);
+      position:relative;
+    }
+    .mob-nav-item:active{background:var(--slate);}
+    .mob-nav-item.active{color:var(--navy);}
+    .mob-nav-item .mob-icon{font-size:20px;line-height:1;}
+    .mob-nav-item .mob-badge{
+      position:absolute;top:4px;right:calc(50% - 16px);
+      background:var(--orange);color:var(--white);
+      font-size:9px;font-weight:700;
+      width:14px;height:14px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+    }
+    @media(max-width:768px){
+      #mobile-nav{display:flex;}
     }
   </style>
 </head>
@@ -798,7 +880,7 @@
         🔍 <strong>Find Leads</strong> searches public websites — Reddit, forums, and local directories — for people asking for your trade. <strong>Facebook posts are not included here</strong> — use <a onclick="showPage('page-ai',document.querySelectorAll('.nav-item')[3])" style="color:var(--orange);font-weight:600;cursor:pointer;">Facebook Leads →</a> for those.
       </div>
       <div style="background:var(--white);border-radius:var(--r-md);border:1px solid var(--slate-mid);padding:18px 20px;margin-bottom:16px;">
-        <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;">
+        <div id="scan-toolbar" style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;">
           <div style="flex:1;min-width:160px;">
             <label class="settings-label" style="margin-bottom:5px;">Trade</label>
             <select class="filter-select" id="scan-trade" style="width:100%;">
@@ -2749,6 +2831,106 @@ async function loadSubscription() {
 
 // ─── START ───
 init();
+</script>
+
+<!-- ── MOBILE BOTTOM NAV ── -->
+<div id="mobile-nav">
+  <div class="mob-nav-item active" id="mob-dashboard" onclick="mobNav('page-dashboard','mob-dashboard')">
+    <span class="mob-icon">🏠</span>
+    <span>Home</span>
+  </div>
+  <div class="mob-nav-item" id="mob-feed" onclick="mobNav('page-feed','mob-feed')">
+    <span class="mob-icon">🔍</span>
+    <span>Find Leads</span>
+  </div>
+  <div class="mob-nav-item" id="mob-ai" onclick="mobNav('page-ai','mob-ai')">
+    <span class="mob-icon">📱</span>
+    <span>Facebook</span>
+  </div>
+  <div class="mob-nav-item" id="mob-saved" onclick="mobNav('page-saved','mob-saved')">
+    <span class="mob-icon">💾</span>
+    <span>Saved</span>
+  </div>
+  <div class="mob-nav-item" id="mob-more" onclick="toggleMobMenu()">
+    <span class="mob-icon">☰</span>
+    <span>More</span>
+  </div>
+</div>
+
+<!-- Mobile "more" slide-up menu -->
+<div id="mob-more-menu" style="
+  display:none;position:fixed;bottom:60px;left:0;right:0;z-index:499;
+  background:var(--white);border-top:1px solid var(--slate-mid);
+  padding:12px;box-shadow:0 -8px 24px rgba(27,43,94,0.12);
+">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+    <div onclick="mobNav('page-reports','');toggleMobMenu()" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--r-md);background:var(--slate);cursor:pointer;">
+      <span style="font-size:20px;">📈</span>
+      <span style="font-size:13px;font-weight:600;color:var(--navy);">My Results</span>
+    </div>
+    <div onclick="mobNav('page-maps','');toggleMobMenu()" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--r-md);background:var(--slate);cursor:pointer;">
+      <span style="font-size:20px;">🗺️</span>
+      <span style="font-size:13px;font-weight:600;color:var(--navy);">Lead Map</span>
+    </div>
+    <div onclick="mobNav('page-notifications','');toggleMobMenu()" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--r-md);background:var(--slate);cursor:pointer;">
+      <span style="font-size:20px;">🔔</span>
+      <span style="font-size:13px;font-weight:600;color:var(--navy);">Alerts</span>
+    </div>
+    <div onclick="mobNav('page-billing','');toggleMobMenu()" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--r-md);background:var(--slate);cursor:pointer;">
+      <span style="font-size:20px;">💳</span>
+      <span style="font-size:13px;font-weight:600;color:var(--navy);">Billing</span>
+    </div>
+    <div onclick="mobNav('page-settings','');toggleMobMenu()" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--r-md);background:var(--slate);cursor:pointer;">
+      <span style="font-size:20px;">⚙️</span>
+      <span style="font-size:13px;font-weight:600;color:var(--navy);">Settings</span>
+    </div>
+    <div onclick="doLogout()" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--r-md);background:var(--slate);cursor:pointer;">
+      <span style="font-size:20px;">🚪</span>
+      <span style="font-size:13px;font-weight:600;color:var(--grey);">Sign out</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// Mobile nav functions
+function mobNav(pageId, tabId) {
+  // Use existing showPage
+  showPage(pageId, null);
+  // Update mobile tab active state
+  document.querySelectorAll('.mob-nav-item').forEach(el => el.classList.remove('active'));
+  if (tabId) document.getElementById(tabId)?.classList.add('active');
+  // Close more menu if open
+  document.getElementById('mob-more-menu').style.display = 'none';
+}
+
+function toggleMobMenu() {
+  const menu = document.getElementById('mob-more-menu');
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+// Close more menu when tapping outside
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('mob-more-menu');
+  const btn  = document.getElementById('mob-more');
+  if (menu.style.display !== 'none' && !menu.contains(e.target) && !btn.contains(e.target)) {
+    menu.style.display = 'none';
+  }
+});
+
+// Show/hide mobile nav only when app screen is visible
+function updateMobileNavVisibility() {
+  const nav = document.getElementById('mobile-nav');
+  if (!nav) return;
+  const appVisible = document.getElementById('screen-app')?.classList.contains('active');
+  nav.style.display = appVisible ? 'flex' : 'none';
+}
+
+// Patch renderApp to show mobile nav
+const _origRenderApp = renderApp;
+function renderApp() {
+  _origRenderApp();
+  updateMobileNavVisibility();
+}
 </script>
 </body>
 </html>
