@@ -1666,10 +1666,10 @@ function renderApp() {
   showScreen('screen-app');
   populateUserInfo();
   renderLeadRows();
-  // Don't auto-load example leads — restore real results instead
   restoreLastResults();
   setTimeout(loadAlertSettings, 500);
   setTimeout(loadSubscription, 600);
+  updateMobileNavVisibility();
 }
 
 // Close bell panel when clicking outside
@@ -2946,12 +2946,8 @@ function updateMobileNavVisibility() {
   if (!appVisible && moreMenu) moreMenu.style.display = 'none';
 }
 
-// Patch renderApp to show mobile nav
-const _origRenderApp = renderApp;
-function renderApp() {
-  _origRenderApp();
-  updateMobileNavVisibility();
-}
+// Mobile nav is updated via renderApp() and showScreen() directly
+
 </script>
 </body>
 </html>
