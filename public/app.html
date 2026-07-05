@@ -552,7 +552,25 @@
       display:flex;align-items:center;justify-content:center;
     }
     @media(max-width:768px){
-      #mobile-nav{display:flex;}
+      /* Mobile nav only shows when app is active — controlled by JS */
+      /* Auth screen fixes for small screens */
+      .auth-screen{
+        padding:16px;
+        align-items:flex-start;
+        overflow-y:auto;
+        min-height:100vh;
+      }
+      .auth-card{
+        padding:28px 20px;
+        margin:16px auto;
+        max-width:100%;
+        width:100%;
+      }
+      .auth-title{font-size:20px;}
+      .auth-sub{font-size:13px;}
+      .btn-auth{padding:13px;}
+      .gate-card{padding:20px 16px;}
+      .gate-plans{grid-template-columns:1fr;}
     }
   </style>
 </head>
@@ -2030,6 +2048,7 @@ function saveSettings() { showToast('✅ Settings saved!'); }
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  updateMobileNavVisibility();
 }
 
 function showPage(pageId, navEl) {
@@ -2834,7 +2853,7 @@ init();
 </script>
 
 <!-- ── MOBILE BOTTOM NAV ── -->
-<div id="mobile-nav">
+<div id="mobile-nav" style="display:none;">
   <div class="mob-nav-item active" id="mob-dashboard" onclick="mobNav('page-dashboard','mob-dashboard')">
     <span class="mob-icon">🏠</span>
     <span>Home</span>
@@ -2920,9 +2939,11 @@ document.addEventListener('click', (e) => {
 // Show/hide mobile nav only when app screen is visible
 function updateMobileNavVisibility() {
   const nav = document.getElementById('mobile-nav');
+  const moreMenu = document.getElementById('mob-more-menu');
   if (!nav) return;
   const appVisible = document.getElementById('screen-app')?.classList.contains('active');
   nav.style.display = appVisible ? 'flex' : 'none';
+  if (!appVisible && moreMenu) moreMenu.style.display = 'none';
 }
 
 // Patch renderApp to show mobile nav
