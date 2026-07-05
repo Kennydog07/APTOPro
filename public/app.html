@@ -844,17 +844,16 @@
         </div>
       </div>
       <div id="scan-status" style="display:none;background:var(--slate);border-radius:var(--r-md);padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--grey);"></div>
+      <div id="back-to-results-bar" style="display:none;background:var(--navy);border-radius:var(--r-md);padding:10px 16px;margin-bottom:16px;display:none;align-items:center;justify-content:space-between;">
+        <span style="font-size:13px;color:rgba(255,255,255,0.8);">Your last scan results are waiting</span>
+        <button onclick="showLastResults()" style="background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:700;font-size:12px;padding:6px 14px;border-radius:var(--r-sm);border:none;cursor:pointer;">← Back to results</button>
+      </div>
       <div id="lead-cards-container"></div>
     </div>
 
     <!-- ── SAVED LEADS ── -->
     <div class="page-content" id="page-saved">
-      <div class="empty-state">
-        <img src="/images/mascot.png" alt="No saved leads"/>
-        <h3>No saved leads yet</h3>
-        <p>Save leads from your feed and they'll appear here for easy follow-up.</p>
-        <button class="btn-sm btn-navy" onclick="showPage('page-feed',null)">Go to Lead Feed →</button>
-      </div>
+      <div id="saved-leads-container"></div>
     </div>
 
     <!-- ── AI ENGINE ── -->
@@ -1618,23 +1617,41 @@ async function scanForRealLeads() {
     const areaText = mode === 'national' ? 'across the UK' : `within ${radius} miles of ${location}`;
     status.textContent = `✅ Found ${data.leads.length} genuine ${typeLabel} ${areaText}, out of ${data.totalSearched} results scanned.`;
     renderRealLeadCards(data.leads);
+    // Track stats
+    data.leads.forEach(l => trackStat('found', l.detectedTrade, l.score));
 
   } catch (err) {
-    status.textContent = '⚠️ Scan failed: ' + err.message + '. Make sure GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_ENGINE_ID are set in Netlify.';
+    status.textContent = '⚠️ Scan failed: ' + err.message;
   }
 
   btn.disabled = false;
-  btn.innerHTML = '🔍 Scan for New Leads';
+  btn.innerHTML = '🔍 Scan for Leads';
 }
 
+function showLastResults() {
+  if (!lastScanResults.length) return;
+  renderRealLeadCards(lastScanResults);
+  const bar = document.getElementById('back-to-results-bar');
+  if (bar) bar.style.display = 'none';
+  const status = document.getElementById('scan-status');
+  if (status) {
+    status.style.display = 'block';
+    status.textContent = `Showing your last scan — ${lastScanResults.length} lead${lastScanResults.length>1?'s':''} found.`;
+  }
+}
+
+// Store last scan results so user can return to them
+let lastScanResults = [];
+
 function renderRealLeadCards(leads) {
+  lastScanResults = leads; // store for back button
   const container = document.getElementById('lead-cards-container');
   container.innerHTML = `
     <div style="background:rgba(27,43,94,0.04);border:1px solid rgba(27,43,94,0.1);border-radius:var(--r-md);padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--navy);">
-      💡 <strong>How to respond:</strong> Click "View Original Post" to open the real post on its source website, then paste the AI reply as a comment or message there.
+      💡 <strong>How to respond:</strong> Click "View Original Post" to open the real post, then paste the AI reply there directly.
     </div>` +
-  leads.map(l => `
-    <div class="lead-card">
+  leads.map((l, i) => `
+    <div class="lead-card" id="real-lead-${i}">
       <div class="lc-header">
         <div class="lc-meta">
           <span class="lc-score">Score ${l.score}/100</span>
@@ -1656,12 +1673,41 @@ function renderRealLeadCards(leads) {
         </div>
       </div>
       <div class="lc-actions">
-        <a class="btn-lc btn-lc-save" href="${l.sourceUrl}" target="_blank" style="text-align:center;text-decoration:none;">🔗 View Original Post</a>
-        <button class="btn-lc btn-lc-copy" onclick="copyText('${(l.reply||'').replace(/'/g,"\\'")}')">📋 Copy Reply</button>
-        <button class="btn-lc btn-lc-dismiss" onclick="showToast('💾 Lead saved!')">💾 Save</button>
+        <a class="btn-lc btn-lc-save" href="${l.sourceUrl}" target="_blank" style="text-align:center;text-decoration:none;">🔗 View Post</a>
+        <button class="btn-lc btn-lc-copy" onclick="copyRealReply(${i}, '${(l.reply||'').replace(/'/g,"\\'").replace(/\n/g,' ')}')">📋 Copy Reply</button>
+        <button class="btn-lc btn-lc-dismiss" onclick="saveRealLead(${i})">💾 Save</button>
       </div>
     </div>
   `).join('');
+}
+
+function saveRealLead(idx) {
+  const lead = lastScanResults[idx];
+  if (!lead) return;
+  const saved = JSON.parse(localStorage.getItem('apto_saved_leads') || '[]');
+  // Check not already saved
+  const alreadySaved = saved.some(s => s.sourceUrl === lead.sourceUrl);
+  if (alreadySaved) { showToast('Already saved!'); return; }
+  saved.push({ ...lead, savedAt: new Date().toISOString() });
+  localStorage.setItem('apto_saved_leads', JSON.stringify(saved));
+  trackStat('saved', lead.detectedTrade);
+  // Update button to show saved
+  const card = document.getElementById(`real-lead-${idx}`);
+  if (card) {
+    const btn = card.querySelector('.btn-lc-dismiss');
+    if (btn) { btn.textContent = '✅ Saved'; btn.disabled = true; btn.style.opacity = '0.6'; }
+  }
+  showToast('💾 Lead saved — view in Saved Leads');
+}
+
+function copyRealReply(idx, reply) {
+  copyText(reply);
+  trackStat('replied');
+  const card = document.getElementById(`real-lead-${idx}`);
+  if (card) {
+    const btn = card.querySelector('.btn-lc-copy');
+    if (btn) { const orig = btn.textContent; btn.textContent = '✅ Copied!'; setTimeout(() => btn.textContent = orig, 2000); }
+  }
 }
 
 function renderLeadCards() {
@@ -1818,6 +1864,17 @@ function showPage(pageId, navEl) {
   // Load page-specific content
   if (pageId === 'page-reports') renderReports();
   if (pageId === 'page-maps')    renderMap();
+  if (pageId === 'page-saved')   renderSavedLeads();
+
+  // Show "back to results" bar when leaving Find Leads page if results exist
+  const backBar = document.getElementById('back-to-results-bar');
+  if (backBar) {
+    if (pageId !== 'page-feed' && lastScanResults.length > 0) {
+      backBar.style.display = 'flex';
+    } else {
+      backBar.style.display = 'none';
+    }
+  }
 }
 
 function setAuthLoading(btnId, loading) {
@@ -2155,6 +2212,75 @@ async function loadAlertSettings() {
 function saveAlertSettings() {
   saveAlertsToSupabase(alertsEnabled);
   showToast('✅ Alert settings saved');
+}
+
+// ─── SAVED LEADS ───
+function renderSavedLeads() {
+  const container = document.getElementById('saved-leads-container');
+  if (!container) return;
+  const saved = JSON.parse(localStorage.getItem('apto_saved_leads') || '[]');
+
+  if (saved.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <img src="/images/mascot.png" alt="No saved leads"/>
+        <h3>No saved leads yet</h3>
+        <p>When you save a lead from Find Leads or Facebook Leads it will appear here so you can follow up.</p>
+        <button class="btn-sm btn-navy" onclick="showPage('page-feed',null)">Go to Find Leads →</button>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-family:var(--font-d);font-weight:700;font-size:18px;color:var(--navy);">${saved.length} saved lead${saved.length>1?'s':''}</div>
+      <button onclick="clearSavedLeads()" style="font-size:12px;color:var(--grey);background:none;border:none;cursor:pointer;text-decoration:underline;">Clear all</button>
+    </div>` +
+  saved.slice().reverse().map((l, i) => {
+    const idx = saved.length - 1 - i;
+    const date = l.savedAt ? new Date(l.savedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : '';
+    return `
+    <div class="lead-card" id="saved-lead-${idx}">
+      <div class="lc-header">
+        <div class="lc-meta">
+          <span class="lc-score">Score ${l.score||'?'}/100</span>
+          📍 ${l.detectedLocation||l.location||'Local'}${l.detectedTrade?' · '+l.detectedTrade:''}
+          ${date?`<span style="color:var(--grey);font-size:11px;margin-left:8px;">Saved ${date}</span>`:''}
+        </div>
+        <span class="mini-badge ${l.urgency==='High'||l.urgency==='Urgent'?'mb-urgent':'mb-normal'}">${l.urgency||'Normal'}</span>
+      </div>
+      <div class="lc-body">
+        <img class="lc-trade-mascot" src="/images/mascot.png" alt=""/>
+        <div class="lc-body-text">
+          <div class="lc-msg">${l.headline||l.msg||'Saved lead'}</div>
+          ${l.sourceUrl?`<div class="lc-chips"><a href="${l.sourceUrl}" target="_blank" class="lc-chip" style="text-decoration:none;">🌐 ${l.sourceName||'View source'} ↗</a></div>`:''}
+          <div class="lc-reply">
+            <div class="lc-reply-label">🤖 AI Suggested Reply</div>
+            <div class="lc-reply-text">${l.reply||'No reply saved'}</div>
+          </div>
+        </div>
+      </div>
+      <div class="lc-actions">
+        ${l.sourceUrl?`<a class="btn-lc btn-lc-save" href="${l.sourceUrl}" target="_blank" style="text-align:center;text-decoration:none;">🔗 View Post</a>`:''}
+        <button class="btn-lc btn-lc-copy" onclick="copyText('${(l.reply||'').replace(/'/g,"\\'").replace(/\n/g,' ')}')">📋 Copy Reply</button>
+        <button class="btn-lc btn-lc-dismiss" onclick="deleteSavedLead(${idx})">🗑️ Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function deleteSavedLead(idx) {
+  const saved = JSON.parse(localStorage.getItem('apto_saved_leads') || '[]');
+  saved.splice(idx, 1);
+  localStorage.setItem('apto_saved_leads', JSON.stringify(saved));
+  renderSavedLeads();
+  showToast('Lead removed');
+}
+
+function clearSavedLeads() {
+  if (!confirm('Remove all saved leads?')) return;
+  localStorage.removeItem('apto_saved_leads');
+  renderSavedLeads();
 }
 
 // ─── REPORTS ───
