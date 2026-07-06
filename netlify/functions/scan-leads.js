@@ -61,34 +61,38 @@ const SEEK_INTENTS = [
 // Build search queries — one per source type for diversity
 function buildQueries(tradeTerms, seekIntents, location, isJob) {
   const loc = location ? ` "${location}"` : '';
-  const term = tradeTerms[0];
+  const term  = tradeTerms[0];
   const term2 = tradeTerms[1] || tradeTerms[0];
-  const intent = seekIntents[0];
+  const intent  = seekIntents[0];
   const intent2 = seekIntents[1];
+  const intent3 = seekIntents[2];
 
   if (isJob) {
     return [
       `"${term}" site:reddit.com${loc}`,
       `"${term}" site:gumtree.com${loc}`,
       `"${term2}" site:indeed.co.uk${loc}`,
-      // Unrestricted — catches job boards and other sources
-      `"${term}"${loc} -"we offer" -"our services" -inurl:company`,
+      `"${term}"${loc} -"we offer" -"our services"`,
     ];
   }
 
+  // NOTE: Nextdoor excluded — it only gives neighbourhood aggregate pages,
+  // not direct post URLs. Reddit, Mumsnet, Gumtree all give direct linkable posts.
   return [
-    // Tier 1: Nextdoor neighbourhood posts (exclude business /pages/)
-    `"${intent}" "${term}"${loc} site:nextdoor.co.uk -site:nextdoor.co.uk/pages`,
-    // Tier 2: Reddit
+    // Reddit — direct thread links, UK subreddits
     `"${intent}" "${term}"${loc} site:reddit.com`,
-    // Tier 3: Mumsnet
+    // Mumsnet — direct thread links
     `"${intent}" "${term}"${loc} site:mumsnet.com`,
-    // Tier 4: Gumtree
+    // Gumtree services wanted — direct listing links
     `"${intent}" "${term2}"${loc} site:gumtree.com`,
-    // Tier 5: Unrestricted — catches Facebook public posts + any other high-ranking community content
-    `"${intent}" "${term}"${loc} -"we offer" -"our services" -"call us today" -"get a quote from us" -"we specialise in"`,
-    // Tier 6: Second intent phrase, unrestricted
-    `"${intent2}" "${term}"${loc} -"we offer" -"our services" -"our team"`,
+    // MoneySavingExpert forums — direct thread links
+    `"${intent}" "${term}"${loc} site:forums.moneysavingexpert.com`,
+    // Unrestricted #1 — Google's top results (often includes Facebook public posts)
+    `"${intent}" "${term}"${loc} -"we offer" -"our services" -"call us today" -"get a quote from us" -"we specialise in" -site:nextdoor.co.uk`,
+    // Unrestricted #2 — different intent phrase
+    `"${intent2}" "${term}"${loc} -"we offer" -"our services" -"our team" -site:nextdoor.co.uk`,
+    // Unrestricted #3 — third intent phrase, catches different phrasing
+    `"${intent3}" "${term2}"${loc} -"we offer" -"our services" -site:nextdoor.co.uk`,
   ];
 }
 
@@ -124,13 +128,16 @@ exports.handler = async (event) => {
         `("tradesperson wanted" OR "tradesman needed")${loc} site:gumtree.com`,
         `("tradesperson wanted" OR "tradesman needed")${loc}`,
       ] : [
-        // Restricted — specific community sites
-        `("looking for" OR "can anyone recommend" OR "need a") (plumber OR electrician OR builder OR cleaner OR gardener)${loc} site:nextdoor.co.uk -site:nextdoor.co.uk/pages`,
+        // Reddit — direct linkable posts
         `("looking for" OR "can anyone recommend" OR "need a") (plumber OR electrician OR builder OR cleaner OR gardener)${loc} site:reddit.com`,
+        // Mumsnet — direct thread links
         `("looking for" OR "can anyone recommend" OR "need a") (plumber OR electrician OR builder OR decorator OR gardener)${loc} site:mumsnet.com`,
-        // Unrestricted — catches Facebook public posts and anything else Google ranks highly
-        `("looking for" OR "can anyone recommend" OR "need a") (plumber OR electrician OR builder OR cleaner OR gardener)${loc} -"we offer" -"our services" -"get a quote from us"`,
-        `("looking for" OR "need a") (roofer OR plasterer OR tiler OR handyman OR carer OR removals)${loc} -"we offer" -"our services"`,
+        // Gumtree services wanted
+        `("looking for" OR "need a") (plumber OR electrician OR builder OR cleaner OR decorator)${loc} site:gumtree.com`,
+        // Unrestricted #1 — Google top results excluding Nextdoor (catches Facebook etc)
+        `("looking for" OR "can anyone recommend" OR "need a") (plumber OR electrician OR builder OR cleaner OR gardener)${loc} -"we offer" -"our services" -"get a quote from us" -site:nextdoor.co.uk`,
+        // Unrestricted #2 — wider trades
+        `("looking for" OR "need a") (roofer OR plasterer OR tiler OR handyman OR carer OR removals)${loc} -"we offer" -"our services" -site:nextdoor.co.uk`,
       ];
     } else {
       tradeTerms = isJob ? (JOB_TERMS[trade] || [trade + ' wanted']) : (TRADE_TERMS[trade] || [trade]);
