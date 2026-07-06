@@ -1,71 +1,82 @@
 /**
- * APTO Pro — Lead Scanner v4
- * Runs multiple targeted searches across proven community sources
- * Uses site-specific URL patterns to avoid business listing pages
+ * APTO Pro — Lead Scanner v5
+ * Fixes: num=10, candidates=30, broader intents, looser Claude filter,
+ * retry on zero genuine leads (not just zero results), expanded phrase list
  */
 
 const TRADE_TERMS = {
-  plumbing:        ['plumber', 'plumbing', 'boiler', 'leak', 'burst pipe'],
-  electrical:      ['electrician', 'electrical', 'electrics', 'fuse box', 'rewire'],
-  decorating:      ['decorator', 'painter', 'painting', 'decorating'],
-  gardening:       ['gardener', 'gardening', 'garden', 'landscaper', 'lawn'],
-  building:        ['builder', 'building work', 'extension', 'loft conversion'],
-  'dog-grooming':  ['dog groomer', 'dog grooming', 'pet grooming'],
-  cleaning:        ['cleaner', 'cleaning', 'domestic clean', 'end of tenancy'],
-  removals:        ['removal', 'removals', 'man and van', 'moving house'],
-  hvac:            ['boiler engineer', 'gas engineer', 'central heating', 'air conditioning'],
-  locksmith:       ['locksmith', 'locked out', 'lock change'],
-  catering:        ['caterer', 'catering', 'wedding catering'],
-  photography:     ['photographer', 'photography'],
-  'windows-doors': ['window fitter', 'double glazing', 'UPVC windows'],
-  hairdressing:    ['hairdresser', 'mobile hairdresser', 'hair stylist'],
-  general:         ['handyman', 'odd jobs', 'home repairs'],
-  carer:           ['carer', 'care worker', 'home help'],
-  clearance:       ['house clearance', 'rubbish removal', 'garden clearance'],
-  roofing:         ['roofer', 'roofing', 'roof repair'],
-  plastering:      ['plasterer', 'plastering'],
-  tiling:          ['tiler', 'tiling', 'tile fitting'],
+  plumbing:        ['plumber', 'plumbing', 'boiler', 'leak', 'burst pipe', 'no hot water', 'heating'],
+  electrical:      ['electrician', 'electrical', 'electrics', 'fuse box', 'rewire', 'power'],
+  decorating:      ['decorator', 'painter', 'painting', 'decorating', 'wallpaper', 'paint job'],
+  gardening:       ['gardener', 'gardening', 'garden', 'landscaper', 'lawn', 'hedge', 'grass'],
+  building:        ['builder', 'building work', 'extension', 'loft conversion', 'renovation', 'brickwork'],
+  'dog-grooming':  ['dog groomer', 'dog grooming', 'pet grooming', 'dog wash'],
+  cleaning:        ['cleaner', 'cleaning', 'domestic clean', 'end of tenancy', 'carpet clean', 'house clean'],
+  removals:        ['removal', 'removals', 'man and van', 'moving house', 'house move', 'van hire'],
+  hvac:            ['boiler engineer', 'gas engineer', 'central heating', 'air conditioning', 'boiler service', 'boiler repair'],
+  locksmith:       ['locksmith', 'locked out', 'lock change', 'new locks'],
+  catering:        ['caterer', 'catering', 'wedding catering', 'event catering', 'buffet'],
+  photography:     ['photographer', 'photography', 'wedding photographer', 'event photographer'],
+  'windows-doors': ['window fitter', 'double glazing', 'UPVC windows', 'new windows', 'bifold doors'],
+  hairdressing:    ['hairdresser', 'mobile hairdresser', 'hair stylist', 'haircut at home'],
+  general:         ['handyman', 'odd jobs', 'home repairs', 'odd job man', 'DIY help'],
+  carer:           ['carer', 'care worker', 'home help', 'elderly care', 'personal care'],
+  clearance:       ['house clearance', 'rubbish removal', 'garden clearance', 'waste removal', 'junk removal'],
+  roofing:         ['roofer', 'roofing', 'roof repair', 'roof leak', 'flat roof', 'guttering'],
+  plastering:      ['plasterer', 'plastering', 'skim coat', 'ceiling repair', 'plaster crack'],
+  tiling:          ['tiler', 'tiling', 'tile fitting', 'bathroom tiles', 'kitchen tiles'],
 };
 
 const JOB_TERMS = {
-  plumbing:        ['plumber wanted', 'plumber needed', 'subcontractor plumber'],
+  plumbing:        ['plumber wanted', 'plumber needed', 'subcontractor plumber', 'self employed plumber'],
   electrical:      ['electrician wanted', 'electrician needed', 'subcontractor electrician'],
-  decorating:      ['decorator wanted', 'painter wanted'],
-  gardening:       ['gardener wanted', 'landscaper wanted'],
+  decorating:      ['decorator wanted', 'painter wanted', 'decorator needed'],
+  gardening:       ['gardener wanted', 'landscaper wanted', 'gardener needed'],
   building:        ['builder wanted', 'builder needed', 'subcontractor builder'],
-  'dog-grooming':  ['dog groomer wanted'],
-  cleaning:        ['cleaner wanted', 'cleaner needed'],
-  removals:        ['removal driver wanted', 'man and van wanted'],
-  hvac:            ['gas engineer wanted', 'heating engineer wanted'],
-  locksmith:       ['locksmith wanted'],
-  catering:        ['caterer wanted', 'catering staff wanted'],
-  photography:     ['photographer wanted'],
+  'dog-grooming':  ['dog groomer wanted', 'groomer needed'],
+  cleaning:        ['cleaner wanted', 'cleaner needed', 'cleaning staff wanted'],
+  removals:        ['removal driver wanted', 'man and van wanted', 'movers needed'],
+  hvac:            ['gas engineer wanted', 'heating engineer wanted', 'boiler engineer needed'],
+  locksmith:       ['locksmith wanted', 'locksmith needed'],
+  catering:        ['caterer wanted', 'catering staff wanted', 'chef wanted'],
+  photography:     ['photographer wanted', 'photographer needed'],
   'windows-doors': ['window fitter wanted', 'glazier wanted'],
   hairdressing:    ['hairdresser wanted', 'stylist wanted'],
-  general:         ['handyman wanted', 'odd job man wanted'],
-  carer:           ['carer wanted', 'care worker wanted'],
+  general:         ['handyman wanted', 'odd job man wanted', 'labourer wanted'],
+  carer:           ['carer wanted', 'care worker wanted', 'home help wanted'],
   clearance:       ['clearance driver wanted', 'rubbish removal driver wanted'],
-  roofing:         ['roofer wanted', 'roofing subcontractor'],
-  plastering:      ['plasterer wanted'],
-  tiling:          ['tiler wanted'],
+  roofing:         ['roofer wanted', 'roofing subcontractor', 'roofer needed'],
+  plastering:      ['plasterer wanted', 'plasterer needed'],
+  tiling:          ['tiler wanted', 'tiler needed'],
 };
 
-// Intent phrases that signal a person seeking help (not offering it)
+// Broad intent phrases — covers how real people actually phrase requests
 const SEEK_INTENTS = [
-  'looking for a', 'can anyone recommend', 'need a', 'need someone',
-  'after a', 'recommendations please', 'anyone know a good',
-  'does anyone know', 'who can recommend', 'recommendation for a',
-  'can someone recommend', 'help wanted'
+  'looking for a',
+  'can anyone recommend',
+  'need a',
+  'after a',
+  'recommendations please',
+  'anyone know a good',
+  'does anyone know',
+  'any recommendations for',
+  'looking to get',
+  'need someone to',
+  'who can',
+  'recommendation for',
+  'can someone recommend',
+  'help wanted',
+  'looking for someone',
+  'need help with',
+  'getting quotes for',
+  'any good',
 ];
 
-// Build search queries — one per source type for diversity
-function buildQueries(tradeTerms, seekIntents, location, isJob) {
-  const loc = location ? ` "${location}"` : '';
+function buildQueries(tradeTerms, location, isJob) {
+  const loc   = location ? ` "${location}"` : '';
   const term  = tradeTerms[0];
-  const term2 = tradeTerms[1] || tradeTerms[0];
-  const intent  = seekIntents[0];
-  const intent2 = seekIntents[1];
-  const intent3 = seekIntents[2];
+  const term2 = tradeTerms[1] || term;
+  const term3 = tradeTerms[2] || term;
 
   if (isJob) {
     return [
@@ -76,29 +87,132 @@ function buildQueries(tradeTerms, seekIntents, location, isJob) {
     ];
   }
 
-  // NOTE: Nextdoor excluded — it only gives neighbourhood aggregate pages,
-  // not direct post URLs. Reddit, Mumsnet, Gumtree all give direct linkable posts.
+  // Use varied intent phrases across queries for maximum coverage
   return [
-    // Reddit — direct thread links, UK subreddits
-    `"${intent}" "${term}"${loc} site:reddit.com`,
-    // Mumsnet — direct thread links
-    `"${intent}" "${term}"${loc} site:mumsnet.com`,
-    // Gumtree services wanted — direct listing links
-    `"${intent}" "${term2}"${loc} site:gumtree.com`,
-    // MoneySavingExpert forums — direct thread links
-    `"${intent}" "${term}"${loc} site:forums.moneysavingexpert.com`,
-    // Unrestricted #1 — Google's top results (often includes Facebook public posts)
-    `"${intent}" "${term}"${loc} -"we offer" -"our services" -"call us today" -"get a quote from us" -"we specialise in" -site:nextdoor.co.uk`,
-    // Unrestricted #2 — different intent phrase
-    `"${intent2}" "${term}"${loc} -"we offer" -"our services" -"our team" -site:nextdoor.co.uk`,
-    // Unrestricted #3 — third intent phrase, catches different phrasing
-    `"${intent3}" "${term2}"${loc} -"we offer" -"our services" -site:nextdoor.co.uk`,
+    // Reddit — most consistent source of real posts
+    `("looking for a" OR "can anyone recommend" OR "need a" OR "anyone know a good") "${term}"${loc} site:reddit.com`,
+    // Mumsnet — great for domestic trades
+    `("looking for a" OR "can anyone recommend" OR "any recommendations" OR "does anyone know") "${term}"${loc} site:mumsnet.com`,
+    // Gumtree services wanted
+    `("looking for" OR "need a" OR "wanted") "${term}"${loc} site:gumtree.com`,
+    // MSE forums
+    `("looking for a" OR "can anyone recommend" OR "need a") "${term}"${loc} site:forums.moneysavingexpert.com`,
+    // Unrestricted #1 — Google top results, varied intent phrases, neg business signals
+    `("looking for a" OR "can anyone recommend" OR "need a" OR "recommendations please") "${term}"${loc} -"we offer" -"our services" -"call us today" -"get a quote from us" -site:nextdoor.co.uk`,
+    // Unrestricted #2 — different phrasing catches different posts
+    `("after a" OR "looking to get" OR "need someone to" OR "any good" OR "getting quotes") "${term2}"${loc} -"we offer" -"our services" -"our team" -site:nextdoor.co.uk`,
+    // Unrestricted #3 — third trade term, catches edge cases
+    `("does anyone know" OR "who can" OR "looking for someone" OR "need help with") "${term3}"${loc} -"we offer" -"our services" -site:nextdoor.co.uk`,
   ];
+}
+
+async function runSearch(query, tbs, serpKey, num) {
+  const serpUrl = new URL('https://serpapi.com/search.json');
+  serpUrl.searchParams.set('q',       query);
+  serpUrl.searchParams.set('api_key', serpKey);
+  serpUrl.searchParams.set('num',     String(num));
+  serpUrl.searchParams.set('hl',      'en');
+  serpUrl.searchParams.set('gl',      'uk');
+  if (tbs) serpUrl.searchParams.set('tbs', tbs);
+
+  console.log(`Searching [num=${num}]:`, query.slice(0, 100));
+  const res  = await fetch(serpUrl.toString());
+  const data = await res.json();
+
+  if (data.error) {
+    console.error('SerpAPI error:', data.error);
+    return [];
+  }
+  const items = data.organic_results || [];
+  console.log(`  → ${items.length} results`);
+  return items;
+}
+
+function dedup(items) {
+  const seen = new Set();
+  return items.filter(item => {
+    if (seen.has(item.link)) return false;
+    seen.add(item.link);
+    return true;
+  });
+}
+
+async function runClaude(candidates, tradeLabel, areaContext, isJob, anthropicKey) {
+  const prompt = isJob
+    ? `You are APTO Pro. From these search results find genuine job or subcontract opportunities for a self-employed ${tradeLabel} working ${areaContext}.
+
+Include: Posts where a homeowner, landlord, business, or contractor needs a tradesperson for a specific job.
+Include commercial customers too — cafes, offices, landlords, letting agents are all valid clients.
+Exclude: Businesses advertising their own services. Recruitment agencies for employed roles. Completely unrelated content.
+
+Return ONLY a valid JSON array. No explanation, no markdown, no extra text.
+If no genuine leads: []
+
+[{"isGenuineLead":true,"score":80,"headline":"brief job description","urgency":"Normal","detectedLocation":"Brighton","detectedTrade":"Plumbing","reply":"professional reply under 40 words","sourceUrl":"https://example.com","sourceName":"reddit.com"}]
+
+RESULTS:
+${JSON.stringify(candidates)}`
+
+    : `You are APTO Pro Lead Filter. From these search results find genuine posts from people SEEKING a ${tradeLabel} service ${areaContext}.
+
+Include BROADLY — all of these are valid leads:
+- Homeowners, tenants, landlords, letting agents, businesses, cafes, offices, schools asking for trade help
+- Anyone asking for recommendations, quotes, or someone to do a job
+- Commercial customers are fine — a cafe needing a plumber is a real lead
+- Phrases like "can anyone recommend", "looking for", "need a", "any good", "getting quotes", "after a reliable"
+
+Exclude only clear non-leads:
+- Tradespeople advertising their own services ("we offer", "our services", "call us", "get a quote from us")
+- Pure directory listings with no human request
+- Completely irrelevant content unrelated to the trade
+
+When in doubt, INCLUDE it — it is better to show a borderline lead than miss a real one.
+
+Return ONLY a valid JSON array. No explanation, no markdown, no extra text.
+If no genuine leads: []
+
+[{"isGenuineLead":true,"score":80,"headline":"what they need in 10 words","urgency":"High","detectedLocation":"Brighton","detectedTrade":"Plumbing","reply":"friendly reply as tradesperson under 40 words","sourceUrl":"https://example.com","sourceName":"reddit.com"}]
+
+RESULTS:
+${JSON.stringify(candidates)}`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type':    'application/json',
+      'x-api-key':       anthropicKey,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model:      'claude-sonnet-4-6',
+      max_tokens: 4000,
+      messages:   [{ role: 'user', content: prompt }]
+    })
+  });
+
+  const data    = await res.json();
+  const rawText = data.content?.map(b => b.text || '').join('') || '[]';
+
+  // Robust JSON extraction
+  try {
+    const cleaned = rawText.replace(/```json|```/g, '').trim();
+    return JSON.parse(cleaned);
+  } catch {
+    try {
+      const start = rawText.indexOf('[');
+      const end   = rawText.lastIndexOf(']');
+      if (start !== -1 && end > start) {
+        return JSON.parse(rawText.slice(start, end + 1));
+      }
+    } catch {}
+    console.error('Claude JSON parse failed. Raw:', rawText.slice(0, 300));
+    return [];
+  }
 }
 
 exports.handler = async (event) => {
   const headers = {
-    'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGIN || '*',
+    'Access-Control-Allow-Origin':  process.env.ALLOWED_ORIGIN || '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type': 'application/json'
   };
@@ -112,160 +226,102 @@ exports.handler = async (event) => {
     const location   = mode === 'national' ? '' : (params.location || '');
     const searchType = params.searchType || 'customer';
     const days       = params.days       || '5';
+    const isJob      = searchType === 'jobs';
+    const isAll      = trade === 'all';
+    const tradeLabel = isAll ? 'any trade' : trade;
     const tbs        = days && days !== '0' ? `qdr:d${days}` : '';
+    const areaContext = mode === 'national' ? 'anywhere in the UK' : `in or near ${location || 'the UK'}`;
+    const serpKey    = process.env.SERPAPI_KEY;
+    const claudeKey  = process.env.ANTHROPIC_API_KEY;
 
-    const isAllTrades = trade === 'all';
-    const isJob       = searchType === 'jobs';
-    const tradeLabel  = isAllTrades ? 'any trade' : trade;
+    // Build queries
+    let queries;
+    const loc = location ? ` "${location}"` : '';
 
-    // Get trade terms
-    let tradeTerms, queries;
-
-    if (isAllTrades) {
-      const loc = location ? ` "${location}"` : '';
+    if (isAll) {
       queries = isJob ? [
         `("tradesperson wanted" OR "subcontractor needed" OR "tradesman wanted")${loc} site:reddit.com`,
         `("tradesperson wanted" OR "tradesman needed")${loc} site:gumtree.com`,
-        `("tradesperson wanted" OR "tradesman needed")${loc}`,
+        `("tradesperson wanted" OR "tradesman needed")${loc} -"we offer" -"our services"`,
       ] : [
-        // Reddit — direct linkable posts
-        `("looking for" OR "can anyone recommend" OR "need a") (plumber OR electrician OR builder OR cleaner OR gardener)${loc} site:reddit.com`,
-        // Mumsnet — direct thread links
-        `("looking for" OR "can anyone recommend" OR "need a") (plumber OR electrician OR builder OR decorator OR gardener)${loc} site:mumsnet.com`,
-        // Gumtree services wanted
+        `("looking for" OR "can anyone recommend" OR "need a" OR "any recommendations") (plumber OR electrician OR builder OR cleaner OR gardener OR decorator)${loc} site:reddit.com`,
+        `("looking for" OR "can anyone recommend" OR "need a") (plumber OR electrician OR builder OR cleaner OR decorator OR gardener)${loc} site:mumsnet.com`,
         `("looking for" OR "need a") (plumber OR electrician OR builder OR cleaner OR decorator)${loc} site:gumtree.com`,
-        // Unrestricted #1 — Google top results excluding Nextdoor (catches Facebook etc)
-        `("looking for" OR "can anyone recommend" OR "need a") (plumber OR electrician OR builder OR cleaner OR gardener)${loc} -"we offer" -"our services" -"get a quote from us" -site:nextdoor.co.uk`,
-        // Unrestricted #2 — wider trades
-        `("looking for" OR "need a") (roofer OR plasterer OR tiler OR handyman OR carer OR removals)${loc} -"we offer" -"our services" -site:nextdoor.co.uk`,
+        `("looking for" OR "can anyone recommend" OR "need a" OR "any recommendations") (plumber OR electrician OR builder OR cleaner OR gardener)${loc} -"we offer" -"our services" -site:nextdoor.co.uk`,
+        `("after a" OR "looking to get" OR "getting quotes" OR "any good") (roofer OR plasterer OR tiler OR handyman OR carer OR removals)${loc} -"we offer" -"our services" -site:nextdoor.co.uk`,
       ];
     } else {
-      tradeTerms = isJob ? (JOB_TERMS[trade] || [trade + ' wanted']) : (TRADE_TERMS[trade] || [trade]);
-      queries    = buildQueries(tradeTerms, SEEK_INTENTS, location, isJob);
+      const tradeTerms = isJob ? (JOB_TERMS[trade] || [trade + ' wanted']) : (TRADE_TERMS[trade] || [trade]);
+      queries = buildQueries(tradeTerms, location, isJob);
     }
 
-    // Run each query and collect ALL results from ALL sources
+    // Run ALL queries with num=10 and collect everything
     const allResults = [];
-    const usedQueries = [];
-
-    for (const query of queries) {
-      const serpUrl = new URL('https://serpapi.com/search.json');
-      serpUrl.searchParams.set('q',       query);
-      serpUrl.searchParams.set('api_key', process.env.SERPAPI_KEY);
-      serpUrl.searchParams.set('num',     '5'); // fewer per query, more queries = more diversity
-      serpUrl.searchParams.set('hl',      'en');
-      serpUrl.searchParams.set('gl',      'uk');
-      if (tbs) serpUrl.searchParams.set('tbs', tbs);
-
-      console.log('Query:', query.slice(0, 100));
-
-      const res  = await fetch(serpUrl.toString());
-      const data = await res.json();
-
-      if (data.error) {
-        console.error('SerpAPI error:', data.error);
-        continue;
-      }
-
-      const items = data.organic_results || [];
-      console.log(`  → ${items.length} results`);
-
-      if (items.length > 0) {
-        allResults.push(...items);
-        usedQueries.push(query.slice(0, 60));
-      }
+    for (const q of queries) {
+      const items = await runSearch(q, tbs, serpKey, 10);
+      allResults.push(...items);
     }
 
-    // Deduplicate by URL
-    const seen   = new Set();
-    const unique = allResults.filter(item => {
-      if (seen.has(item.link)) return false;
-      seen.add(item.link);
-      return true;
-    });
+    let unique = dedup(allResults);
+    console.log(`Total unique results: ${unique.length}`);
 
-    // Retry without date filter if nothing found at all
+    // If still nothing, retry without date filter
     if (unique.length === 0 && tbs) {
-      console.log('No results — retrying without date filter');
-      const q       = queries[0];
-      const serpUrl = `https://serpapi.com/search.json?q=${encodeURIComponent(q)}&api_key=${process.env.SERPAPI_KEY}&num=8&hl=en&gl=uk`;
-      const res     = await fetch(serpUrl);
-      const data    = await res.json();
-      if (data.organic_results) unique.push(...data.organic_results);
+      console.log('No results at all — retrying without date filter');
+      for (const q of queries.slice(0, 3)) {
+        const items = await runSearch(q, '', serpKey, 10);
+        allResults.push(...items);
+      }
+      unique = dedup(allResults);
     }
 
     if (unique.length === 0) {
-      return { statusCode: 200, headers, body: JSON.stringify({ leads: [], totalSearched: 0, message: 'No results found — try UK-wide or a different time range' }) };
+      return {
+        statusCode: 200, headers,
+        body: JSON.stringify({ leads: [], totalSearched: 0, message: 'No results found — try UK-wide or Any time' })
+      };
     }
 
-    // Claude analysis — strict filtering
-    const candidates = unique.slice(0, 10).map(item => ({
+    // Send up to 30 candidates to Claude (was 10 before)
+    const candidates = unique.slice(0, 30).map(item => ({
       title:   item.title,
       snippet: item.snippet,
       link:    item.link,
       source:  (() => { try { return new URL(item.link).hostname; } catch { return item.link; } })()
     }));
 
-    const areaContext = mode === 'national' ? 'anywhere in the UK' : `in or near ${location || 'UK'}`;
+    // First Claude pass
+    let analysed     = await runClaude(candidates, tradeLabel, areaContext, isJob, claudeKey);
+    let genuineLeads = Array.isArray(analysed) ? analysed.filter(l => l && l.isGenuineLead) : [];
 
-    const prompt = isJob
-      ? `You are APTO Pro. From these search results find genuine job/subcontract opportunities for a self-employed ${tradeLabel} working ${areaContext}.
-
-INCLUDE: Posts where someone needs a tradesperson hired for a specific job.
-EXCLUDE: Businesses advertising their own services. Recruitment agencies. Unrelated content.
-
-JSON array only — no markdown:
-[{"isGenuineLead":true,"score":80,"headline":"brief job description","urgency":"Normal","detectedLocation":"town name","detectedTrade":"trade","reply":"professional reply under 40 words","sourceUrl":"url","sourceName":"site"}]`
-
-      : `You are APTO Pro Lead Filter. From these search results find genuine posts from MEMBERS OF THE PUBLIC who are LOOKING FOR a ${tradeLabel} ${areaContext}.
-
-A genuine lead is a post where a real person asks for recommendations, needs someone for a job, or is seeking a service.
-
-INCLUDE: "looking for a plumber", "can anyone recommend", "need someone to", "after a reliable", "does anyone know a good"
-EXCLUDE ALL of the following — set isGenuineLead:false:
-• Any business or tradesperson advertising THEIR OWN services
-• Business pages, company profiles, directories
-• News articles, blog posts, how-to guides
-• Any page where a tradesperson is describing what THEY offer
-• Nextdoor /pages/ business profiles
-• If a snippet says "we offer", "our services", "call us", "get a quote from us" — EXCLUDE
-
-JSON array only — no markdown:
-[{"isGenuineLead":true,"score":80,"headline":"what they need in 10 words","urgency":"High","detectedLocation":"town name","detectedTrade":"trade name","reply":"reply as the tradesperson, under 40 words, friendly and local","sourceUrl":"url","sourceName":"site name"}]
-
-RESULTS:
-${JSON.stringify(candidates)}`;
-
-    const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 2000,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-
-    const claudeData   = await claudeRes.json();
-    const rawText      = claudeData.content?.map(b => b.text || '').join('') || '[]';
-    const cleaned      = rawText.replace(/```json|```/g, '').trim();
-    const analysed     = JSON.parse(cleaned);
-    const genuineLeads = analysed.filter(l => l.isGenuineLead);
+    // Fix 7: Retry without date filter if Claude found nothing genuine
+    if (genuineLeads.length === 0 && tbs) {
+      console.log('Claude found nothing genuine — retrying without date filter');
+      const widerResults = [];
+      for (const q of queries.slice(0, 4)) {
+        const items = await runSearch(q, '', serpKey, 10);
+        widerResults.push(...items);
+      }
+      const widerUnique = dedup([...allResults, ...widerResults]);
+      const widerCandidates = widerUnique.slice(0, 30).map(item => ({
+        title:   item.title,
+        snippet: item.snippet,
+        link:    item.link,
+        source:  (() => { try { return new URL(item.link).hostname; } catch { return item.link; } })()
+      }));
+      analysed     = await runClaude(widerCandidates, tradeLabel, areaContext, isJob, claudeKey);
+      genuineLeads = Array.isArray(analysed) ? analysed.filter(l => l && l.isGenuineLead) : [];
+    }
 
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
-        leads:           genuineLeads,
-        totalSearched:   candidates.length,
-        totalGenuine:    genuineLeads.length,
+        leads:         genuineLeads,
+        totalSearched: candidates.length,
+        totalGenuine:  genuineLeads.length,
         trade, location, searchType,
-        sourcesSearched: usedQueries.length,
-        daysSearched:    days
+        daysSearched:  days
       })
     };
 
