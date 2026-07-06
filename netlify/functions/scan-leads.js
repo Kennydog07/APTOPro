@@ -17,30 +17,31 @@
  *      previously only allTerms[0]/[1] were ever used, so "all trades" mode
  *      only searched 2 of 8 trades and single-trade searches used 2 of up to
  *      6 synonyms.
- *   #3 The `radius` parameter (previously collected from the UI and silently
- *      ignored) now actually affects the query: wide radii relax the location
- *      match from a strict quoted phrase to an unquoted relevance signal, so
- *      posts about nearby towns aren't excluded just for not saying the exact
- *      search town. This is a heuristic, not true geo-distance filtering —
- *      real postcode/distance data is still the correct long-term fix.
+ *   #3 REVERTED after production testing. Originally: wide radii relaxed the
+ *      location match from a strict quoted phrase to an unquoted relevance
+ *      signal. In practice Google's unquoted matching isn't geo-aware — it
+ *      just makes the word optional/fuzzy — and this let same-named towns in
+ *      other countries through (e.g. "Brighton" started surfacing Brighton,
+ *      USA posts). Reverted to always-quoted location. `radius` is still
+ *      accepted/reported but no longer changes the query. Real radius-aware
+ *      search needs postcode/distance data, not a query-string heuristic.
  *   #4 Collector results are merged round-robin (interleave()) instead of
  *      simple concatenation, so the 30-candidate cap doesn't systematically
  *      starve whichever collectors happen to run later in the array. Claude's
  *      output is also sorted by score (descending) before being returned, so
  *      the best leads render first instead of in whatever order the model
  *      happened to list them.
- *   #5 Promotional-phrase exclusions (-"we offer" -"our services" etc.) have
- *      been removed from the SerpAPI queries. They were silently discarding
- *      genuine leads that merely quoted a business ("they said 'we offer
- *      same-day' but I want a second opinion") before Claude ever saw them.
- *      Claude's prompt already excludes self-promotional posts semantically —
- *      that's a better place for this judgement call than a blunt keyword
- *      match. (-site:nextdoor.co.uk is kept: that's a domain-access
- *      constraint, not a content filter — Nextdoor links aren't usable by
- *      logged-out users anyway.)
+ *   #5 REVERTED after production testing. Originally: removed the
+ *      promotional-phrase exclusions (-"we offer" -"our services" etc.) so
+ *      Claude would filter self-promotion semantically instead. In practice
+ *      this flooded the raw candidate pool with company adverts that crowded
+ *      genuine leads out of the fixed 30-candidate cap — Claude's semantic
+ *      filtering alone wasn't a strong enough substitute. Restored the
+ *      keyword exclusions.
  *   #6 All outbound fetches (SerpAPI + Claude) now have a timeout via
  *      AbortController, so one hung upstream request can no longer stall the
- *      whole function indefinitely.
+ *      whole function indefinitely. SERP_TIMEOUT_MS raised 10s -> 20s after
+ *      the first version cut off legitimately-slower SerpAPI/Bing responses.
  *
  * DEBUG INSTRUMENTATION (added post-v7, no lead logic changed):
  *   Pass ?debug=true to get a `debug` block in the JSON response showing,
@@ -276,11 +277,16 @@ exports.handler = async (event) => {
     const areaCtx    = mode === 'national' ? 'anywhere in the UK' : `in or near ${location || 'the UK'}`;
     const serpKey    = process.env.SERPAPI_KEY;
 
-    // Wide radius = treat location as a relevance signal (unquoted) rather than
-    // a strict phrase requirement, so nearby-but-differently-named towns aren't
-    // excluded outright. Narrow radius keeps the original strict quoted match.
-    const looseLocation = mode === 'local' && radius >= LOOSE_RADIUS_THRESHOLD_MILES;
-    const loc = location ? (looseLocation ? ` ${location}` : ` "${location}"`) : '';
+    // REVERTED: previously (v7 #3) wide radii dropped the quotes around location
+    // to "loosen" the match. In production this let unrelated same-named towns in
+    // other countries through (e.g. searching "Brighton" started surfacing
+    // Brighton, USA posts) — Google's unquoted term matching is not geo-aware,
+    // it just makes the word optional/fuzzy, which is much worse than the
+    // narrow-recall problem it was meant to fix. Reverted to always-quoted.
+    // `radius` is still accepted and reported in `debug` for now; true
+    // radius-aware search needs real postcode/distance data, not a query hack.
+    const looseLocation = false;
+    const loc = location ? ` "${location}"` : '';
 
     // Build trade-specific terms
     const tradeTermList = isJob
@@ -348,19 +354,23 @@ exports.handler = async (event) => {
         q: `("${i2}" OR "${i1}") ${term}${loc} (site:forums.moneysavingexpert.com OR site:diychatroom.com OR site:buildhub.org.uk OR site:pistonheads.com)`,
         num: 10, hl: 'en', gl: 'uk', tbs
       }});
+      // REVERTED (v7 #5 removed the promotional-phrase exclusions here; production
+      // testing showed the raw pool got flooded with company adverts, and Claude's
+      // semantic filtering alone wasn't enough to keep them from crowding out
+      // genuine leads in the fixed 30-candidate cap). Restored below.
       collectorDefs.push({ label: 'google-open', params: {
         engine: 'google',
-        q: `("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} -site:nextdoor.co.uk`,
+        q: `("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} -"we offer" -"our services" -"call us today" -"get a quote from us" -"we specialise" -site:nextdoor.co.uk`,
         num: 10, hl: 'en', gl: 'uk', tbs
       }});
       collectorDefs.push({ label: 'google-open2', params: {
         engine: 'google',
-        q: `("${i4}" OR "${i5}" OR "need someone to" OR "any good" OR "getting quotes") ${term2}${loc} -site:nextdoor.co.uk`,
+        q: `("${i4}" OR "${i5}" OR "need someone to" OR "any good" OR "getting quotes") ${term2}${loc} -"we offer" -"our services" -site:nextdoor.co.uk`,
         num: 10, hl: 'en', gl: 'uk', tbs
       }});
       collectorDefs.push({ label: 'bing', params: {
         engine: 'bing',
-        q: `("${i1}" OR "${i2}" OR "${i3}") ${term}${loc ? loc : ' UK'}`,
+        q: `("${i1}" OR "${i2}" OR "${i3}") ${term}${loc ? loc : ' UK'} -"we offer" -"our services"`,
         count: 10, mkt: 'en-GB', freshness: tbs ? 'Week' : undefined
       }});
       collectorDefs.push({ label: 'google-news', params: {
@@ -376,7 +386,7 @@ exports.handler = async (event) => {
         engine: 'google', q: `${term}${loc} site:gumtree.com`, num: 10, hl: 'en', gl: 'uk', tbs
       }});
       collectorDefs.push({ label: 'google-open', params: {
-        engine: 'google', q: `${term2}${loc}`, num: 10, hl: 'en', gl: 'uk', tbs
+        engine: 'google', q: `${term2}${loc} -"we offer" -"our services"`, num: 10, hl: 'en', gl: 'uk', tbs
       }});
       collectorDefs.push({ label: 'bing', params: {
         engine: 'bing', q: `${term}${loc ? loc : ' UK'}`, count: 10, mkt: 'en-GB'
@@ -413,7 +423,7 @@ exports.handler = async (event) => {
       debug.retryNoDateFilter.ran = true;
       const retryDefs = [
         { label: 'google-reddit-retry', params: { engine:'google', q:`("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} site:reddit.com`, num:10, hl:'en', gl:'uk' } },
-        { label: 'google-open-retry',   params: { engine:'google', q:`("${i1}" OR "${i2}") ${term}${loc}`, num:10, hl:'en', gl:'uk' } },
+        { label: 'google-open-retry',   params: { engine:'google', q:`("${i1}" OR "${i2}") ${term}${loc} -"we offer" -"our services"`, num:10, hl:'en', gl:'uk' } },
         { label: 'bing-retry',          params: { engine:'bing',   q:`("${i1}" OR "${i2}") ${term}${loc ? loc : ' UK'}`, count:10, mkt:'en-GB' } },
       ];
       const { perCollectorResults: retryNorm, debugEntries: retryDebug } = await runCollectorBatch(retryDefs, serpKey);
@@ -521,7 +531,7 @@ ${JSON.stringify(candidates)}`;
       debug.claudeEmptyRetry.ran = true;
       const widerDefs = [
         { label: 'google-reddit-wider', params: { engine:'google', q:`("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} site:reddit.com`, num:10, hl:'en', gl:'uk' } },
-        { label: 'google-open-wider',   params: { engine:'google', q:`("${i1}" OR "${i2}") ${term}${loc}`, num:10, hl:'en', gl:'uk' } },
+        { label: 'google-open-wider',   params: { engine:'google', q:`("${i1}" OR "${i2}") ${term}${loc} -"we offer" -"our services"`, num:10, hl:'en', gl:'uk' } },
         { label: 'bing-wider',          params: { engine:'bing',   q:`${term}${loc ? loc:' UK'} "${i1}" OR "${i2}"`, count:10, mkt:'en-GB' } },
       ];
       const { perCollectorResults: widerNorm, debugEntries: widerDebug } = await runCollectorBatch(widerDefs, serpKey);
