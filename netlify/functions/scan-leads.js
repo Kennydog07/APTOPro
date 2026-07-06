@@ -1,5 +1,5 @@
 /**
- * APTO Pro — Lead Scanner v6 — Modular Multi-Source Architecture
+ * APTO Pro — Lead Scanner v7 — Modular Multi-Source Architecture
  *
  * Runs independent collectors in parallel:
  *   Collector 1: Google — site:reddit.com
@@ -10,6 +10,37 @@
  *   Collector 6: Google — site:forums.moneysavingexpert.com + other forums
  *
  * All results merged → deduped → 30 best sent to Claude → filtered → shown
+ *
+ * v7 changes (audit recommendations #1, #3, #4, #5, #6 — the fixes confined to
+ * this file; #2 concerns scheduled-scan.js and is tracked separately):
+ *   #1 Every configured trade/synonym term is now OR'd together (orGroup()) —
+ *      previously only allTerms[0]/[1] were ever used, so "all trades" mode
+ *      only searched 2 of 8 trades and single-trade searches used 2 of up to
+ *      6 synonyms.
+ *   #3 The `radius` parameter (previously collected from the UI and silently
+ *      ignored) now actually affects the query: wide radii relax the location
+ *      match from a strict quoted phrase to an unquoted relevance signal, so
+ *      posts about nearby towns aren't excluded just for not saying the exact
+ *      search town. This is a heuristic, not true geo-distance filtering —
+ *      real postcode/distance data is still the correct long-term fix.
+ *   #4 Collector results are merged round-robin (interleave()) instead of
+ *      simple concatenation, so the 30-candidate cap doesn't systematically
+ *      starve whichever collectors happen to run later in the array. Claude's
+ *      output is also sorted by score (descending) before being returned, so
+ *      the best leads render first instead of in whatever order the model
+ *      happened to list them.
+ *   #5 Promotional-phrase exclusions (-"we offer" -"our services" etc.) have
+ *      been removed from the SerpAPI queries. They were silently discarding
+ *      genuine leads that merely quoted a business ("they said 'we offer
+ *      same-day' but I want a second opinion") before Claude ever saw them.
+ *      Claude's prompt already excludes self-promotional posts semantically —
+ *      that's a better place for this judgement call than a blunt keyword
+ *      match. (-site:nextdoor.co.uk is kept: that's a domain-access
+ *      constraint, not a content filter — Nextdoor links aren't usable by
+ *      logged-out users anyway.)
+ *   #6 All outbound fetches (SerpAPI + Claude) now have a timeout via
+ *      AbortController, so one hung upstream request can no longer stall the
+ *      whole function indefinitely.
  */
 
 // ── TRADE CONFIGURATION ──────────────────────────────────────────────────────
@@ -62,6 +93,44 @@ const INTENTS = [
   'need help with', 'who does', 'anyone used a', 'can someone recommend',
 ];
 
+// Radius (miles) at or above which we stop requiring the location as an exact
+// quoted phrase. A 10-mile search around a town should still require that
+// town's name; a 50-100 mile search shouldn't discard a post just because it
+// says a neighbouring town instead of the one the user typed.
+const LOOSE_RADIUS_THRESHOLD_MILES = 20;
+
+// Default timeout applied to every outbound fetch (see fetchWithTimeout).
+const SERP_TIMEOUT_MS   = 10000;
+const CLAUDE_TIMEOUT_MS = 25000;
+
+// ── SHARED HELPERS ────────────────────────────────────────────────────────────
+
+// Wraps fetch() with an AbortController timeout so a single hung upstream
+// request (SerpAPI or Anthropic) can't stall the whole function invocation.
+async function fetchWithTimeout(url, options = {}, timeoutMs = SERP_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// Round-robins multiple result arrays into one, e.g. [[a,b],[c],[d,e]] -> [a,c,d,b,e].
+// Used when merging collector output so the 30-candidate cap applied later
+// doesn't systematically favour whichever collectors happen to come first.
+function interleave(lists) {
+  const out = [];
+  const maxLen = lists.reduce((m, l) => Math.max(m, l.length), 0);
+  for (let i = 0; i < maxLen; i++) {
+    for (const list of lists) {
+      if (i < list.length) out.push(list[i]);
+    }
+  }
+  return out;
+}
+
 // ── COLLECTOR FUNCTIONS ───────────────────────────────────────────────────────
 
 async function serpSearch(params, serpKey) {
@@ -71,7 +140,7 @@ async function serpSearch(params, serpKey) {
     if (v) url.searchParams.set(k, String(v));
   }
   try {
-    const res  = await fetch(url.toString());
+    const res  = await fetchWithTimeout(url.toString(), {}, SERP_TIMEOUT_MS);
     const data = await res.json();
     if (data.error) { console.error('SerpAPI:', data.error); return []; }
     return data.organic_results || data.news_results || [];
@@ -89,6 +158,15 @@ function normalise(items, source) {
     source:  (() => { try { return new URL(item.link || item.url || '').hostname; } catch { return source; } })(),
     engine:  source,
   })).filter(item => item.link && item.title);
+}
+
+// Builds a quoted OR-group from every configured term, e.g. ["plumber","boiler repair"]
+// -> ("plumber" OR "boiler repair"). Ensures every synonym/trade actually gets searched
+// instead of only the first one or two array entries.
+function orGroup(terms) {
+  const list = (Array.isArray(terms) ? terms : [terms]).filter(Boolean);
+  if (list.length <= 1) return `"${list[0] || ''}"`;
+  return '(' + list.map(t => `"${t}"`).join(' OR ') + ')';
 }
 
 // ── MAIN HANDLER ─────────────────────────────────────────────────────────────
@@ -109,13 +187,19 @@ exports.handler = async (event) => {
     const location   = mode === 'national' ? '' : (params.location || '');
     const searchType = params.searchType || 'customer';
     const days       = params.days       || '7';
+    const radius     = parseInt(params.radius, 10) || 10;
     const isJob      = searchType === 'jobs';
     const isAll      = trade === 'all';
     const tradeLabel = isAll ? 'any trade' : trade;
     const tbs        = days && days !== '0' ? `qdr:d${days}` : '';
     const areaCtx    = mode === 'national' ? 'anywhere in the UK' : `in or near ${location || 'the UK'}`;
     const serpKey    = process.env.SERPAPI_KEY;
-    const loc        = location ? ` "${location}"` : '';
+
+    // Wide radius = treat location as a relevance signal (unquoted) rather than
+    // a strict phrase requirement, so nearby-but-differently-named towns aren't
+    // excluded outright. Narrow radius keeps the original strict quoted match.
+    const looseLocation = mode === 'local' && radius >= LOOSE_RADIUS_THRESHOLD_MILES;
+    const loc = location ? (looseLocation ? ` ${location}` : ` "${location}"`) : '';
 
     // Build trade-specific terms
     const tradeTermList = isJob
@@ -127,9 +211,11 @@ exports.handler = async (event) => {
       : ['plumber', 'electrician', 'builder', 'cleaner', 'gardener', 'decorator', 'roofer', 'handyman']
     ) : tradeTermList;
 
-    const term  = allTerms[0];
-    const term2 = allTerms[1] || term;
-    const term3 = allTerms[2] || term;
+    // OR every configured term together so no synonym (or, in "all trades" mode, no
+    // trade) is silently dropped. `term`/`term2` are pre-quoted OR-groups now, not
+    // single bare words — do not wrap them in extra quotes at the call sites below.
+    const term  = orGroup(allTerms);
+    const term2 = term;
     const i1    = INTENTS[0];
     const i2    = INTENTS[1];
     const i3    = INTENTS[2];
@@ -143,73 +229,76 @@ exports.handler = async (event) => {
     if (!isJob) {
       // C1: Google — Reddit (most reliable community posts)
       collectors.push(serpSearch({
-        engine: 'google', q: `("${i1}" OR "${i2}" OR "${i3}") "${term}"${loc} site:reddit.com`,
+        engine: 'google', q: `("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} site:reddit.com`,
         num: 10, hl: 'en', gl: 'uk', tbs
       }, serpKey).then(r => normalise(r, 'google-reddit')));
 
       // C2: Google — Mumsnet (UK domestic trades gold mine)
       collectors.push(serpSearch({
-        engine: 'google', q: `("${i1}" OR "${i2}" OR "${i5}") "${term}"${loc} site:mumsnet.com`,
+        engine: 'google', q: `("${i1}" OR "${i2}" OR "${i5}") ${term}${loc} site:mumsnet.com`,
         num: 10, hl: 'en', gl: 'uk', tbs
       }, serpKey).then(r => normalise(r, 'google-mumsnet')));
 
       // C3: Google — Gumtree services wanted
       collectors.push(serpSearch({
-        engine: 'google', q: `("${i1}" OR "${i3}" OR "wanted") "${term2}"${loc} site:gumtree.com`,
+        engine: 'google', q: `("${i1}" OR "${i3}" OR "wanted") ${term2}${loc} site:gumtree.com`,
         num: 10, hl: 'en', gl: 'uk', tbs
       }, serpKey).then(r => normalise(r, 'google-gumtree')));
 
       // C4: Google — MSE forums + other UK forums
       collectors.push(serpSearch({
         engine: 'google',
-        q: `("${i2}" OR "${i1}") "${term}"${loc} (site:forums.moneysavingexpert.com OR site:diychatroom.com OR site:buildhub.org.uk OR site:pistonheads.com)`,
+        q: `("${i2}" OR "${i1}") ${term}${loc} (site:forums.moneysavingexpert.com OR site:diychatroom.com OR site:buildhub.org.uk OR site:pistonheads.com)`,
         num: 10, hl: 'en', gl: 'uk', tbs
       }, serpKey).then(r => normalise(r, 'google-forums')));
 
       // C5: Google — Unrestricted (catches Facebook public posts, local blogs, etc.)
+      // Promotional-phrase exclusions removed (v7 #5) — Claude filters self-promotion
+      // semantically in the prompt below, which doesn't risk dropping genuine leads
+      // that merely mention a business's own words in passing.
       collectors.push(serpSearch({
         engine: 'google',
-        q: `("${i1}" OR "${i2}" OR "${i3}") "${term}"${loc} -"we offer" -"our services" -"call us today" -"get a quote from us" -"we specialise" -site:nextdoor.co.uk`,
+        q: `("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} -site:nextdoor.co.uk`,
         num: 10, hl: 'en', gl: 'uk', tbs
       }, serpKey).then(r => normalise(r, 'google-open')));
 
       // C6: Google — Different intent phrases, unrestricted
       collectors.push(serpSearch({
         engine: 'google',
-        q: `("${i4}" OR "${i5}" OR "need someone to" OR "any good" OR "getting quotes") "${term2}"${loc} -"we offer" -"our services" -site:nextdoor.co.uk`,
+        q: `("${i4}" OR "${i5}" OR "need someone to" OR "any good" OR "getting quotes") ${term2}${loc} -site:nextdoor.co.uk`,
         num: 10, hl: 'en', gl: 'uk', tbs
       }, serpKey).then(r => normalise(r, 'google-open2')));
 
       // C7: Bing — Different index, often surfaces different community content
       collectors.push(serpSearch({
         engine: 'bing',
-        q: `("${i1}" OR "${i2}" OR "${i3}") "${term}"${loc ? loc : ' UK'} -"we offer" -"our services"`,
+        q: `("${i1}" OR "${i2}" OR "${i3}") ${term}${loc ? loc : ' UK'}`,
         count: 10, mkt: 'en-GB', freshness: tbs ? 'Week' : undefined
       }, serpKey).then(r => normalise(r, 'bing')));
 
       // C8: Google News — catches recent community posts indexed as news
       collectors.push(serpSearch({
         engine: 'google',
-        q: `"${term}" "looking for" OR "need a" OR "can anyone recommend"${loc ? loc : ' UK'}`,
+        q: `${term} "looking for" OR "need a" OR "can anyone recommend"${loc ? loc : ' UK'}`,
         tbm: 'nws', num: 10, hl: 'en', gl: 'uk', tbs
       }, serpKey).then(r => normalise(r, 'google-news')));
 
     } else {
       // Job search collectors
       collectors.push(serpSearch({
-        engine: 'google', q: `"${term}"${loc} site:reddit.com`, num: 10, hl: 'en', gl: 'uk', tbs
+        engine: 'google', q: `${term}${loc} site:reddit.com`, num: 10, hl: 'en', gl: 'uk', tbs
       }, serpKey).then(r => normalise(r, 'google-reddit')));
 
       collectors.push(serpSearch({
-        engine: 'google', q: `"${term}"${loc} site:gumtree.com`, num: 10, hl: 'en', gl: 'uk', tbs
+        engine: 'google', q: `${term}${loc} site:gumtree.com`, num: 10, hl: 'en', gl: 'uk', tbs
       }, serpKey).then(r => normalise(r, 'google-gumtree')));
 
       collectors.push(serpSearch({
-        engine: 'google', q: `"${term2}"${loc} -"we offer" -"our services"`, num: 10, hl: 'en', gl: 'uk', tbs
+        engine: 'google', q: `${term2}${loc}`, num: 10, hl: 'en', gl: 'uk', tbs
       }, serpKey).then(r => normalise(r, 'google-open')));
 
       collectors.push(serpSearch({
-        engine: 'bing', q: `"${term}"${loc ? loc : ' UK'}`, count: 10, mkt: 'en-GB'
+        engine: 'bing', q: `${term}${loc ? loc : ' UK'}`, count: 10, mkt: 'en-GB'
       }, serpKey).then(r => normalise(r, 'bing')));
     }
 
@@ -217,16 +306,20 @@ exports.handler = async (event) => {
     console.log(`Running ${collectors.length} collectors in parallel...`);
     const results = await Promise.allSettled(collectors);
 
-    // Merge all results
-    let allItems = [];
+    // Merge all results round-robin across collectors (v7 #4) so the 30-candidate
+    // cap applied below doesn't systematically starve whichever collectors are
+    // later in the array.
+    const perCollectorResults = [];
     results.forEach((r, i) => {
       if (r.status === 'fulfilled') {
         console.log(`Collector ${i + 1}: ${r.value.length} results`);
-        allItems.push(...r.value);
+        perCollectorResults.push(r.value);
       } else {
         console.error(`Collector ${i + 1} failed:`, r.reason?.message);
+        perCollectorResults.push([]);
       }
     });
+    let allItems = interleave(perCollectorResults);
 
     // Deduplicate by URL
     const seen    = new Set();
@@ -244,9 +337,9 @@ exports.handler = async (event) => {
       const retryCollectors = collectors.slice(0, 3);
       const retryResults    = await Promise.allSettled(
         [
-          serpSearch({ engine:'google', q:`("${i1}" OR "${i2}" OR "${i3}") "${term}"${loc} site:reddit.com`, num:10, hl:'en', gl:'uk' }, serpKey).then(r => normalise(r,'google-reddit')),
-          serpSearch({ engine:'google', q:`("${i1}" OR "${i2}") "${term}"${loc} -"we offer" -"our services"`, num:10, hl:'en', gl:'uk' }, serpKey).then(r => normalise(r,'google-open')),
-          serpSearch({ engine:'bing', q:`("${i1}" OR "${i2}") "${term}"${loc ? loc : ' UK'}`, count:10, mkt:'en-GB' }, serpKey).then(r => normalise(r,'bing')),
+          serpSearch({ engine:'google', q:`("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} site:reddit.com`, num:10, hl:'en', gl:'uk' }, serpKey).then(r => normalise(r,'google-reddit')),
+          serpSearch({ engine:'google', q:`("${i1}" OR "${i2}") ${term}${loc}`, num:10, hl:'en', gl:'uk' }, serpKey).then(r => normalise(r,'google-open')),
+          serpSearch({ engine:'bing', q:`("${i1}" OR "${i2}") ${term}${loc ? loc : ' UK'}`, count:10, mkt:'en-GB' }, serpKey).then(r => normalise(r,'bing')),
         ]
       );
       retryResults.forEach(r => { if (r.status === 'fulfilled') allItems.push(...r.value); });
@@ -298,11 +391,11 @@ Return ONLY a valid JSON array, nothing else. Empty array if no leads: []
 RESULTS:
 ${JSON.stringify(candidates)}`;
 
-    const claudeRes  = await fetch('https://api.anthropic.com/v1/messages', {
+    const claudeRes  = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version':'2023-06-01' },
       body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:4000, messages:[{ role:'user', content:prompt }] })
-    });
+    }, CLAUDE_TIMEOUT_MS);
 
     const claudeData = await claudeRes.json();
     const rawText    = claudeData.content?.map(b => b.text||'').join('') || '[]';
@@ -318,29 +411,32 @@ ${JSON.stringify(candidates)}`;
     }
 
     let genuineLeads = Array.isArray(analysed) ? analysed.filter(l => l?.isGenuineLead) : [];
+    // Best leads first (v7 #4) — Claude's array order isn't guaranteed to be score order.
+    genuineLeads.sort((a, b) => (b.score || 0) - (a.score || 0));
 
     // Retry with no date filter if Claude found nothing
     if (genuineLeads.length === 0 && tbs && unique.length < 10) {
       console.log('Claude found nothing — retrying without date filter');
       const widerItems = [];
       const widerCollectors = await Promise.allSettled([
-        serpSearch({ engine:'google', q:`("${i1}" OR "${i2}" OR "${i3}") "${term}"${loc} site:reddit.com`, num:10, hl:'en', gl:'uk' }, serpKey).then(r=>normalise(r,'google-reddit')),
-        serpSearch({ engine:'google', q:`("${i1}" OR "${i2}") "${term}"${loc} -"we offer" -"our services"`, num:10, hl:'en', gl:'uk' }, serpKey).then(r=>normalise(r,'google-open')),
-        serpSearch({ engine:'bing', q:`"${term}"${loc ? loc:' UK'} "${i1}" OR "${i2}"`, count:10, mkt:'en-GB' }, serpKey).then(r=>normalise(r,'bing')),
+        serpSearch({ engine:'google', q:`("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} site:reddit.com`, num:10, hl:'en', gl:'uk' }, serpKey).then(r=>normalise(r,'google-reddit')),
+        serpSearch({ engine:'google', q:`("${i1}" OR "${i2}") ${term}${loc}`, num:10, hl:'en', gl:'uk' }, serpKey).then(r=>normalise(r,'google-open')),
+        serpSearch({ engine:'bing', q:`${term}${loc ? loc:' UK'} "${i1}" OR "${i2}"`, count:10, mkt:'en-GB' }, serpKey).then(r=>normalise(r,'bing')),
       ]);
       widerCollectors.forEach(r => { if (r.status==='fulfilled') widerItems.push(...r.value); });
       const widerUnique = widerItems.filter(item => { if (!item.link||seen.has(item.link)) return false; seen.add(item.link); return true; });
       if (widerUnique.length > 0) {
         const widerCandidates = widerUnique.slice(0,30).map(({title,snippet,link,source,engine})=>({title,snippet,link,source,engine}));
-        const wRes = await fetch('https://api.anthropic.com/v1/messages', {
+        const wRes = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
           method:'POST', headers:{'Content-Type':'application/json','x-api-key':process.env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01'},
           body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:4000, messages:[{role:'user',content:prompt.replace(JSON.stringify(candidates),JSON.stringify(widerCandidates))}] })
-        });
+        }, CLAUDE_TIMEOUT_MS);
         const wData = await wRes.json();
         const wText = wData.content?.map(b=>b.text||'').join('')||'[]';
         try {
           const wArr = JSON.parse(wText.replace(/```json|```/g,'').trim());
           genuineLeads = Array.isArray(wArr) ? wArr.filter(l=>l?.isGenuineLead) : [];
+          genuineLeads.sort((a, b) => (b.score || 0) - (a.score || 0));
         } catch {}
       }
     }
@@ -352,7 +448,7 @@ ${JSON.stringify(candidates)}`;
         leads:         genuineLeads,
         totalSearched: candidates.length,
         totalGenuine:  genuineLeads.length,
-        trade, location, searchType,
+        trade, location, searchType, radius,
         daysSearched:  days,
         collectorsRun: collectors.length,
       })
