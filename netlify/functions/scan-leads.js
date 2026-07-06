@@ -41,6 +41,17 @@
  *   #6 All outbound fetches (SerpAPI + Claude) now have a timeout via
  *      AbortController, so one hung upstream request can no longer stall the
  *      whole function indefinitely.
+ *
+ * DEBUG INSTRUMENTATION (added post-v7, no lead logic changed):
+ *   Pass ?debug=true to get a `debug` block in the JSON response showing,
+ *   per collector: the exact query sent, raw result count, and normalised
+ *   count; the merged/deduped unique count; the candidates actually sent to
+ *   Claude; Claude's raw response text; which candidates were NOT returned
+ *   as genuine leads (with title/snippet, so you can see what got rejected
+ *   and why); whether the date filter was active; and whether either retry
+ *   path fired. This only changes what is *reported*, not what is searched,
+ *   scored, or filtered — every value logged is a value the handler was
+ *   already computing.
  */
 
 // ── TRADE CONFIGURATION ──────────────────────────────────────────────────────
@@ -100,7 +111,13 @@ const INTENTS = [
 const LOOSE_RADIUS_THRESHOLD_MILES = 20;
 
 // Default timeout applied to every outbound fetch (see fetchWithTimeout).
-const SERP_TIMEOUT_MS   = 10000;
+// SERP_TIMEOUT_MS was 10000 — raised after real-world testing showed some
+// SerpAPI/Bing calls legitimately take 10-15s under load, which the original
+// value was aborting as false-timeout failures (silently returning 0 results
+// for that collector instead of its real, slower answer). durationMs/isTimeout
+// are now recorded per collector in debug so this can be tuned from evidence
+// instead of guesswork next time.
+const SERP_TIMEOUT_MS   = 20000;
 const CLAUDE_TIMEOUT_MS = 25000;
 
 // ── SHARED HELPERS ────────────────────────────────────────────────────────────
@@ -133,21 +150,24 @@ function interleave(lists) {
 
 // ── COLLECTOR FUNCTIONS ───────────────────────────────────────────────────────
 
+// Note: this used to catch its own errors and always resolve to [] — which
+// meant a genuine "SerpAPI found nothing" and "the request timed out/failed"
+// were indistinguishable in the response and in debug output. It now lets
+// errors (including AbortError from a timeout) propagate to the caller
+// (runCollectorBatch), which handles them via Promise.allSettled exactly the
+// same way — a failed collector still contributes zero items to the search —
+// but the failure is now visible in `debug.mainCollectors[].error/isTimeout`
+// instead of being silently indistinguishable from a true empty result.
 async function serpSearch(params, serpKey) {
   const url = new URL('https://serpapi.com/search.json');
   url.searchParams.set('api_key', serpKey);
   for (const [k, v] of Object.entries(params)) {
     if (v) url.searchParams.set(k, String(v));
   }
-  try {
-    const res  = await fetchWithTimeout(url.toString(), {}, SERP_TIMEOUT_MS);
-    const data = await res.json();
-    if (data.error) { console.error('SerpAPI:', data.error); return []; }
-    return data.organic_results || data.news_results || [];
-  } catch (err) {
-    console.error('Fetch error:', err.message);
-    return [];
-  }
+  const res  = await fetchWithTimeout(url.toString(), {}, SERP_TIMEOUT_MS);
+  const data = await res.json();
+  if (data.error) throw new Error(`SerpAPI: ${data.error}`);
+  return data.organic_results || data.news_results || [];
 }
 
 function normalise(items, source) {
@@ -169,6 +189,59 @@ function orGroup(terms) {
   return '(' + list.map(t => `"${t}"`).join(' OR ') + ')';
 }
 
+// Runs a batch of {label, params} collector defs in parallel via serpSearch,
+// returning both the normalised results (for the actual search pipeline) and
+// a parallel debug array (query used, raw/normalised count, timing, and
+// whether it failed/timed out) so callers can report exactly what happened
+// without duplicating any logic. A failed collector still contributes zero
+// items to the search — same as before — only now that fact is observable.
+async function runCollectorBatch(defs, serpKey) {
+  const settled = await Promise.allSettled(defs.map(async def => {
+    const startedAt = Date.now();
+    try {
+      const raw = await serpSearch(def.params, serpKey);
+      return { raw, durationMs: Date.now() - startedAt };
+    } catch (err) {
+      err.durationMs = Date.now() - startedAt;
+      throw err;
+    }
+  }));
+  const perCollectorResults = [];
+  const debugEntries = [];
+  settled.forEach((r, i) => {
+    const def = defs[i];
+    if (r.status === 'fulfilled') {
+      const { raw, durationMs } = r.value;
+      const norm = normalise(raw, def.label);
+      perCollectorResults.push(norm);
+      debugEntries.push({
+        label: def.label,
+        engine: def.params.engine,
+        query: def.params.q,
+        rawCount: raw.length,
+        normalisedCount: norm.length,
+        durationMs,
+      });
+    } else {
+      const durationMs = r.reason?.durationMs ?? null;
+      const isTimeout  = r.reason?.name === 'AbortError';
+      console.error(`Collector "${def.label}" failed after ${durationMs}ms${isTimeout ? ' (timed out)' : ''}:`, r.reason?.message);
+      perCollectorResults.push([]);
+      debugEntries.push({
+        label: def.label,
+        engine: def.params.engine,
+        query: def.params.q,
+        rawCount: 0,
+        normalisedCount: 0,
+        durationMs,
+        isTimeout,
+        error: r.reason?.message || 'unknown error',
+      });
+    }
+  });
+  return { perCollectorResults, debugEntries };
+}
+
 // ── MAIN HANDLER ─────────────────────────────────────────────────────────────
 
 exports.handler = async (event) => {
@@ -180,8 +253,16 @@ exports.handler = async (event) => {
 
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
 
+  // Populated throughout the run; only ever returned to the client when
+  // ?debug=true is passed. Declared before the try body so it's safe to read
+  // in the catch block even if something throws early.
+  let debug = { debugEnabled: false };
+
   try {
-    const params     = event.queryStringParameters || {};
+    const params      = event.queryStringParameters || {};
+    const debugEnabled = params.debug === 'true';
+    debug.debugEnabled = debugEnabled;
+
     const trade      = params.trade      || 'plumbing';
     const mode       = params.mode       || 'local';
     const location   = mode === 'national' ? '' : (params.location || '');
@@ -222,103 +303,97 @@ exports.handler = async (event) => {
     const i4    = INTENTS[3];
     const i5    = INTENTS[4];
 
+    // Record the inputs that decide *what* gets searched, so a report of "volume
+    // didn't improve" can be checked against what this specific invocation
+    // actually configured — e.g. confirming allTerms/term reflect the intended
+    // trade config, rather than guessing whether a deploy went out.
+    Object.assign(debug, {
+      trade, isAll, searchType, isJob, mode, location, radius, looseLocation,
+      days, tbs, dateFilterActive: !!tbs,
+      allTermsConfigured: allTerms,
+      termGroupUsed: term,
+      mainCollectors: [],
+      uniqueAfterDedupe: 0,
+      retryNoDateFilter: { ran: false, collectors: [], uniqueAfterRetry: null },
+      candidatesSentToClaude: [],
+      claudeRawResponse: null,
+      claudeDurationMs: null,
+      claudeParseOk: null,
+      rejectedByClaudeCount: null,
+      rejectedByClaude: [],
+      claudeEmptyRetry: { ran: false, collectors: [], candidatesSent: [], rawResponse: null, claudeDurationMs: null, rejected: [] },
+    });
+
     // ── PARALLEL COLLECTORS ──────────────────────────────────────────────────
-    // All run simultaneously for speed
-    const collectors = [];
+    // All run simultaneously for speed. Defined declaratively (label + params)
+    // so the exact query sent by each collector can be reported in `debug`
+    // without duplicating the query strings separately.
+    const collectorDefs = [];
 
     if (!isJob) {
-      // C1: Google — Reddit (most reliable community posts)
-      collectors.push(serpSearch({
+      collectorDefs.push({ label: 'google-reddit', params: {
         engine: 'google', q: `("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} site:reddit.com`,
         num: 10, hl: 'en', gl: 'uk', tbs
-      }, serpKey).then(r => normalise(r, 'google-reddit')));
-
-      // C2: Google — Mumsnet (UK domestic trades gold mine)
-      collectors.push(serpSearch({
+      }});
+      collectorDefs.push({ label: 'google-mumsnet', params: {
         engine: 'google', q: `("${i1}" OR "${i2}" OR "${i5}") ${term}${loc} site:mumsnet.com`,
         num: 10, hl: 'en', gl: 'uk', tbs
-      }, serpKey).then(r => normalise(r, 'google-mumsnet')));
-
-      // C3: Google — Gumtree services wanted
-      collectors.push(serpSearch({
+      }});
+      collectorDefs.push({ label: 'google-gumtree', params: {
         engine: 'google', q: `("${i1}" OR "${i3}" OR "wanted") ${term2}${loc} site:gumtree.com`,
         num: 10, hl: 'en', gl: 'uk', tbs
-      }, serpKey).then(r => normalise(r, 'google-gumtree')));
-
-      // C4: Google — MSE forums + other UK forums
-      collectors.push(serpSearch({
+      }});
+      collectorDefs.push({ label: 'google-forums', params: {
         engine: 'google',
         q: `("${i2}" OR "${i1}") ${term}${loc} (site:forums.moneysavingexpert.com OR site:diychatroom.com OR site:buildhub.org.uk OR site:pistonheads.com)`,
         num: 10, hl: 'en', gl: 'uk', tbs
-      }, serpKey).then(r => normalise(r, 'google-forums')));
-
-      // C5: Google — Unrestricted (catches Facebook public posts, local blogs, etc.)
-      // Promotional-phrase exclusions removed (v7 #5) — Claude filters self-promotion
-      // semantically in the prompt below, which doesn't risk dropping genuine leads
-      // that merely mention a business's own words in passing.
-      collectors.push(serpSearch({
+      }});
+      collectorDefs.push({ label: 'google-open', params: {
         engine: 'google',
         q: `("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} -site:nextdoor.co.uk`,
         num: 10, hl: 'en', gl: 'uk', tbs
-      }, serpKey).then(r => normalise(r, 'google-open')));
-
-      // C6: Google — Different intent phrases, unrestricted
-      collectors.push(serpSearch({
+      }});
+      collectorDefs.push({ label: 'google-open2', params: {
         engine: 'google',
         q: `("${i4}" OR "${i5}" OR "need someone to" OR "any good" OR "getting quotes") ${term2}${loc} -site:nextdoor.co.uk`,
         num: 10, hl: 'en', gl: 'uk', tbs
-      }, serpKey).then(r => normalise(r, 'google-open2')));
-
-      // C7: Bing — Different index, often surfaces different community content
-      collectors.push(serpSearch({
+      }});
+      collectorDefs.push({ label: 'bing', params: {
         engine: 'bing',
         q: `("${i1}" OR "${i2}" OR "${i3}") ${term}${loc ? loc : ' UK'}`,
         count: 10, mkt: 'en-GB', freshness: tbs ? 'Week' : undefined
-      }, serpKey).then(r => normalise(r, 'bing')));
-
-      // C8: Google News — catches recent community posts indexed as news
-      collectors.push(serpSearch({
+      }});
+      collectorDefs.push({ label: 'google-news', params: {
         engine: 'google',
         q: `${term} "looking for" OR "need a" OR "can anyone recommend"${loc ? loc : ' UK'}`,
         tbm: 'nws', num: 10, hl: 'en', gl: 'uk', tbs
-      }, serpKey).then(r => normalise(r, 'google-news')));
-
+      }});
     } else {
-      // Job search collectors
-      collectors.push(serpSearch({
+      collectorDefs.push({ label: 'google-reddit', params: {
         engine: 'google', q: `${term}${loc} site:reddit.com`, num: 10, hl: 'en', gl: 'uk', tbs
-      }, serpKey).then(r => normalise(r, 'google-reddit')));
-
-      collectors.push(serpSearch({
+      }});
+      collectorDefs.push({ label: 'google-gumtree', params: {
         engine: 'google', q: `${term}${loc} site:gumtree.com`, num: 10, hl: 'en', gl: 'uk', tbs
-      }, serpKey).then(r => normalise(r, 'google-gumtree')));
-
-      collectors.push(serpSearch({
+      }});
+      collectorDefs.push({ label: 'google-open', params: {
         engine: 'google', q: `${term2}${loc}`, num: 10, hl: 'en', gl: 'uk', tbs
-      }, serpKey).then(r => normalise(r, 'google-open')));
-
-      collectors.push(serpSearch({
+      }});
+      collectorDefs.push({ label: 'bing', params: {
         engine: 'bing', q: `${term}${loc ? loc : ' UK'}`, count: 10, mkt: 'en-GB'
-      }, serpKey).then(r => normalise(r, 'bing')));
+      }});
     }
 
-    // Run all collectors in parallel
-    console.log(`Running ${collectors.length} collectors in parallel...`);
-    const results = await Promise.allSettled(collectors);
+    console.log(`Running ${collectorDefs.length} collectors in parallel...`);
+    const { perCollectorResults, debugEntries } = await runCollectorBatch(collectorDefs, serpKey);
+    // Failures are already logged inside runCollectorBatch (with duration + timeout flag).
+    debugEntries.forEach((d, i) => {
+      if (!d.error) console.log(`Collector ${i + 1} (${d.label}): ${d.normalisedCount} results in ${d.durationMs}ms`);
+    });
+    debug.mainCollectors = debugEntries;
 
     // Merge all results round-robin across collectors (v7 #4) so the 30-candidate
     // cap applied below doesn't systematically starve whichever collectors are
     // later in the array.
-    const perCollectorResults = [];
-    results.forEach((r, i) => {
-      if (r.status === 'fulfilled') {
-        console.log(`Collector ${i + 1}: ${r.value.length} results`);
-        perCollectorResults.push(r.value);
-      } else {
-        console.error(`Collector ${i + 1} failed:`, r.reason?.message);
-        perCollectorResults.push([]);
-      }
-    });
     let allItems = interleave(perCollectorResults);
 
     // Deduplicate by URL
@@ -330,30 +405,39 @@ exports.handler = async (event) => {
     });
 
     console.log(`Total unique items: ${unique.length} from ${allItems.length} raw`);
+    debug.uniqueAfterDedupe = unique.length;
 
     // If nothing found with date filter, retry top 3 collectors without it
     if (unique.length === 0 && tbs) {
       console.log('No results — retrying without date filter');
-      const retryCollectors = collectors.slice(0, 3);
-      const retryResults    = await Promise.allSettled(
-        [
-          serpSearch({ engine:'google', q:`("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} site:reddit.com`, num:10, hl:'en', gl:'uk' }, serpKey).then(r => normalise(r,'google-reddit')),
-          serpSearch({ engine:'google', q:`("${i1}" OR "${i2}") ${term}${loc}`, num:10, hl:'en', gl:'uk' }, serpKey).then(r => normalise(r,'google-open')),
-          serpSearch({ engine:'bing', q:`("${i1}" OR "${i2}") ${term}${loc ? loc : ' UK'}`, count:10, mkt:'en-GB' }, serpKey).then(r => normalise(r,'bing')),
-        ]
-      );
-      retryResults.forEach(r => { if (r.status === 'fulfilled') allItems.push(...r.value); });
+      debug.retryNoDateFilter.ran = true;
+      const retryDefs = [
+        { label: 'google-reddit-retry', params: { engine:'google', q:`("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} site:reddit.com`, num:10, hl:'en', gl:'uk' } },
+        { label: 'google-open-retry',   params: { engine:'google', q:`("${i1}" OR "${i2}") ${term}${loc}`, num:10, hl:'en', gl:'uk' } },
+        { label: 'bing-retry',          params: { engine:'bing',   q:`("${i1}" OR "${i2}") ${term}${loc ? loc : ' UK'}`, count:10, mkt:'en-GB' } },
+      ];
+      const { perCollectorResults: retryNorm, debugEntries: retryDebug } = await runCollectorBatch(retryDefs, serpKey);
+      debug.retryNoDateFilter.collectors = retryDebug;
+      retryNorm.forEach(list => allItems.push(...list));
       unique = allItems.filter(item => { if (!item.link || seen.has(item.link)) return false; seen.add(item.link); return true; });
+      debug.retryNoDateFilter.uniqueAfterRetry = unique.length;
     }
 
     if (unique.length === 0) {
-      return { statusCode: 200, headers, body: JSON.stringify({ leads: [], totalSearched: 0, message: 'No results found — try UK-wide or Any time' }) };
+      return {
+        statusCode: 200, headers,
+        body: JSON.stringify({
+          leads: [], totalSearched: 0, message: 'No results found — try UK-wide or Any time',
+          ...(debugEnabled ? { debug } : {})
+        })
+      };
     }
 
     // Send up to 30 candidates to Claude
     const candidates = unique.slice(0, 30).map(({ title, snippet, link, source, engine }) => ({
       title, snippet, link, source, engine
     }));
+    debug.candidatesSentToClaude = candidates;
 
     // ── CLAUDE SCORING ───────────────────────────────────────────────────────
     const prompt = isJob
@@ -391,52 +475,80 @@ Return ONLY a valid JSON array, nothing else. Empty array if no leads: []
 RESULTS:
 ${JSON.stringify(candidates)}`;
 
+    const claudeStartedAt = Date.now();
     const claudeRes  = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version':'2023-06-01' },
       body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:4000, messages:[{ role:'user', content:prompt }] })
     }, CLAUDE_TIMEOUT_MS);
+    debug.claudeDurationMs = Date.now() - claudeStartedAt;
 
     const claudeData = await claudeRes.json();
     const rawText    = claudeData.content?.map(b => b.text||'').join('') || '[]';
+    debug.claudeRawResponse = rawText;
 
     let analysed = [];
     try {
       analysed = JSON.parse(rawText.replace(/```json|```/g,'').trim());
+      debug.claudeParseOk = true;
     } catch {
       try {
         const s = rawText.indexOf('['), e = rawText.lastIndexOf(']');
         if (s !== -1 && e > s) analysed = JSON.parse(rawText.slice(s, e+1));
-      } catch { console.error('JSON parse failed. Raw:', rawText.slice(0,200)); }
+        debug.claudeParseOk = true;
+      } catch {
+        console.error('JSON parse failed. Raw:', rawText.slice(0,200));
+        debug.claudeParseOk = false;
+      }
     }
 
     let genuineLeads = Array.isArray(analysed) ? analysed.filter(l => l?.isGenuineLead) : [];
     // Best leads first (v7 #4) — Claude's array order isn't guaranteed to be score order.
     genuineLeads.sort((a, b) => (b.score || 0) - (a.score || 0));
 
+    // Diagnostics only — figure out which of the candidates sent to Claude did NOT
+    // come back as a genuine lead, matched by URL. Doesn't affect what's returned.
+    {
+      const genuineUrls = new Set(genuineLeads.map(l => l.sourceUrl));
+      const rejected = candidates.filter(c => !genuineUrls.has(c.link));
+      debug.rejectedByClaudeCount = rejected.length;
+      debug.rejectedByClaude = rejected.map(c => ({ title: c.title, snippet: c.snippet, link: c.link, source: c.source, engine: c.engine }));
+    }
+
     // Retry with no date filter if Claude found nothing
     if (genuineLeads.length === 0 && tbs && unique.length < 10) {
       console.log('Claude found nothing — retrying without date filter');
+      debug.claudeEmptyRetry.ran = true;
+      const widerDefs = [
+        { label: 'google-reddit-wider', params: { engine:'google', q:`("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} site:reddit.com`, num:10, hl:'en', gl:'uk' } },
+        { label: 'google-open-wider',   params: { engine:'google', q:`("${i1}" OR "${i2}") ${term}${loc}`, num:10, hl:'en', gl:'uk' } },
+        { label: 'bing-wider',          params: { engine:'bing',   q:`${term}${loc ? loc:' UK'} "${i1}" OR "${i2}"`, count:10, mkt:'en-GB' } },
+      ];
+      const { perCollectorResults: widerNorm, debugEntries: widerDebug } = await runCollectorBatch(widerDefs, serpKey);
+      debug.claudeEmptyRetry.collectors = widerDebug;
       const widerItems = [];
-      const widerCollectors = await Promise.allSettled([
-        serpSearch({ engine:'google', q:`("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} site:reddit.com`, num:10, hl:'en', gl:'uk' }, serpKey).then(r=>normalise(r,'google-reddit')),
-        serpSearch({ engine:'google', q:`("${i1}" OR "${i2}") ${term}${loc}`, num:10, hl:'en', gl:'uk' }, serpKey).then(r=>normalise(r,'google-open')),
-        serpSearch({ engine:'bing', q:`${term}${loc ? loc:' UK'} "${i1}" OR "${i2}"`, count:10, mkt:'en-GB' }, serpKey).then(r=>normalise(r,'bing')),
-      ]);
-      widerCollectors.forEach(r => { if (r.status==='fulfilled') widerItems.push(...r.value); });
+      widerNorm.forEach(list => widerItems.push(...list));
       const widerUnique = widerItems.filter(item => { if (!item.link||seen.has(item.link)) return false; seen.add(item.link); return true; });
       if (widerUnique.length > 0) {
         const widerCandidates = widerUnique.slice(0,30).map(({title,snippet,link,source,engine})=>({title,snippet,link,source,engine}));
+        debug.claudeEmptyRetry.candidatesSent = widerCandidates;
+        const wStartedAt = Date.now();
         const wRes = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
           method:'POST', headers:{'Content-Type':'application/json','x-api-key':process.env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01'},
           body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:4000, messages:[{role:'user',content:prompt.replace(JSON.stringify(candidates),JSON.stringify(widerCandidates))}] })
         }, CLAUDE_TIMEOUT_MS);
+        debug.claudeEmptyRetry.claudeDurationMs = Date.now() - wStartedAt;
         const wData = await wRes.json();
         const wText = wData.content?.map(b=>b.text||'').join('')||'[]';
+        debug.claudeEmptyRetry.rawResponse = wText;
         try {
           const wArr = JSON.parse(wText.replace(/```json|```/g,'').trim());
           genuineLeads = Array.isArray(wArr) ? wArr.filter(l=>l?.isGenuineLead) : [];
           genuineLeads.sort((a, b) => (b.score || 0) - (a.score || 0));
+          const genuineUrls = new Set(genuineLeads.map(l => l.sourceUrl));
+          debug.claudeEmptyRetry.rejected = widerCandidates
+            .filter(c => !genuineUrls.has(c.link))
+            .map(c => ({ title: c.title, snippet: c.snippet, link: c.link, source: c.source, engine: c.engine }));
         } catch {}
       }
     }
@@ -450,12 +562,16 @@ ${JSON.stringify(candidates)}`;
         totalGenuine:  genuineLeads.length,
         trade, location, searchType, radius,
         daysSearched:  days,
-        collectorsRun: collectors.length,
+        collectorsRun: collectorDefs.length,
+        ...(debugEnabled ? { debug } : {})
       })
     };
 
   } catch (err) {
     console.error('Scanner error:', err);
-    return { statusCode:500, headers, body: JSON.stringify({ error: err.message }) };
+    return {
+      statusCode:500, headers,
+      body: JSON.stringify({ error: err.message, ...(debug.debugEnabled ? { debug } : {}) })
+    };
   }
 };
