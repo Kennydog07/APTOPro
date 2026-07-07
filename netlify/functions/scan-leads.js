@@ -9,7 +9,7 @@
  *   Collector 5: Google News — recent service requests in news/community sites
  *   Collector 6: Google — site:forums.moneysavingexpert.com + other forums
  *
- * All results merged → deduped → 30 best sent to Claude → filtered → shown
+ * All results merged → deduped → 50 best sent to Claude → filtered → shown
  *
  * v7 changes (audit recommendations #1, #3, #4, #5, #6 — the fixes confined to
  * this file; #2 concerns scheduled-scan.js and is tracked separately):
@@ -42,6 +42,18 @@
  *      AbortController, so one hung upstream request can no longer stall the
  *      whole function indefinitely. SERP_TIMEOUT_MS raised 10s -> 20s after
  *      the first version cut off legitimately-slower SerpAPI/Bing responses.
+ *
+ * v8 changes (audit follow-up — search recall):
+ *   #A INTENTS has 15 phrases, but every collector only ever referenced
+ *      INTENTS[0..4] by name (as i1..i5) — the other 10 ("does anyone know a
+ *      good", "who does", "need help with", "recommendations please", etc.)
+ *      were configured but never actually searched. All collectors now use
+ *      ALL_INTENTS = orGroup(INTENTS), so every configured phrase is live.
+ *   #B num/count raised 10 -> 20 per collector (SerpAPI supports up to 100;
+ *      10 meant Google/Bing chose which 10 of many matches you saw). The
+ *      candidate cap sent to Claude raised 30 -> 50 to match. google-open2
+ *      now pages Google results 11-20 (`start: 10`) for the open query
+ *      instead of duplicating google-open's first page.
  *
  * DEBUG INSTRUMENTATION (added post-v7, no lead logic changed):
  *   Pass ?debug=true to get a `debug` block in the JSON response showing,
@@ -303,11 +315,11 @@ exports.handler = async (event) => {
     // single bare words — do not wrap them in extra quotes at the call sites below.
     const term  = orGroup(allTerms);
     const term2 = term;
-    const i1    = INTENTS[0];
-    const i2    = INTENTS[1];
-    const i3    = INTENTS[2];
-    const i4    = INTENTS[3];
-    const i5    = INTENTS[4];
+    // Every phrase in INTENTS OR'd together as one pre-quoted group (v8 #A) —
+    // previously only INTENTS[0..4] were ever referenced by name (i1..i5),
+    // leaving 10 of 15 configured phrases dead. This is a full replacement,
+    // not a supplement — do not wrap it in extra quotes at the call sites.
+    const ALL_INTENTS = orGroup(INTENTS);
 
     // Record the inputs that decide *what* gets searched, so a report of "volume
     // didn't improve" can be checked against what this specific invocation
@@ -338,58 +350,63 @@ exports.handler = async (event) => {
 
     if (!isJob) {
       collectorDefs.push({ label: 'google-reddit', params: {
-        engine: 'google', q: `("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} site:reddit.com`,
-        num: 10, hl: 'en', gl: 'uk', tbs
+        engine: 'google', q: `${ALL_INTENTS} ${term}${loc} site:reddit.com`,
+        num: 20, hl: 'en', gl: 'uk', tbs
       }});
       collectorDefs.push({ label: 'google-mumsnet', params: {
-        engine: 'google', q: `("${i1}" OR "${i2}" OR "${i5}") ${term}${loc} site:mumsnet.com`,
-        num: 10, hl: 'en', gl: 'uk', tbs
+        engine: 'google', q: `${ALL_INTENTS} ${term}${loc} site:mumsnet.com`,
+        num: 20, hl: 'en', gl: 'uk', tbs
       }});
       collectorDefs.push({ label: 'google-gumtree', params: {
-        engine: 'google', q: `("${i1}" OR "${i3}" OR "wanted") ${term2}${loc} site:gumtree.com`,
-        num: 10, hl: 'en', gl: 'uk', tbs
+        engine: 'google', q: `(${ALL_INTENTS} OR "wanted") ${term2}${loc} site:gumtree.com`,
+        num: 20, hl: 'en', gl: 'uk', tbs
       }});
       collectorDefs.push({ label: 'google-forums', params: {
         engine: 'google',
-        q: `("${i2}" OR "${i1}") ${term}${loc} (site:forums.moneysavingexpert.com OR site:diychatroom.com OR site:buildhub.org.uk OR site:pistonheads.com)`,
-        num: 10, hl: 'en', gl: 'uk', tbs
+        q: `${ALL_INTENTS} ${term}${loc} (site:forums.moneysavingexpert.com OR site:diychatroom.com OR site:buildhub.org.uk OR site:pistonheads.com)`,
+        num: 20, hl: 'en', gl: 'uk', tbs
       }});
       // REVERTED (v7 #5 removed the promotional-phrase exclusions here; production
       // testing showed the raw pool got flooded with company adverts, and Claude's
       // semantic filtering alone wasn't enough to keep them from crowding out
-      // genuine leads in the fixed 30-candidate cap). Restored below.
+      // genuine leads in the fixed candidate cap). Restored below.
       collectorDefs.push({ label: 'google-open', params: {
         engine: 'google',
-        q: `("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} -"we offer" -"our services" -"call us today" -"get a quote from us" -"we specialise" -site:nextdoor.co.uk`,
-        num: 10, hl: 'en', gl: 'uk', tbs
+        q: `${ALL_INTENTS} ${term}${loc} -"we offer" -"our services" -"call us today" -"get a quote from us" -"we specialise" -site:nextdoor.co.uk`,
+        num: 20, hl: 'en', gl: 'uk', tbs
       }});
+      // v8 #B: was a near-duplicate of google-open with a different intent subset
+      // (which is now moot since ALL_INTENTS covers every intent everywhere).
+      // Repurposed to page Google's *next* 10 organic results (11-20) for the
+      // same open query via `start`, instead of re-fetching page 1 under a
+      // different label — this is the actual fix for "you never see result 11+".
       collectorDefs.push({ label: 'google-open2', params: {
         engine: 'google',
-        q: `("${i4}" OR "${i5}" OR "need someone to" OR "any good" OR "getting quotes") ${term2}${loc} -"we offer" -"our services" -site:nextdoor.co.uk`,
-        num: 10, hl: 'en', gl: 'uk', tbs
+        q: `${ALL_INTENTS} ${term2}${loc} -"we offer" -"our services" -site:nextdoor.co.uk`,
+        num: 10, start: 10, hl: 'en', gl: 'uk', tbs
       }});
       collectorDefs.push({ label: 'bing', params: {
         engine: 'bing',
-        q: `("${i1}" OR "${i2}" OR "${i3}") ${term}${loc ? loc : ' UK'} -"we offer" -"our services"`,
-        count: 10, mkt: 'en-GB', freshness: tbs ? 'Week' : undefined
+        q: `${ALL_INTENTS} ${term}${loc ? loc : ' UK'} -"we offer" -"our services"`,
+        count: 20, mkt: 'en-GB', freshness: tbs ? 'Week' : undefined
       }});
       collectorDefs.push({ label: 'google-news', params: {
         engine: 'google',
-        q: `${term} "looking for" OR "need a" OR "can anyone recommend"${loc ? loc : ' UK'}`,
-        tbm: 'nws', num: 10, hl: 'en', gl: 'uk', tbs
+        q: `${term} ${ALL_INTENTS}${loc ? loc : ' UK'}`,
+        tbm: 'nws', num: 20, hl: 'en', gl: 'uk', tbs
       }});
     } else {
       collectorDefs.push({ label: 'google-reddit', params: {
-        engine: 'google', q: `${term}${loc} site:reddit.com`, num: 10, hl: 'en', gl: 'uk', tbs
+        engine: 'google', q: `${term}${loc} site:reddit.com`, num: 20, hl: 'en', gl: 'uk', tbs
       }});
       collectorDefs.push({ label: 'google-gumtree', params: {
-        engine: 'google', q: `${term}${loc} site:gumtree.com`, num: 10, hl: 'en', gl: 'uk', tbs
+        engine: 'google', q: `${term}${loc} site:gumtree.com`, num: 20, hl: 'en', gl: 'uk', tbs
       }});
       collectorDefs.push({ label: 'google-open', params: {
-        engine: 'google', q: `${term2}${loc} -"we offer" -"our services"`, num: 10, hl: 'en', gl: 'uk', tbs
+        engine: 'google', q: `${term2}${loc} -"we offer" -"our services"`, num: 20, hl: 'en', gl: 'uk', tbs
       }});
       collectorDefs.push({ label: 'bing', params: {
-        engine: 'bing', q: `${term}${loc ? loc : ' UK'}`, count: 10, mkt: 'en-GB'
+        engine: 'bing', q: `${term}${loc ? loc : ' UK'}`, count: 20, mkt: 'en-GB'
       }});
     }
 
@@ -422,9 +439,9 @@ exports.handler = async (event) => {
       console.log('No results — retrying without date filter');
       debug.retryNoDateFilter.ran = true;
       const retryDefs = [
-        { label: 'google-reddit-retry', params: { engine:'google', q:`("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} site:reddit.com`, num:10, hl:'en', gl:'uk' } },
-        { label: 'google-open-retry',   params: { engine:'google', q:`("${i1}" OR "${i2}") ${term}${loc} -"we offer" -"our services"`, num:10, hl:'en', gl:'uk' } },
-        { label: 'bing-retry',          params: { engine:'bing',   q:`("${i1}" OR "${i2}") ${term}${loc ? loc : ' UK'}`, count:10, mkt:'en-GB' } },
+        { label: 'google-reddit-retry', params: { engine:'google', q:`${ALL_INTENTS} ${term}${loc} site:reddit.com`, num:20, hl:'en', gl:'uk' } },
+        { label: 'google-open-retry',   params: { engine:'google', q:`${ALL_INTENTS} ${term}${loc} -"we offer" -"our services"`, num:20, hl:'en', gl:'uk' } },
+        { label: 'bing-retry',          params: { engine:'bing',   q:`${ALL_INTENTS} ${term}${loc ? loc : ' UK'}`, count:20, mkt:'en-GB' } },
       ];
       const { perCollectorResults: retryNorm, debugEntries: retryDebug } = await runCollectorBatch(retryDefs, serpKey);
       debug.retryNoDateFilter.collectors = retryDebug;
@@ -443,8 +460,9 @@ exports.handler = async (event) => {
       };
     }
 
-    // Send up to 30 candidates to Claude
-    const candidates = unique.slice(0, 30).map(({ title, snippet, link, source, engine }) => ({
+    // Send up to 50 candidates to Claude (v8 #B — raised from 30 now that
+    // collectors return more raw results per query)
+    const candidates = unique.slice(0, 50).map(({ title, snippet, link, source, engine }) => ({
       title, snippet, link, source, engine
     }));
     debug.candidatesSentToClaude = candidates;
@@ -530,9 +548,9 @@ ${JSON.stringify(candidates)}`;
       console.log('Claude found nothing — retrying without date filter');
       debug.claudeEmptyRetry.ran = true;
       const widerDefs = [
-        { label: 'google-reddit-wider', params: { engine:'google', q:`("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} site:reddit.com`, num:10, hl:'en', gl:'uk' } },
-        { label: 'google-open-wider',   params: { engine:'google', q:`("${i1}" OR "${i2}") ${term}${loc} -"we offer" -"our services"`, num:10, hl:'en', gl:'uk' } },
-        { label: 'bing-wider',          params: { engine:'bing',   q:`${term}${loc ? loc:' UK'} "${i1}" OR "${i2}"`, count:10, mkt:'en-GB' } },
+        { label: 'google-reddit-wider', params: { engine:'google', q:`${ALL_INTENTS} ${term}${loc} site:reddit.com`, num:20, hl:'en', gl:'uk' } },
+        { label: 'google-open-wider',   params: { engine:'google', q:`${ALL_INTENTS} ${term}${loc} -"we offer" -"our services"`, num:20, hl:'en', gl:'uk' } },
+        { label: 'bing-wider',          params: { engine:'bing',   q:`${term}${loc ? loc:' UK'} ${ALL_INTENTS}`, count:20, mkt:'en-GB' } },
       ];
       const { perCollectorResults: widerNorm, debugEntries: widerDebug } = await runCollectorBatch(widerDefs, serpKey);
       debug.claudeEmptyRetry.collectors = widerDebug;
@@ -540,7 +558,7 @@ ${JSON.stringify(candidates)}`;
       widerNorm.forEach(list => widerItems.push(...list));
       const widerUnique = widerItems.filter(item => { if (!item.link||seen.has(item.link)) return false; seen.add(item.link); return true; });
       if (widerUnique.length > 0) {
-        const widerCandidates = widerUnique.slice(0,30).map(({title,snippet,link,source,engine})=>({title,snippet,link,source,engine}));
+        const widerCandidates = widerUnique.slice(0,50).map(({title,snippet,link,source,engine})=>({title,snippet,link,source,engine}));
         debug.claudeEmptyRetry.candidatesSent = widerCandidates;
         const wStartedAt = Date.now();
         const wRes = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
