@@ -315,11 +315,27 @@ exports.handler = async (event) => {
     // single bare words — do not wrap them in extra quotes at the call sites below.
     const term  = orGroup(allTerms);
     const term2 = term;
-    // Every phrase in INTENTS OR'd together as one pre-quoted group (v8 #A) —
-    // previously only INTENTS[0..4] were ever referenced by name (i1..i5),
-    // leaving 10 of 15 configured phrases dead. This is a full replacement,
-    // not a supplement — do not wrap it in extra quotes at the call sites.
-    const ALL_INTENTS = orGroup(INTENTS);
+    // v8 #A / v8.1 fix: INTENTS has 15 phrases. Originally only INTENTS[0..4]
+    // (i1..i5) were ever referenced anywhere, so 10 phrases were configured
+    // but never searched — that was a real bug. But OR'ing all 15 into every
+    // collector query (ALL_INTENTS) made each query ~70+ words, which is far
+    // outside what a search engine parses sensibly as one query; that caused
+    // the "zero leads anywhere" regression. Fix: keep each *live* collector
+    // query short (3-4 phrases, like the original), but use the full list
+    // only in the retry paths below (retryDefs/widerDefs) that already exist
+    // specifically for when a narrow search comes back empty — the one place
+    // extra query weight is worth paying for.
+    const i1 = INTENTS[0];  // 'looking for a'
+    const i2 = INTENTS[1];  // 'can anyone recommend'
+    const i3 = INTENTS[2];  // 'need a'
+    const i4 = INTENTS[3];  // 'after a'
+    const i5 = INTENTS[4];  // 'any recommendations for'
+    const ALL_INTENTS = orGroup(INTENTS); // kept for reference/debug only — do not use directly in a query
+    // Broader than any single main-flow query, but capped at 6 phrases so a
+    // retry query still stays in normal search-engine range (~35-40 words
+    // total incl. term/location) rather than the ~70-word ALL_INTENTS bloat
+    // that caused the zero-leads regression.
+    const MEDIUM_INTENTS = orGroup([INTENTS[0], INTENTS[1], INTENTS[2], INTENTS[5], INTENTS[10], INTENTS[11]]);
 
     // Record the inputs that decide *what* gets searched, so a report of "volume
     // didn't improve" can be checked against what this specific invocation
@@ -350,20 +366,20 @@ exports.handler = async (event) => {
 
     if (!isJob) {
       collectorDefs.push({ label: 'google-reddit', params: {
-        engine: 'google', q: `${ALL_INTENTS} ${term}${loc} site:reddit.com`,
+        engine: 'google', q: `("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} site:reddit.com`,
         num: 20, hl: 'en', gl: 'uk', tbs
       }});
       collectorDefs.push({ label: 'google-mumsnet', params: {
-        engine: 'google', q: `${ALL_INTENTS} ${term}${loc} site:mumsnet.com`,
+        engine: 'google', q: `("${i1}" OR "${i2}" OR "${i5}" OR "${INTENTS[5]}") ${term}${loc} site:mumsnet.com`,
         num: 20, hl: 'en', gl: 'uk', tbs
       }});
       collectorDefs.push({ label: 'google-gumtree', params: {
-        engine: 'google', q: `(${ALL_INTENTS} OR "wanted") ${term2}${loc} site:gumtree.com`,
+        engine: 'google', q: `("${i1}" OR "${i3}" OR "wanted") ${term2}${loc} site:gumtree.com`,
         num: 20, hl: 'en', gl: 'uk', tbs
       }});
       collectorDefs.push({ label: 'google-forums', params: {
         engine: 'google',
-        q: `${ALL_INTENTS} ${term}${loc} (site:forums.moneysavingexpert.com OR site:diychatroom.com OR site:buildhub.org.uk OR site:pistonheads.com)`,
+        q: `("${i2}" OR "${i1}" OR "${INTENTS[10]}" OR "${INTENTS[11]}") ${term}${loc} (site:forums.moneysavingexpert.com OR site:diychatroom.com OR site:buildhub.org.uk OR site:pistonheads.com)`,
         num: 20, hl: 'en', gl: 'uk', tbs
       }});
       // REVERTED (v7 #5 removed the promotional-phrase exclusions here; production
@@ -372,27 +388,30 @@ exports.handler = async (event) => {
       // genuine leads in the fixed candidate cap). Restored below.
       collectorDefs.push({ label: 'google-open', params: {
         engine: 'google',
-        q: `${ALL_INTENTS} ${term}${loc} -"we offer" -"our services" -"call us today" -"get a quote from us" -"we specialise" -site:nextdoor.co.uk`,
+        q: `("${i1}" OR "${i2}" OR "${i3}") ${term}${loc} -"we offer" -"our services" -"call us today" -"get a quote from us" -"we specialise" -site:nextdoor.co.uk`,
         num: 20, hl: 'en', gl: 'uk', tbs
       }});
-      // v8 #B: was a near-duplicate of google-open with a different intent subset
-      // (which is now moot since ALL_INTENTS covers every intent everywhere).
-      // Repurposed to page Google's *next* 10 organic results (11-20) for the
-      // same open query via `start`, instead of re-fetching page 1 under a
-      // different label — this is the actual fix for "you never see result 11+".
+      // v8 #B: pages Google's *next* 10 organic results (11-20) for a
+      // differently-worded open query via `start`, instead of re-fetching
+      // page 1 under a different label — this is the fix for "you never see
+      // result 11+". Uses a short set of the previously-unused intents
+      // (INTENTS[6..9]) so this collector also surfaces different phrasing,
+      // without ballooning the query the way ALL_INTENTS did.
       collectorDefs.push({ label: 'google-open2', params: {
         engine: 'google',
-        q: `${ALL_INTENTS} ${term2}${loc} -"we offer" -"our services" -site:nextdoor.co.uk`,
+        q: `("${i4}" OR "${INTENTS[6]}" OR "${INTENTS[7]}" OR "${INTENTS[8]}" OR "${INTENTS[9]}") ${term2}${loc} -"we offer" -"our services" -site:nextdoor.co.uk`,
         num: 10, start: 10, hl: 'en', gl: 'uk', tbs
       }});
       collectorDefs.push({ label: 'bing', params: {
         engine: 'bing',
-        q: `${ALL_INTENTS} ${term}${loc ? loc : ' UK'} -"we offer" -"our services"`,
+        q: `("${i1}" OR "${i2}" OR "${i3}") ${term}${loc ? loc : ' UK'} -"we offer" -"our services"`,
         count: 20, mkt: 'en-GB', freshness: tbs ? 'Week' : undefined
       }});
+      // News gets the remaining previously-unused phrases (12-14), keeping its
+      // own query short rather than adding to an already-used group elsewhere.
       collectorDefs.push({ label: 'google-news', params: {
         engine: 'google',
-        q: `${term} ${ALL_INTENTS}${loc ? loc : ' UK'}`,
+        q: `${term} ("${INTENTS[12]}" OR "${INTENTS[13]}" OR "${INTENTS[14]}")${loc ? loc : ' UK'}`,
         tbm: 'nws', num: 20, hl: 'en', gl: 'uk', tbs
       }});
     } else {
@@ -439,9 +458,9 @@ exports.handler = async (event) => {
       console.log('No results — retrying without date filter');
       debug.retryNoDateFilter.ran = true;
       const retryDefs = [
-        { label: 'google-reddit-retry', params: { engine:'google', q:`${ALL_INTENTS} ${term}${loc} site:reddit.com`, num:20, hl:'en', gl:'uk' } },
-        { label: 'google-open-retry',   params: { engine:'google', q:`${ALL_INTENTS} ${term}${loc} -"we offer" -"our services"`, num:20, hl:'en', gl:'uk' } },
-        { label: 'bing-retry',          params: { engine:'bing',   q:`${ALL_INTENTS} ${term}${loc ? loc : ' UK'}`, count:20, mkt:'en-GB' } },
+        { label: 'google-reddit-retry', params: { engine:'google', q:`${MEDIUM_INTENTS} ${term}${loc} site:reddit.com`, num:20, hl:'en', gl:'uk' } },
+        { label: 'google-open-retry',   params: { engine:'google', q:`${MEDIUM_INTENTS} ${term}${loc} -"we offer" -"our services"`, num:20, hl:'en', gl:'uk' } },
+        { label: 'bing-retry',          params: { engine:'bing',   q:`${MEDIUM_INTENTS} ${term}${loc ? loc : ' UK'}`, count:20, mkt:'en-GB' } },
       ];
       const { perCollectorResults: retryNorm, debugEntries: retryDebug } = await runCollectorBatch(retryDefs, serpKey);
       debug.retryNoDateFilter.collectors = retryDebug;
@@ -548,9 +567,9 @@ ${JSON.stringify(candidates)}`;
       console.log('Claude found nothing — retrying without date filter');
       debug.claudeEmptyRetry.ran = true;
       const widerDefs = [
-        { label: 'google-reddit-wider', params: { engine:'google', q:`${ALL_INTENTS} ${term}${loc} site:reddit.com`, num:20, hl:'en', gl:'uk' } },
-        { label: 'google-open-wider',   params: { engine:'google', q:`${ALL_INTENTS} ${term}${loc} -"we offer" -"our services"`, num:20, hl:'en', gl:'uk' } },
-        { label: 'bing-wider',          params: { engine:'bing',   q:`${term}${loc ? loc:' UK'} ${ALL_INTENTS}`, count:20, mkt:'en-GB' } },
+        { label: 'google-reddit-wider', params: { engine:'google', q:`${MEDIUM_INTENTS} ${term}${loc} site:reddit.com`, num:20, hl:'en', gl:'uk' } },
+        { label: 'google-open-wider',   params: { engine:'google', q:`${MEDIUM_INTENTS} ${term}${loc} -"we offer" -"our services"`, num:20, hl:'en', gl:'uk' } },
+        { label: 'bing-wider',          params: { engine:'bing',   q:`${term}${loc ? loc:' UK'} ${MEDIUM_INTENTS}`, count:20, mkt:'en-GB' } },
       ];
       const { perCollectorResults: widerNorm, debugEntries: widerDebug } = await runCollectorBatch(widerDefs, serpKey);
       debug.claudeEmptyRetry.collectors = widerDebug;
