@@ -54,6 +54,11 @@
  *      candidate cap sent to Claude raised 30 -> 50 to match. google-open2
  *      now pages Google results 11-20 (`start: 10`) for the open query
  *      instead of duplicating google-open's first page.
+ *   #C max_tokens raised 4000 -> 8000 on both Claude calls. This was left
+ *      unchanged when #B raised the candidate cap 30 -> 50 — a fully-genuine
+ *      50-candidate batch is ~6500 output tokens, over the old 4000 limit,
+ *      which truncates the JSON array mid-object and makes it unparseable,
+ *      silently returning zero leads even when Claude found many.
  *
  * DEBUG INSTRUMENTATION (added post-v7, no lead logic changed):
  *   Pass ?debug=true to get a `debug` block in the JSON response showing,
@@ -522,11 +527,17 @@ Return ONLY a valid JSON array, nothing else. Empty array if no leads: []
 RESULTS:
 ${JSON.stringify(candidates)}`;
 
+    // max_tokens raised 4000 -> 8000 (was left at 4000 when the candidate cap
+    // was raised 30 -> 50 in v8). ~50 genuine leads at ~130 tokens each in the
+    // output schema is ~6500 tokens — over the old 4000 limit, which would
+    // truncate the JSON array mid-object and make it unparseable, silently
+    // producing zero leads even though Claude had found many. 8000 gives
+    // headroom for a fully-genuine 50-candidate batch.
     const claudeStartedAt = Date.now();
     const claudeRes  = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version':'2023-06-01' },
-      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:4000, messages:[{ role:'user', content:prompt }] })
+      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:8000, messages:[{ role:'user', content:prompt }] })
     }, CLAUDE_TIMEOUT_MS);
     debug.claudeDurationMs = Date.now() - claudeStartedAt;
 
@@ -582,7 +593,7 @@ ${JSON.stringify(candidates)}`;
         const wStartedAt = Date.now();
         const wRes = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
           method:'POST', headers:{'Content-Type':'application/json','x-api-key':process.env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01'},
-          body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:4000, messages:[{role:'user',content:prompt.replace(JSON.stringify(candidates),JSON.stringify(widerCandidates))}] })
+          body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:8000, messages:[{role:'user',content:prompt.replace(JSON.stringify(candidates),JSON.stringify(widerCandidates))}] })
         }, CLAUDE_TIMEOUT_MS);
         debug.claudeEmptyRetry.claudeDurationMs = Date.now() - wStartedAt;
         const wData = await wRes.json();
