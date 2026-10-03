@@ -4,18 +4,46 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Find Local Tradespeople | APTO Pro Directory</title>
-  <meta name="description" content="Find trusted, verified local tradespeople across the UK. Plumbers, electricians, gardeners, decorators and more. All APTO Pro verified."/>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <meta name="description" content="Find local tradespeople across the UK — plumbers, electricians, gardeners, decorators and more — listed by APTO Pro subscribers."/>
+  <link rel="canonical" href="https://apto-pro.com/trades"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:site_name" content="APTO Pro"/>
+  <meta property="og:locale" content="en_GB"/>
+  <meta property="og:title" content="Find Local Tradespeople | APTO Pro Directory"/>
+  <meta property="og:description" content="Find local tradespeople across the UK — plumbers, electricians, gardeners, decorators and more — listed by APTO Pro subscribers."/>
+  <meta property="og:url" content="https://apto-pro.com/trades"/>
+  <meta property="og:image" content="https://apto-pro.com/images/og-image.png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:alt" content="APTO Pro mascot with the text: Find customers before your competitors do"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Find Local Tradespeople | APTO Pro Directory"/>
+  <meta name="twitter:description" content="Find local tradespeople across the UK — plumbers, electricians, gardeners, decorators and more — listed by APTO Pro subscribers."/>
+  <meta name="twitter:image" content="https://apto-pro.com/images/og-image.png"/>
+  <link rel="icon" href="/favicon.ico" sizes="48x48"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+  <link rel="manifest" href="/site.webmanifest"/>
+  <meta name="theme-color" content="#1B2B5E"/>
+  <!-- Fonts are self-hosted (see /fonts/LICENSE.txt) so no request goes to Google -->
+  <link rel="preload" href="/fonts/jakarta-latin.woff2" as="font" type="font/woff2" crossorigin/>
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin/>
+  <style>
+    /* Self-hosted Google Fonts (SIL Open Font License 1.1) — latin + latin-ext, variable weight */
+    @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/inter-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;}
+    @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/inter-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+    @font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:400 800;font-display:swap;src:url(/fonts/jakarta-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;}
+    @font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:400 800;font-display:swap;src:url(/fonts/jakarta-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+  </style>
   <style>
     :root {
       --navy:#1B2B5E; --navy-mid:#243579; --navy-dark:#111C3E;
       --yellow:#F5C518; --yellow-lt:#FDE96B;
       --orange:#C4541A; --orange-lt:#E8722E;
       --white:#FFFFFF; --slate:#F4F6FA; --slate-mid:#E8ECF4;
-      --grey:#6B7280; --dark:#1A1A2E;
-      --success:#16A34A; --success-lt:#DCFCE7;
+      --grey:#596070; --dark:#1A1A2E;
+      --success:#16A34A; --success-lt:#DCFCE7; --success-dk:#166534;
       --font-d:'Plus Jakarta Sans',sans-serif;
       --font-b:'Inter',sans-serif;
       --r-sm:6px; --r-md:12px; --r-lg:20px;
@@ -41,7 +69,9 @@
       height:68px;max-width:1200px;margin:0 auto;padding:0 24px;
     }
     .nav-logo{display:flex;align-items:center;gap:10px;}
-    .nav-logo img{width:36px;}
+    .nav-logo img{width:36px;height:36px;}
+    .nav-actions{display:flex;align-items:center;gap:12px;}
+    .nav-actions .nav-login{color:rgba(255,255,255,0.8);font-size:14px;font-weight:500;}
     .nav-logo-text{font-family:var(--font-d);font-weight:800;font-size:19px;color:var(--white);letter-spacing:-0.02em;}
     .nav-logo-text span{color:var(--yellow);}
     .nav-links{display:flex;align-items:center;gap:28px;list-style:none;}
@@ -76,8 +106,8 @@
       color:var(--white);letter-spacing:-0.03em;line-height:1.1;margin-bottom:16px;
     }
     .hero h1 span{color:var(--yellow);}
-    .hero p{font-size:17px;color:rgba(255,255,255,0.7);line-height:1.7;max-width:520px;margin-bottom:32px;}
-    .hero-mascot img{width:160px;filter:drop-shadow(0 12px 40px rgba(196,84,26,0.4));}
+    .hero p{font-size:17px;color:rgba(255,255,255,0.8);line-height:1.7;max-width:520px;margin-bottom:32px;}
+    .hero-mascot img{width:160px;height:auto;filter:drop-shadow(0 12px 40px rgba(196,84,26,0.4));}
 
     /* SEARCH BAR */
     .search-section{
@@ -117,12 +147,13 @@
       background:var(--white);border:1px solid var(--slate-mid);
       border-radius:var(--r-lg);padding:20px;margin-bottom:16px;
     }
-    .filter-panel h3{
+    .filter-panel h2{
       font-family:var(--font-d);font-weight:700;font-size:14px;
       color:var(--navy);margin-bottom:14px;text-transform:uppercase;
       letter-spacing:0.06em;
     }
     .filter-item{
+      width:100%;background:none;text-align:left;font-family:inherit;border-radius:0;
       display:flex;align-items:center;gap:10px;
       padding:8px 0;cursor:pointer;border-bottom:1px solid var(--slate-mid);
       font-size:14px;color:var(--dark);transition:color 0.15s;
@@ -196,7 +227,9 @@
       display:flex;align-items:center;gap:16px;font-size:13px;color:var(--grey);
     }
     .tc-meta span{display:flex;align-items:center;gap:4px;}
-    .tc-stars{color:var(--yellow);letter-spacing:1px;font-size:13px;}
+    .tc-example{background:var(--slate-mid);color:var(--navy);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:2px 8px;border-radius:100px;display:inline-block;margin:0 0 6px 4px;}
+    .tc-verified{color:var(--success-dk);font-weight:600;}
+    .example-notice{background:var(--slate);border:1px dashed rgba(27,43,94,0.25);border-radius:var(--r-md);padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--navy);line-height:1.6;}
     .tc-actions{display:flex;flex-direction:column;gap:8px;min-width:140px;}
     .btn-contact{
       background:var(--navy);color:var(--white);
@@ -214,7 +247,7 @@
     .btn-view:hover{border-color:var(--navy);}
     .verified-badge{
       display:flex;align-items:center;gap:4px;
-      font-size:11px;font-weight:600;color:var(--success);
+      font-size:11px;font-weight:600;color:var(--success-dk);
       background:var(--success-lt);padding:3px 10px;border-radius:100px;
       justify-content:center;
     }
@@ -232,12 +265,12 @@
       background-size:40px 40px;
     }
     .cta-banner-text{position:relative;z-index:1;}
-    .cta-banner-text h3{
+    .cta-banner-text h2{
       font-family:var(--font-d);font-weight:800;font-size:20px;
       color:var(--white);margin-bottom:6px;letter-spacing:-0.02em;
     }
-    .cta-banner-text h3 span{color:var(--yellow);}
-    .cta-banner-text p{font-size:14px;color:rgba(255,255,255,0.65);line-height:1.6;}
+    .cta-banner-text h2 span{color:var(--yellow);}
+    .cta-banner-text p{font-size:14px;color:rgba(255,255,255,0.8);line-height:1.6;}
     .btn-cta-banner{
       position:relative;z-index:1;flex-shrink:0;
       background:var(--yellow);color:var(--navy-dark);
@@ -267,6 +300,7 @@
       display:none;
     }
     .modal-overlay.open{display:flex;}
+    .modal{max-height:calc(100vh - 48px);overflow-y:auto;}
     .modal{
       background:var(--white);border-radius:var(--r-lg);
       max-width:520px;width:100%;padding:36px;
@@ -291,20 +325,89 @@
       box-shadow:0 3px 12px rgba(245,197,24,0.4);transition:background 0.2s;margin-top:8px;
     }
     .btn-submit:hover{background:var(--yellow-lt);}
+    .btn-submit[disabled]{opacity:0.7;cursor:wait;}
+    .form-status{display:none;margin-top:12px;padding:10px 12px;border-radius:var(--r-sm);font-size:13px;line-height:1.5;}
+    .form-status.show{display:block;}
+    .form-status.error{background:#FEE2E2;color:#991B1B;}
+    .form-status.success{background:var(--success-lt);color:var(--success-dk);}
+    .visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+    .form-note{font-size:11px;color:var(--grey);text-align:center;margin-top:12px;line-height:1.5;}
+    .form-note a{text-decoration:underline;}
+    .sort-wrap{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--grey);}
+
+    /* ─── MOBILE MENU ─── */
+    .hamburger { display: none; flex-direction: column; justify-content: center; gap: 5px; width: 44px; height: 44px; padding: 10px; background: none; border: none; cursor: pointer; }
+    .hamburger span { width: 22px; height: 2px; background: #FFFFFF; border-radius: 2px; display: block; transition: transform 0.2s, opacity 0.2s; }
+    .hamburger[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+    .hamburger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .mobile-menu { background: #1B2B5E; border-top: 1px solid rgba(245,197,24,0.15); padding: 8px 24px 20px; max-height: calc(100vh - 68px); overflow-y: auto; }
+    .mobile-menu[hidden] { display: none; }
+    .mobile-menu-link { display: block; padding: 12px 0; color: rgba(255,255,255,0.85); font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .mobile-menu-link[aria-current="page"] { color: #F5C518; }
+    .mobile-menu-cta { display: block; margin-top: 14px; background: #F5C518; color: #111C3E; text-align: center; padding: 12px; border-radius: 8px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; }
+    /* ─── FOOTER ─── */
+    footer {
+      background: #111C3E;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 64px 0 32px;
+    }
+    footer .container { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+    .footer-grid {
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px; margin-bottom: 48px;
+    }
+    .footer-logo {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+    }
+    .footer-logo img { width: 36px; height: 36px; object-fit: contain; }
+    .footer-logo-text {
+      font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 18px;
+      color: #FFFFFF; letter-spacing: -0.02em;
+    }
+    .footer-logo-text span { color: #F5C518; }
+    .footer-desc { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.7; max-width: 260px; }
+    .footer-col .footer-heading {
+      font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 12px;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.6); margin: 0 0 16px;
+    }
+    .footer-col ul { list-style: none; margin: 0; padding: 0; }
+    .footer-col li { margin-bottom: 10px; }
+    .footer-col a { font-size: 13px; color: rgba(255,255,255,0.7); transition: color 0.2s; }
+    .footer-col a:hover, .footer-col a:focus-visible { color: #FFFFFF; }
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding-top: 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .footer-bottom p { font-size: 12px; color: rgba(255,255,255,0.6); margin: 0; }
+    .footer-mascot-mini { width: 48px; height: 48px; opacity: 0.7; }
+    @media (max-width: 900px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 560px) { .footer-grid { grid-template-columns: 1fr; } }
 
     /* RESPONSIVE */
     @media(max-width:900px){
+      .nav-links,.nav-actions{display:none;}
+      .hamburger{display:flex;}
       .hero-inner{grid-template-columns:1fr;}
       .hero-mascot{display:none;}
       .search-bar{grid-template-columns:1fr 1fr;}
       .main{grid-template-columns:1fr;}
       .filters{display:none;}
       .trade-card{grid-template-columns:auto 1fr;}
-      .tc-actions{display:none;}
+      .tc-actions{grid-column:1 / -1;flex-direction:row;flex-wrap:wrap;min-width:0;}
+      .tc-actions > *{flex:1 1 140px;}
+      .cta-banner{flex-direction:column;align-items:flex-start;}
+      .btn-cta-banner{white-space:normal;text-align:center;}
     }
     @media(max-width:560px){
       .search-bar{grid-template-columns:1fr;}
       .trade-card{grid-template-columns:1fr;}
+      .main{padding:24px 16px;}
+      .cta-banner{padding:24px 20px;}
+      .tc-meta{flex-wrap:wrap;gap:8px;}
     }
   </style>
 </head>
@@ -313,40 +416,70 @@
 <!-- NAV -->
 <nav>
   <div class="nav-inner">
-    <a class="nav-logo" href="/index.html">
-      <img src="/images/mascot.png" alt="APTO Pro"/>
+    <a class="nav-logo" href="/" aria-label="APTO Pro home">
+      <img src="/images/mascot-192.webp" width="36" height="36" alt="" decoding="async"/>
       <span class="nav-logo-text">APTO <span>Pro</span></span>
     </a>
     <ul class="nav-links">
-      <li><a href="/index.html">Home</a></li>
-      <li><a href="/index.html#features">Features</a></li>
-      <li><a href="/trades.html" class="active">Find a Trade</a></li>
-      <li><a href="/index.html#pricing">Pricing</a></li>
+      <li><a href="/">Home</a></li>
+      <li><a href="/#features">Features</a></li>
+      <li><a href="/trades" class="active" aria-current="page">Find a Trade</a></li>
+      <li><a href="/#pricing">Pricing</a></li>
     </ul>
-    <div style="display:flex;align-items:center;gap:12px;">
-      <a href="/app.html" style="color:rgba(255,255,255,0.75);font-size:14px;font-weight:500;">Log in</a>
-      <a href="/app.html?action=signup" class="btn-nav">List your business →</a>
+    <div class="nav-actions">
+      <a href="/app" class="nav-login">Log in</a>
+      <a href="/app?action=signup" class="btn-nav">List your business →</a>
     </div>
+    <button class="hamburger" id="hamburger-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div id="mobile-menu" class="mobile-menu" hidden>
+    <a class="mobile-menu-link" href="/">Home</a>
+    <a class="mobile-menu-link" href="/#features">Features</a>
+    <a class="mobile-menu-link" href="/trades" aria-current="page">Find a Trade</a>
+    <a class="mobile-menu-link" href="/#pricing">Pricing</a>
+    <a class="mobile-menu-link" href="/app">Log in</a>
+    <a class="mobile-menu-cta" href="/app?action=signup">List your business →</a>
   </div>
 </nav>
+<script>
+  // Mobile hamburger menu
+  (function () {
+    var btn = document.getElementById('hamburger-btn');
+    var menu = document.getElementById('mobile-menu');
+    if (!btn || !menu) return;
+    function setOpen(open) {
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      menu.hidden = !open;
+    }
+    btn.addEventListener('click', function () { setOpen(menu.hidden); });
+    menu.addEventListener('click', function (e) { if (e.target.closest('a')) setOpen(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !menu.hidden) { setOpen(false); btn.focus(); } });
+    window.addEventListener('resize', function () { if (window.innerWidth > 900 && !menu.hidden) setOpen(false); });
+  })();
+</script>
 
+<main id="main">
 <!-- HERO -->
 <section class="hero">
   <div class="hero-inner">
     <div>
-      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--success-lt);border:1px solid rgba(22,163,74,0.25);border-radius:100px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--success);margin-bottom:20px;">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--success-lt);border:1px solid rgba(22,163,74,0.25);border-radius:100px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--success-dk);margin-bottom:20px;">
         <span style="width:7px;height:7px;border-radius:50%;background:var(--success);display:inline-block;"></span>
-        APTO Pro Verified Tradespeople
+        APTO Pro Trade Directory
       </div>
       <h1>Find trusted local<br><span>tradespeople near you</span></h1>
-      <p>Every tradesperson in our directory is an APTO Pro subscriber — vetted, active, and ready to help. Search by trade and location to find reliable local professionals.</p>
+      <!-- was: "Every tradesperson in our directory is an APTO Pro subscriber — vetted, active, and ready to help." ("vetted" removed: no vetting process is described anywhere) -->
+      <p>Businesses in this directory are APTO Pro subscribers. Search by trade and location to find local professionals, then send them an enquiry.</p>
       <div style="display:flex;gap:12px;flex-wrap:wrap;">
         <a href="#directory" class="btn-nav" style="padding:13px 28px;font-size:15px;border-radius:var(--r-md);">Browse directory ↓</a>
-        <a href="/app.html?action=signup" style="background:transparent;color:var(--white);font-family:var(--font-d);font-weight:700;font-size:15px;padding:13px 28px;border-radius:var(--r-md);border:2px solid rgba(255,255,255,0.3);transition:border-color 0.2s;">List your business →</a>
+        <a href="/app?action=signup" style="background:transparent;color:var(--white);font-family:var(--font-d);font-weight:700;font-size:15px;padding:13px 28px;border-radius:var(--r-md);border:2px solid rgba(255,255,255,0.3);transition:border-color 0.2s;">List your business →</a>
       </div>
     </div>
     <div class="hero-mascot">
-      <img src="/images/mascot.png" alt="APTO Pro"/>
+      <img src="/images/mascot-400.webp" srcset="/images/mascot-192.webp 192w, /images/mascot-400.webp 400w" sizes="160px" width="160" height="160" alt="" decoding="async"/>
     </div>
   </div>
 </section>
@@ -355,8 +488,8 @@
 <section class="search-section">
   <div class="search-bar">
     <div class="search-field">
-      <label>Trade or service</label>
-      <select class="search-input" id="search-trade" onchange="filterListings()">
+      <label for="search-trade">Trade or service</label>
+      <select class="search-input" id="search-trade">
         <option value="">All trades</option>
         <option value="Plumbing">🔧 Plumbing</option>
         <option value="Electrical">⚡ Electrical</option>
@@ -380,15 +513,15 @@
       </select>
     </div>
     <div class="search-field">
-      <label>Location</label>
-      <input type="text" class="search-input" id="search-location" placeholder="e.g. Brighton, BN1, Sussex" oninput="filterListings()"/>
+      <label for="search-location">Location</label>
+      <input type="text" class="search-input" id="search-location" placeholder="e.g. Brighton, BN1, Sussex" autocomplete="address-level2"/>
     </div>
     <div class="search-field">
-      <label>Keyword</label>
-      <input type="text" class="search-input" id="search-keyword" placeholder="e.g. emergency, insured, free quote" oninput="filterListings()"/>
+      <label for="search-keyword">Keyword</label>
+      <input type="text" class="search-input" id="search-keyword" placeholder="e.g. emergency, insured, free quote"/>
     </div>
-    <button class="btn-search" onclick="filterListings()">
-      🔍 Search
+    <button class="btn-search" type="button" id="btn-search">
+      <span aria-hidden="true">🔍</span> Search
     </button>
   </div>
 </section>
@@ -397,31 +530,29 @@
 <div class="main" id="directory">
 
   <!-- SIDEBAR FILTERS -->
-  <aside class="filters">
+  <aside class="filters" aria-label="Filters">
     <div class="filter-panel">
-      <h3>Trade Category</h3>
-      <div class="filter-item active" onclick="setFilter('')">
-        <span class="fi-icon">✨</span> All trades <span class="fi-count" id="count-all">0</span>
-      </div>
-      <div class="filter-item" onclick="setFilter('Plumbing')"><span class="fi-icon">🔧</span> Plumbing <span class="fi-count" id="count-plumbing">0</span></div>
-      <div class="filter-item" onclick="setFilter('Electrical')"><span class="fi-icon">⚡</span> Electrical <span class="fi-count" id="count-electrical">0</span></div>
-      <div class="filter-item" onclick="setFilter('Decorating')"><span class="fi-icon">🏠</span> Decorating <span class="fi-count" id="count-decorating">0</span></div>
-      <div class="filter-item" onclick="setFilter('Gardening')"><span class="fi-icon">🌿</span> Gardening <span class="fi-count" id="count-gardening">0</span></div>
-      <div class="filter-item" onclick="setFilter('Building')"><span class="fi-icon">🏗️</span> Building <span class="fi-count" id="count-building">0</span></div>
-      <div class="filter-item" onclick="setFilter('Cleaning')"><span class="fi-icon">🧹</span> Cleaning <span class="fi-count" id="count-cleaning">0</span></div>
-      <div class="filter-item" onclick="setFilter('Removals')"><span class="fi-icon">🚚</span> Removals <span class="fi-count" id="count-removals">0</span></div>
-      <div class="filter-item" onclick="setFilter('Roofing')"><span class="fi-icon">🏘️</span> Roofing <span class="fi-count" id="count-roofing">0</span></div>
+      <h2>Trade Category</h2>
+      <button type="button" class="filter-item active" data-trade="" aria-pressed="true"><span class="fi-icon" aria-hidden="true">✨</span> All trades <span class="fi-count" id="count-all">0</span></button>
+      <button type="button" class="filter-item" data-trade="Plumbing" aria-pressed="false"><span class="fi-icon" aria-hidden="true">🔧</span> Plumbing <span class="fi-count" id="count-plumbing">0</span></button>
+      <button type="button" class="filter-item" data-trade="Electrical" aria-pressed="false"><span class="fi-icon" aria-hidden="true">⚡</span> Electrical <span class="fi-count" id="count-electrical">0</span></button>
+      <button type="button" class="filter-item" data-trade="Decorating" aria-pressed="false"><span class="fi-icon" aria-hidden="true">🏠</span> Decorating <span class="fi-count" id="count-decorating">0</span></button>
+      <button type="button" class="filter-item" data-trade="Gardening" aria-pressed="false"><span class="fi-icon" aria-hidden="true">🌿</span> Gardening <span class="fi-count" id="count-gardening">0</span></button>
+      <button type="button" class="filter-item" data-trade="Building" aria-pressed="false"><span class="fi-icon" aria-hidden="true">🏗️</span> Building <span class="fi-count" id="count-building">0</span></button>
+      <button type="button" class="filter-item" data-trade="Cleaning" aria-pressed="false"><span class="fi-icon" aria-hidden="true">🧹</span> Cleaning <span class="fi-count" id="count-cleaning">0</span></button>
+      <button type="button" class="filter-item" data-trade="Removals" aria-pressed="false"><span class="fi-icon" aria-hidden="true">🚚</span> Removals <span class="fi-count" id="count-removals">0</span></button>
+      <button type="button" class="filter-item" data-trade="Roofing" aria-pressed="false"><span class="fi-icon" aria-hidden="true">🏘️</span> Roofing <span class="fi-count" id="count-roofing">0</span></button>
     </div>
     <div class="filter-panel">
-      <h3>Options</h3>
-      <div class="filter-item" onclick="toggleFeatured(this)"><span class="fi-icon">⭐</span> Featured only</div>
-      <div class="filter-item" onclick="toggleVerified(this)"><span class="fi-icon">✅</span> Verified only</div>
+      <h2>Options</h2>
+      <button type="button" class="filter-item" id="toggle-featured" aria-pressed="false"><span class="fi-icon" aria-hidden="true">⭐</span> Featured only</button>
+      <button type="button" class="filter-item" id="toggle-verified" aria-pressed="false"><span class="fi-icon" aria-hidden="true">✅</span> Verified only</button>
     </div>
     <div class="cta-banner" style="padding:20px;">
       <div class="cta-banner-text">
-        <h3 style="font-size:16px;">Are you a <span>tradesperson?</span></h3>
+        <h2 style="font-size:16px;">Are you a <span>tradesperson?</span></h2>
         <p style="font-size:13px;margin-bottom:12px;">Get listed for free when you join APTO Pro.</p>
-        <a href="/app.html?action=signup" class="btn-cta-banner" style="font-size:13px;padding:10px 16px;">Get listed free →</a>
+        <a href="/app?action=signup" class="btn-cta-banner" style="font-size:13px;padding:10px 16px;">Get listed free →</a>
       </div>
     </div>
   </aside>
@@ -432,21 +563,28 @@
     <!-- CTA for tradespeople -->
     <div class="cta-banner">
       <div class="cta-banner-text">
-        <h3>Are you a tradesperson? <span>Get listed free</span></h3>
-        <p>APTO Pro subscribers get a free listing in this directory — visible to thousands of homeowners searching for local trades. Join today and start getting found.</p>
+        <h2>Are you a tradesperson? <span>Get listed free</span></h2>
+        <!-- was: "visible to thousands of homeowners searching for local trades" (unverifiable) -->
+        <p>APTO Pro subscribers get a free listing in this directory, so homeowners searching for local trades can find them. Join today and start getting found.</p>
       </div>
-      <a href="/app.html?action=signup" class="btn-cta-banner">List my business free →</a>
+      <a href="/app?action=signup" class="btn-cta-banner">List my business free →</a>
     </div>
 
     <div class="results-header">
-      <div class="results-count" id="results-count">Loading listings...</div>
-      <select class="results-sort" onchange="sortListings(this.value)">
-        <option value="featured">Featured first</option>
-        <option value="rating">Highest rated</option>
-        <option value="name">A–Z</option>
-        <option value="newest">Newest first</option>
-      </select>
+      <div class="results-count" id="results-count" role="status">Loading listings...</div>
+      <div class="sort-wrap">
+        <label for="results-sort">Sort by</label>
+        <!-- "Highest rated" removed: no listing has any reviews yet -->
+        <select class="results-sort" id="results-sort">
+          <option value="featured">Featured first</option>
+          <option value="newest">Newest first</option>
+          <option value="name">A–Z</option>
+        </select>
+      </div>
     </div>
+
+    <!-- Remove this notice (and set example:false on each listing) once listings are real subscriber profiles -->
+    <p class="example-notice" id="example-notice"><strong>Example listings.</strong> The listings below show how businesses appear in the APTO Pro directory. Reviews and ratings will appear once customers start leaving them.</p>
 
     <div id="listings-container"></div>
 
@@ -454,67 +592,131 @@
 
   </div>
 </div>
+</main>
 
-<!-- CONTACT MODAL -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="footer-logo" href="/">
+          <img src="/images/mascot-192.webp" width="36" height="36" alt="" loading="lazy" decoding="async"/>
+          <span class="footer-logo-text">APTO <span>Pro</span></span>
+        </a>
+        <p class="footer-desc">AI Business Intelligence for local tradespeople and small businesses across the UK. Find customers before your competitors do.</p>
+      </div>
+      <div class="footer-col">
+        <h2 class="footer-heading">Product</h2>
+        <ul>
+          <li><a href="/#features">Lead Finder</a></li>
+          <li><a href="/#all-features">Features</a></li>
+          <li><a href="/#industries">Industries</a></li>
+          <li><a href="/#pricing">Pricing</a></li>
+          <li><a href="/#how-it-works">How It Works</a></li>
+          <li><a href="/trades">Find a Trade</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h2 class="footer-heading">Company</h2>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/contact">Contact</a></li>
+          <!-- Blog, Careers and Press links removed until those pages have content -->
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h2 class="footer-heading">Legal</h2>
+        <ul>
+          <li><a href="/privacy">Privacy Policy</a></li>
+          <li><a href="/terms">Terms of Service</a></li>
+          <li><a href="/cookies">Cookie Policy</a></li>
+          <li><a href="/privacy#your-rights">GDPR &amp; your rights</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© <span class="js-year">2026</span> APTO Pro. All rights reserved. Made in the UK 🇬🇧</p>
+      <img class="footer-mascot-mini" src="/images/mascot-192.webp" width="48" height="48" alt="" loading="lazy" decoding="async"/>
+    </div>
+  </div>
+</footer>
+<script>document.querySelectorAll('.js-year').forEach(function(el){el.textContent=new Date().getFullYear();});</script>
+
+<!-- CONTACT MODAL
+     This form is in the static HTML so Netlify Forms can detect it at deploy time
+     ("Form detection" must be enabled in Netlify → Site configuration → Forms).
+     Submissions go to the site owner in Netlify, who passes them on to the business. -->
 <div class="modal-overlay" id="contact-modal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal()">✕</button>
-    <h2>Contact <span id="modal-name">this tradesperson</span></h2>
-    <p>Send them a message and they'll get back to you directly. No commission, no middleman.</p>
-    <div class="form-group">
-      <label class="form-label">Your name</label>
-      <input class="form-input" type="text" placeholder="John Smith"/>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Your email</label>
-      <input class="form-input" type="email" placeholder="you@example.com"/>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Your phone (optional)</label>
-      <input class="form-input" type="tel" placeholder="07..."/>
-    </div>
-    <div class="form-group">
-      <label class="form-label">What do you need?</label>
-      <textarea class="form-input" rows="3" placeholder="Briefly describe what you need help with..." style="resize:none;"></textarea>
-    </div>
-    <button class="btn-submit" onclick="sendEnquiry()">Send enquiry →</button>
-    <p style="font-size:11px;color:var(--grey);text-align:center;margin-top:12px;">Your details are shared only with this tradesperson, not stored or sold.</p>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <button class="modal-close" type="button" id="modal-close" aria-label="Close">✕</button>
+    <h2 id="modal-title">Contact <span id="modal-name">this tradesperson</span></h2>
+    <p>Send an enquiry and we'll pass your details on to this business so they can get back to you. No commission, no middleman.</p>
+    <form name="trade-enquiry" id="enquiry-form" method="POST" action="/trades?enquiry=sent" data-netlify="true" netlify-honeypot="bot-field" novalidate>
+      <input type="hidden" name="form-name" value="trade-enquiry"/>
+      <input type="hidden" name="business" id="enquiry-business" value=""/>
+      <p class="visually-hidden"><label>Leave this field empty <input name="bot-field" tabindex="-1" autocomplete="off"/></label></p>
+      <div class="form-group">
+        <label class="form-label" for="enquiry-name">Your name</label>
+        <input class="form-input" type="text" id="enquiry-name" name="name" placeholder="John Smith" autocomplete="name" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="enquiry-email">Your email</label>
+        <input class="form-input" type="email" id="enquiry-email" name="email" placeholder="you@example.com" autocomplete="email" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="enquiry-phone">Your phone (optional)</label>
+        <input class="form-input" type="tel" id="enquiry-phone" name="phone" placeholder="07..." autocomplete="tel"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="enquiry-message">What do you need?</label>
+        <textarea class="form-input" id="enquiry-message" name="message" rows="3" placeholder="Briefly describe what you need help with..." style="resize:none;" required></textarea>
+      </div>
+      <button class="btn-submit" type="submit" id="enquiry-submit">Send enquiry →</button>
+      <div class="form-status" id="enquiry-status" role="alert" aria-live="assertive"></div>
+    </form>
+    <!-- was: "Your details are shared only with this tradesperson, not stored or sold." (not accurate: Netlify Forms stores submissions) -->
+    <p class="form-note">Your enquiry is stored securely by APTO Pro (via our host, Netlify) only so we can pass it to this business. We never sell your details. See our <a href="/privacy">Privacy Policy</a>.</p>
   </div>
 </div>
 
 <!-- TOAST -->
-<div id="toast" style="position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--navy-dark);color:var(--white);padding:12px 20px;border-radius:var(--r-md);font-size:14px;font-weight:500;box-shadow:var(--sh-lg);transform:translateY(80px);opacity:0;transition:transform 0.3s,opacity 0.3s;"></div>
+<div id="toast" role="status" aria-live="polite" style="position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--navy-dark);color:var(--white);padding:12px 20px;border-radius:var(--r-md);font-size:14px;font-weight:500;box-shadow:var(--sh-lg);transform:translateY(80px);opacity:0;transition:transform 0.3s,opacity 0.3s;"></div>
 
 <script>
-// ── SAMPLE LISTINGS ──
-// In production these would come from Supabase
-// Any APTO Pro subscriber can have a listing — populated from their profile
+// ── EXAMPLE LISTINGS ──
+// These are hard-coded example listings (marked "example: true" and labelled on the page).
+// In production these would come from Supabase — any APTO Pro subscriber can have a listing,
+// populated from their profile. Ratings were removed because no listing has any reviews yet
+// (they previously showed "5.0 ★★★★★ (0 reviews)"). If these businesses are genuine
+// subscribers, set example:false and remove the #example-notice paragraph.
 const ALL_LISTINGS = [
   {
     id:11, name:'Whites Storage & Removals', trade:'Removals', location:'West Sussex',
     desc:'Professional removal and storage solutions across West Sussex and beyond. Secure storage facilities, house moves, and commercial relocations handled with care.',
     tags:['House removals','Secure storage','Commercial moves','West Sussex'],
-    rating:5.0, reviews:0, avatar:'WR', featured:true, verified:true, phone:''
+    reviews:0, avatar:'WR', featured:true, verified:true, example:true, phone:''
   },
   {
     id:12, name:'Whites Storage Solutions', trade:'Removals', location:'West Sussex',
     desc:'Short and long term storage solutions in West Sussex. Clean, secure, accessible units available for household and business storage.',
     tags:['Short term storage','Long term storage','Business storage','Household storage'],
-    rating:5.0, reviews:0, avatar:'WS', featured:false, verified:true, phone:''
+    reviews:0, avatar:'WS', featured:false, verified:true, example:true, phone:''
   },
   {
     id:13, name:'JP Lea Installations', trade:'Building', location:'West Sussex',
     desc:'Kitchen and bathroom fitting specialists covering West Sussex. Quality installations with attention to detail from start to finish.',
     tags:['Kitchen fitting','Bathroom fitting','West Sussex','Free quotes'],
-    rating:5.0, reviews:0, avatar:'JP', featured:true, verified:true, phone:''
+    reviews:0, avatar:'JP', featured:true, verified:true, example:true, phone:''
   },
   {
     id:14, name:'ROSCO Painters & Decorators', trade:'Decorating', location:'West Sussex',
     desc:'Professional painting and decorating service across West Sussex. Interior and exterior work, residential and commercial. High quality finish guaranteed.',
     tags:['Interior painting','Exterior painting','Residential','Commercial'],
-    rating:5.0, reviews:0, avatar:'RP', featured:true, verified:true, phone:''
+    reviews:0, avatar:'RP', featured:true, verified:true, example:true, phone:''
   },
 ];
+
+// Replace with your real contact email once known — shown if an enquiry fails to send.
+const FALLBACK_CONTACT_EMAIL = '[CONTACT EMAIL]';
 
 let filtered = [...ALL_LISTINGS];
 let currentPage = 1;
@@ -522,9 +724,31 @@ const PER_PAGE = 6;
 let showFeaturedOnly = false;
 let showVerifiedOnly = false;
 let currentTradeFilter = '';
+let currentSort = 'featured';
+
+function escapeHtml(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 
 function init() {
   updateCounts();
+  document.getElementById('search-trade').addEventListener('change', e => { currentTradeFilter = e.target.value; syncCategoryButtons(); filterListings(); });
+  document.getElementById('search-location').addEventListener('input', filterListings);
+  document.getElementById('search-keyword').addEventListener('input', filterListings);
+  document.getElementById('btn-search').addEventListener('click', filterListings);
+  document.getElementById('results-sort').addEventListener('change', e => sortListings(e.target.value));
+  document.querySelectorAll('.filter-item[data-trade]').forEach(btn => btn.addEventListener('click', () => setFilter(btn.dataset.trade)));
+  document.getElementById('toggle-featured').addEventListener('click', e => toggleFeatured(e.currentTarget));
+  document.getElementById('toggle-verified').addEventListener('click', e => toggleVerified(e.currentTarget));
+  document.getElementById('listings-container').addEventListener('click', e => {
+    const btn = e.target.closest('[data-contact-id]');
+    if (btn) openModal(Number(btn.dataset.contactId), btn);
+  });
+  document.getElementById('pagination').addEventListener('click', e => {
+    const btn = e.target.closest('[data-page]');
+    if (btn) goPage(Number(btn.dataset.page));
+  });
+  if (!ALL_LISTINGS.some(l => l.example)) document.getElementById('example-notice').remove();
   filterListings();
 }
 
@@ -536,30 +760,41 @@ function updateCounts() {
   });
 }
 
+function syncCategoryButtons() {
+  document.querySelectorAll('.filter-item[data-trade]').forEach(el => {
+    const on = el.dataset.trade === currentTradeFilter;
+    el.classList.toggle('active', on);
+    el.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+
 function setFilter(trade) {
   currentTradeFilter = trade;
-  document.getElementById('search-trade').value = trade;
-  document.querySelectorAll('.filter-item').forEach(el => el.classList.remove('active'));
-  event.currentTarget.classList.add('active');
+  const select = document.getElementById('search-trade');
+  select.value = trade;
+  if (select.value !== trade) select.value = '';
+  syncCategoryButtons();
   filterListings();
 }
 
 function toggleFeatured(el) {
   showFeaturedOnly = !showFeaturedOnly;
   el.classList.toggle('active', showFeaturedOnly);
+  el.setAttribute('aria-pressed', showFeaturedOnly ? 'true' : 'false');
   filterListings();
 }
 
 function toggleVerified(el) {
   showVerifiedOnly = !showVerifiedOnly;
   el.classList.toggle('active', showVerifiedOnly);
+  el.setAttribute('aria-pressed', showVerifiedOnly ? 'true' : 'false');
   filterListings();
 }
 
 function filterListings() {
-  const trade    = currentTradeFilter || document.getElementById('search-trade').value;
-  const location = document.getElementById('search-location').value.toLowerCase();
-  const keyword  = document.getElementById('search-keyword').value.toLowerCase();
+  const trade    = currentTradeFilter;
+  const location = document.getElementById('search-location').value.trim().toLowerCase();
+  const keyword  = document.getElementById('search-keyword').value.trim().toLowerCase();
 
   filtered = ALL_LISTINGS.filter(l => {
     if (trade && l.trade !== trade) return false;
@@ -571,13 +806,22 @@ function filterListings() {
   });
 
   currentPage = 1;
+  applySort();
   renderListings();
 }
 
+function applySort() {
+  if (currentSort === 'featured') filtered.sort((a,b) => (b.featured - a.featured) || (a.id - b.id));
+  // Listing ids increase as businesses are added, so a higher id = newer listing.
+  // Switch this to a real created_at date when listings come from Supabase.
+  else if (currentSort === 'newest') filtered.sort((a,b) => b.id - a.id);
+  else if (currentSort === 'name') filtered.sort((a,b) => a.name.localeCompare(b.name));
+}
+
 function sortListings(method) {
-  if (method === 'featured') filtered.sort((a,b) => b.featured - a.featured);
-  else if (method === 'rating') filtered.sort((a,b) => b.rating - a.rating);
-  else if (method === 'name') filtered.sort((a,b) => a.name.localeCompare(b.name));
+  currentSort = method;
+  applySort();
+  currentPage = 1;
   renderListings();
 }
 
@@ -585,45 +829,44 @@ function renderListings() {
   const container = document.getElementById('listings-container');
   const start = (currentPage - 1) * PER_PAGE;
   const page  = filtered.slice(start, start + PER_PAGE);
+  const n = filtered.length;
 
   document.getElementById('results-count').textContent =
-    filtered.length === 0 ? 'No listings found' :
-    `${filtered.length} tradesperson${filtered.length === 1 ? '' : 's'} found`;
+    n === 0 ? 'No listings found' : `${n} ${n === 1 ? 'tradesperson' : 'tradespeople'} found`;
 
-  if (filtered.length === 0) {
+  if (n === 0) {
     container.innerHTML = `
       <div style="text-align:center;padding:60px 24px;">
-        <img src="/images/mascot.png" style="width:80px;margin:0 auto 16px;opacity:0.6;" alt=""/>
+        <img src="/images/mascot-192.webp" width="80" height="80" style="width:80px;margin:0 auto 16px;opacity:0.6;" alt=""/>
         <h3 style="font-family:var(--font-d);font-weight:700;font-size:18px;color:var(--navy);margin-bottom:8px;">No listings found</h3>
         <p style="font-size:14px;color:var(--grey);margin-bottom:20px;">Try widening your search, or be the first to list your trade in this area.</p>
-        <a href="/app.html?action=signup" style="display:inline-block;background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:700;padding:11px 24px;border-radius:var(--r-sm);">List your business free →</a>
+        <a href="/app?action=signup" style="display:inline-block;background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:700;padding:11px 24px;border-radius:var(--r-sm);">List your business free →</a>
       </div>`;
     document.getElementById('pagination').innerHTML = '';
     return;
   }
 
   container.innerHTML = page.map(l => `
-    <div class="trade-card ${l.featured ? 'featured' : ''}">
-      <div class="tc-avatar">${l.avatar}</div>
+    <article class="trade-card ${l.featured ? 'featured' : ''}">
+      <div class="tc-avatar" aria-hidden="true">${escapeHtml(l.avatar)}</div>
       <div>
-        ${l.featured ? '<span class="tc-featured-badge">⭐ Featured</span>' : ''}
-        <div class="tc-name">${l.name}</div>
+        ${l.featured ? '<span class="tc-featured-badge">⭐ Featured</span>' : ''}${l.example ? '<span class="tc-example">Example listing</span>' : ''}
+        <h3 class="tc-name">${escapeHtml(l.name)}</h3>
         <div class="tc-trade">
-          <span class="badge">${l.trade}</span>
-          📍 ${l.location}
+          <span class="badge">${escapeHtml(l.trade)}</span>
+          <span><span aria-hidden="true">📍</span> ${escapeHtml(l.location)}</span>
         </div>
-        <div class="tc-desc">${l.desc}</div>
-        <div class="tc-tags">${l.tags.map(t => `<span class="tc-tag">${t}</span>`).join('')}</div>
+        <div class="tc-desc">${escapeHtml(l.desc)}</div>
+        <div class="tc-tags">${l.tags.map(t => `<span class="tc-tag">${escapeHtml(t)}</span>`).join('')}</div>
         <div class="tc-meta">
-          <span><span class="tc-stars">${'★'.repeat(Math.floor(l.rating))}</span> ${l.rating} (${l.reviews} reviews)</span>
-          ${l.verified ? '<span style="color:var(--success);font-weight:600;">✅ APTO Verified</span>' : ''}
+          <span>${l.reviews > 0 ? `${l.reviews} review${l.reviews === 1 ? '' : 's'}` : 'No reviews yet'}</span>
+          ${l.verified ? '<span class="tc-verified">✅ APTO Verified</span>' : ''}
         </div>
       </div>
       <div class="tc-actions">
-        <button class="btn-contact" onclick="openModal('${l.name}')">📞 Contact</button>
-        <div class="verified-badge">✅ Verified</div>
+        <button class="btn-contact" type="button" data-contact-id="${Number(l.id)}">📞 Contact</button>
       </div>
-    </div>
+    </article>
   `).join('');
 
   renderPagination();
@@ -634,26 +877,76 @@ function renderPagination() {
   if (total <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
   let html = '';
   for (let i = 1; i <= total; i++) {
-    html += `<div class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goPage(${i})">${i}</div>`;
+    html += `<button type="button" class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}" ${i === currentPage ? 'aria-current="page"' : ''}>${i}</button>`;
   }
   document.getElementById('pagination').innerHTML = html;
 }
 
-function goPage(n) { currentPage = n; renderListings(); window.scrollTo({top:400,behavior:'smooth'}); }
+function goPage(n) { currentPage = n; renderListings(); document.getElementById('directory').scrollIntoView({behavior:'smooth'}); }
 
-function openModal(name) {
-  document.getElementById('modal-name').textContent = name;
-  document.getElementById('contact-modal').classList.add('open');
+// ── ENQUIRY MODAL (Netlify Forms) ──
+let lastFocus = null;
+const modal   = document.getElementById('contact-modal');
+const form    = document.getElementById('enquiry-form');
+const statusEl = document.getElementById('enquiry-status');
+const submitBtn = document.getElementById('enquiry-submit');
+
+function setStatus(type, msg) {
+  statusEl.className = 'form-status show ' + type;
+  statusEl.textContent = msg;
+}
+
+function openModal(id, trigger) {
+  const listing = ALL_LISTINGS.find(l => l.id === id);
+  if (!listing) return;
+  lastFocus = trigger || document.activeElement;
+  document.getElementById('modal-name').textContent = listing.name;
+  document.getElementById('enquiry-business').value = listing.name + (listing.example ? ' (example listing)' : '');
+  form.hidden = false;
+  form.reset();
+  document.getElementById('enquiry-business').value = listing.name + (listing.example ? ' (example listing)' : '');
+  statusEl.className = 'form-status';
+  statusEl.textContent = '';
+  submitBtn.disabled = false;
+  modal.classList.add('open');
+  document.getElementById('enquiry-name').focus();
 }
 
 function closeModal() {
-  document.getElementById('contact-modal').classList.remove('open');
+  modal.classList.remove('open');
+  if (lastFocus && lastFocus.focus) lastFocus.focus();
 }
 
-function sendEnquiry() {
-  closeModal();
-  showToast('✅ Enquiry sent! They will contact you shortly.');
-}
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = form.elements.name.value.trim();
+  const email = form.elements.email.value.trim();
+  const message = form.elements.message.value.trim();
+  if (!name || !email || !message) { setStatus('error', 'Please fill in your name, email and what you need.'); return; }
+  if (!form.elements.email.checkValidity()) { setStatus('error', 'Please enter a valid email address.'); return; }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending…';
+  try {
+    const res = await fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(new FormData(form)).toString()
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    setStatus('success', `✅ Thanks ${name.split(' ')[0]} — your enquiry has been sent. We'll pass it to ${document.getElementById('modal-name').textContent}, who will contact you directly.`);
+    form.reset();
+    submitBtn.textContent = 'Sent ✓';
+  } catch (err) {
+    setStatus('error', `Sorry — your enquiry couldn't be sent just now. Please try again in a moment, or email us at ${FALLBACK_CONTACT_EMAIL}.`);
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Send enquiry →';
+  }
+});
+
+document.getElementById('modal-close').addEventListener('click', closeModal);
+modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
 
 let toastTimer;
 function showToast(msg) {
@@ -663,10 +956,6 @@ function showToast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { t.style.transform = 'translateY(80px)'; t.style.opacity = '0'; }, 3500);
 }
-
-document.getElementById('contact-modal').addEventListener('click', e => {
-  if (e.target === document.getElementById('contact-modal')) closeModal();
-});
 
 init();
 </script>
