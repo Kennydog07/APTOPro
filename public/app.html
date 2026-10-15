@@ -1446,9 +1446,8 @@ const SUPABASE_URL  = 'https://gsahuqwmstnzejnoyfic.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_wYMMhxVA7noyBwUYFogGRQ_HOBw4-t8';
 // ──────────────────────────────────────────────────────────
 
-// NOTE (Oct 2026): this Supabase project no longer resolves (DNS NXDOMAIN), so sign-up/sign-in
-// fail until the project is restored or these two values are replaced with a new project's
-// URL + anon key (and the SUPABASE_URL / SUPABASE_ANON_KEY Netlify env vars updated to match).
+// NOTE: this project was restored in Oct 2026. If you ever move to a different Supabase project,
+// change these two values AND the SUPABASE_URL / SUPABASE_ANON_KEY Netlify env vars to match.
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // Where Supabase sends people after they click a password-reset link.
