@@ -1,10 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>404 — Page Not Found | APTO Pro</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+  <meta name="robots" content="noindex"/>
+  <link rel="icon" href="/favicon.ico" sizes="48x48"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+  <link rel="manifest" href="/site.webmanifest"/>
+  <meta name="theme-color" content="#1B2B5E"/>
+  <!-- Fonts are self-hosted (see /fonts/LICENSE.txt) so no request goes to Google -->
+  <link rel="preload" href="/fonts/jakarta-latin.woff2" as="font" type="font/woff2" crossorigin/>
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin/>
+  <style>
+    /* Self-hosted Google Fonts (SIL Open Font License 1.1) — latin + latin-ext, variable weight */
+    @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/inter-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;}
+    @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/inter-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+    @font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:400 800;font-display:swap;src:url(/fonts/jakarta-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;}
+    @font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:400 800;font-display:swap;src:url(/fonts/jakarta-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+  </style>
   <style>
     :root { --navy:#1B2B5E; --yellow:#F5C518; --orange:#C4541A; --slate:#F4F6FA; }
     * { box-sizing:border-box; margin:0; padding:0; }
@@ -14,17 +30,17 @@
       text-align:center; padding:24px;
     }
     .wrap { max-width:480px; }
-    img { width:160px; margin:0 auto 24px; animation:float 3s ease-in-out infinite; }
+    img { width:160px; height:auto; margin:0 auto 24px; animation:float 3s ease-in-out infinite; }
     @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
-    h1 {
+    .code {
       font-family:'Plus Jakarta Sans',sans-serif; font-size:80px; font-weight:800;
-      color:var(--yellow); letter-spacing:-0.04em; line-height:1; margin-bottom:8px;
+      color:var(--yellow); letter-spacing:-0.04em; line-height:1; margin-bottom:8px; color:var(--yellow);
     }
-    h2 {
+    h1 {
       font-family:'Plus Jakarta Sans',sans-serif; font-size:22px; font-weight:700;
       color:#fff; margin-bottom:12px;
     }
-    p { font-size:15px; color:rgba(255,255,255,0.6); line-height:1.7; margin-bottom:32px; }
+    p { font-size:15px; color:rgba(255,255,255,0.75); line-height:1.7; margin-bottom:32px; }
     .btn {
       display:inline-block; background:var(--yellow); color:var(--navy);
       font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; font-size:15px;
@@ -36,12 +52,13 @@
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <img src="/images/mascot.png" alt="APTO Pro"/>
-    <h1>404</h1>
-    <h2>Hmm, that page doesn't exist</h2>
+  <main class="wrap">
+    <img src="/images/mascot-400.webp" srcset="/images/mascot-192.webp 192w, /images/mascot-400.webp 400w" sizes="160px" width="160" height="160" alt=""/>
+    <p class="code" aria-hidden="true">404</p>
+    <h1>Hmm, that page doesn't exist</h1>
     <p>Even the AI couldn't find it. Let's get you back on track — there are leads waiting for you.</p>
     <a class="btn" href="/">Back to APTO Pro →</a>
-  </div>
+    <p style="margin:24px 0 0;font-size:14px;"><a href="/trades" style="color:#F5C518;">Find a Trade</a> · <a href="/contact" style="color:#F5C518;">Contact us</a></p>
+  </main>
 </body>
 </html>

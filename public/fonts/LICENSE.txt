@@ -1,0 +1,5 @@
+Inter (c) The Inter Project Authors (https://github.com/rsms/inter)
+Plus Jakarta Sans (c) The Plus Jakarta Sans Project Authors (https://github.com/tokotype/PlusJakartaSans)
+Both fonts are licensed under the SIL Open Font License, Version 1.1 — https://openfontlicense.org
+Files were downloaded from Google Fonts (latin and latin-ext subsets) and are self-hosted
+so that visitors' browsers do not contact Google's servers.

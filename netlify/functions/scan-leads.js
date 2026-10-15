@@ -255,16 +255,47 @@ async function runCollectorBatch(defs, serpKey) {
   return { perCollectorResults, debugEntries };
 }
 
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+// This endpoint spends money on every call (paid third-party APIs), so it only
+// serves signed-in users. The browser sends the Supabase session JWT as
+// "Authorization: Bearer <token>"; we verify it with Supabase exactly like
+// get-unread-leads.js does. No/invalid token -> 401.
+async function getAuthedUser(event) {
+  const raw   = (event.headers && (event.headers['authorization'] || event.headers['Authorization'])) || '';
+  const token = raw.startsWith('Bearer ') ? raw.slice(7).trim() : '';
+  if (!token) return { status: 401, error: 'Sign in required' };
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+    return { status: 500, error: 'Auth is not configured on the server' };
+  }
+  try {
+    const res = await fetch(`${process.env.SUPABASE_URL}/auth/v1/user`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'apikey': process.env.SUPABASE_ANON_KEY }
+    });
+    if (!res.ok) return { status: 401, error: 'Invalid or expired session' };
+    const user = await res.json();
+    if (!user || !user.id) return { status: 401, error: 'Invalid or expired session' };
+    return { user };
+  } catch (err) {
+    console.error('Auth check failed:', err.message);
+    return { status: 503, error: 'Sign-in service unavailable — please try again later' };
+  }
+}
+
 // ── MAIN HANDLER ─────────────────────────────────────────────────────────────
 
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin':  process.env.ALLOWED_ORIGIN || '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Content-Type': 'application/json'
   };
 
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
+
+  const auth = await getAuthedUser(event);
+  if (auth.error) {
+    return { statusCode: auth.status, headers, body: JSON.stringify({ error: auth.error }) };
+  }
 
   // Populated throughout the run; only ever returned to the client when
   // ?debug=true is passed. Declared before the try body so it's safe to read
@@ -273,7 +304,9 @@ exports.handler = async (event) => {
 
   try {
     const params      = event.queryStringParameters || {};
-    const debugEnabled = params.debug === 'true';
+    // ?debug=true only works when the SCAN_DEBUG env var is set to "true" in
+    // Netlify, so normal users never receive the internal debug block.
+    const debugEnabled = params.debug === 'true' && process.env.SCAN_DEBUG === 'true';
     debug.debugEnabled = debugEnabled;
 
     const trade      = params.trade      || 'plumbing';

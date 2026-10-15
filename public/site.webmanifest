@@ -1,0 +1,21 @@
+{
+  "name": "APTO Pro",
+  "short_name": "APTO Pro",
+  "description": "AI lead finder for UK tradespeople and local businesses",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#1B2B5E",
+  "theme_color": "#1B2B5E",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

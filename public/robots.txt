@@ -1,0 +1,13 @@
+# APTO Pro — https://apto-pro.com
+User-agent: *
+Allow: /
+# Logged-in dashboard, APIs and an old prototype page
+Disallow: /app$
+Disallow: /app?
+Disallow: /app/
+Disallow: /app.html
+Disallow: /api/
+Disallow: /.netlify/
+Disallow: /ai-engine
+
+Sitemap: https://apto-pro.com/sitemap.xml

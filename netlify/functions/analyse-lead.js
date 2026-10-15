@@ -6,10 +6,36 @@
  * server-side and never exposed to the browser.
  */
 
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+// This endpoint spends money on every call (paid third-party APIs), so it only
+// serves signed-in users. The browser sends the Supabase session JWT as
+// "Authorization: Bearer <token>"; we verify it with Supabase exactly like
+// get-unread-leads.js does. No/invalid token -> 401.
+async function getAuthedUser(event) {
+  const raw   = (event.headers && (event.headers['authorization'] || event.headers['Authorization'])) || '';
+  const token = raw.startsWith('Bearer ') ? raw.slice(7).trim() : '';
+  if (!token) return { status: 401, error: 'Sign in required' };
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+    return { status: 500, error: 'Auth is not configured on the server' };
+  }
+  try {
+    const res = await fetch(`${process.env.SUPABASE_URL}/auth/v1/user`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'apikey': process.env.SUPABASE_ANON_KEY }
+    });
+    if (!res.ok) return { status: 401, error: 'Invalid or expired session' };
+    const user = await res.json();
+    if (!user || !user.id) return { status: 401, error: 'Invalid or expired session' };
+    return { user };
+  } catch (err) {
+    console.error('Auth check failed:', err.message);
+    return { status: 503, error: 'Sign-in service unavailable — please try again later' };
+  }
+}
+
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGIN || '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Content-Type': 'application/json'
   };
 
@@ -21,8 +47,18 @@ exports.handler = async (event) => {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
+  const auth = await getAuthedUser(event);
+  if (auth.error) {
+    return { statusCode: auth.status, headers, body: JSON.stringify({ error: auth.error }) };
+  }
+
   try {
     const { leadText, trade, location } = JSON.parse(event.body || '{}');
+
+    // Cap input size so a single request can't run up a large AI bill.
+    if (typeof leadText === 'string' && leadText.length > 5000) {
+      return { statusCode: 413, headers, body: JSON.stringify({ error: 'Lead text is too long (max 5,000 characters)' }) };
+    }
 
     if (!leadText || !trade) {
       return {

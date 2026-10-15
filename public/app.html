@@ -5,11 +5,27 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <meta name="robots" content="noindex,nofollow"/>
   <title>APTO Pro — Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <meta name="description" content="Sign in to your APTO Pro dashboard to find and reply to local leads."/>
+  <link rel="icon" href="/favicon.ico" sizes="48x48"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+  <link rel="manifest" href="/site.webmanifest"/>
+  <meta name="theme-color" content="#1B2B5E"/>
+  <!-- Fonts are self-hosted (see /fonts/LICENSE.txt) so no request goes to Google -->
+  <link rel="preload" href="/fonts/jakarta-latin.woff2" as="font" type="font/woff2" crossorigin/>
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin/>
+  <style>
+    /* Self-hosted Google Fonts (SIL Open Font License 1.1) — latin + latin-ext, variable weight */
+    @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/inter-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;}
+    @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(/fonts/inter-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+    @font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:400 800;font-display:swap;src:url(/fonts/jakarta-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;}
+    @font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:400 800;font-display:swap;src:url(/fonts/jakarta-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+  </style>
   <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+  <!-- Pinned to an exact file + Subresource Integrity hash. To upgrade: change the version, then recompute the hash
+       (curl -s URL | openssl dgst -sha384 -binary | openssl base64 -A). -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
   <style>
     :root {
       --navy:#1B2B5E; --navy-mid:#243579; --navy-dark:#111C3E;
@@ -32,7 +48,8 @@
     button{cursor:pointer;border:none;font-family:inherit;}
     input,select,textarea{font-family:inherit;}
     a{text-decoration:none;color:inherit;}
-    img{max-width:100%;display:block;}
+    img{max-width:100%;display:block;height:auto;}
+    .example-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;background:var(--yellow);color:var(--navy-dark);padding:2px 8px;border-radius:100px;vertical-align:middle;margin-left:6px;}
 
     /* ── SCREENS ── */
     .screen{display:none;min-height:100vh;}
@@ -578,18 +595,18 @@
 
 <!-- LOADING -->
 <div class="full-loading" id="loading">
-  <img src="/images/mascot.png" alt="Loading APTO Pro"/>
+  <img src="/images/mascot-192.webp" width="192" height="192" alt="Loading APTO Pro"/>
   <p>Loading APTO Pro...</p>
 </div>
 
 <!-- ════════ SCREEN: LOGIN ════════ -->
-<div class="screen auth-screen" id="screen-login">
+<div class="screen auth-screen" id="screen-login" hidden aria-hidden="true">
   <div class="auth-bg"></div>
   <div class="auth-glow glow-tl"></div>
   <div class="auth-glow glow-br"></div>
   <div class="auth-card">
     <div class="auth-logo">
-      <img src="/images/mascot.png" alt="APTO Pro"/>
+      <img src="/images/mascot-192.webp" width="192" height="192" alt="APTO Pro"/>
       <span class="auth-logo-text">APTO <span>Pro</span></span>
     </div>
     <div class="auth-title">Welcome back</div>
@@ -597,46 +614,48 @@
     <div class="auth-error" id="login-error"></div>
     <div class="auth-success" id="login-success"></div>
     <div class="form-group">
-      <label class="form-label">Email address</label>
+      <label class="form-label" for="login-email">Email address</label>
       <input class="form-input" type="email" id="login-email" placeholder="you@example.com" autocomplete="email"/>
     </div>
     <div class="form-group">
-      <label class="form-label">Password</label>
+      <label class="form-label" for="login-password">Password</label>
       <input class="form-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"/>
     </div>
     <button class="btn-auth yellow" id="login-btn" onclick="doLogin()">Sign in to APTO Pro</button>
     <div class="auth-divider">or</div>
-    <div class="auth-switch">Don't have an account? <a onclick="showScreen('screen-signup')">Start free trial</a></div>
+    <div class="auth-switch">Don't have an account? <a href="?action=signup" onclick="showScreen('screen-signup');return false;">Create an account</a></div><!-- TRIAL COPY: link text was "Start free trial" -->
     <div class="auth-switch" style="margin-top:8px;"><a onclick="showScreen('screen-reset')" style="color:var(--grey);font-size:12px;">Forgot password?</a></div>
   </div>
 </div>
 
 <!-- ════════ SCREEN: SIGN UP ════════ -->
-<div class="screen auth-screen" id="screen-signup">
+<div class="screen auth-screen" id="screen-signup" hidden aria-hidden="true">
   <div class="auth-bg"></div>
   <div class="auth-glow glow-tl"></div>
   <div class="auth-card">
-    <div class="auth-mascot"><img src="/images/mascot.png" alt="APTO Pro"/></div>
+    <div class="auth-mascot"><img src="/images/mascot-192.webp" width="192" height="192" alt="APTO Pro"/></div>
     <div class="auth-title">Start finding leads today</div>
-    <div class="auth-sub">14-day free trial · No credit card required</div>
+    <!-- TRIAL COPY: was "14-day free trial · No credit card required" -->
+    <div class="auth-sub">Create your account in 2 minutes · Cancel anytime</div>
+    <div class="auth-sub" id="signup-plan-note" style="display:none;margin-top:-8px;"></div>
     <div class="auth-error" id="signup-error"></div>
     <div class="auth-success" id="signup-success"></div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">First name</label>
+        <label class="form-label" for="signup-first">First name</label>
         <input class="form-input" type="text" id="signup-first" placeholder="John"/>
       </div>
       <div class="form-group">
-        <label class="form-label">Last name</label>
+        <label class="form-label" for="signup-last">Last name</label>
         <input class="form-input" type="text" id="signup-last" placeholder="Smith"/>
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label">Email address</label>
+      <label class="form-label" for="signup-email">Email address</label>
       <input class="form-input" type="email" id="signup-email" placeholder="you@example.com" autocomplete="email"/>
     </div>
     <div class="form-group">
-      <label class="form-label">Your trade</label>
+      <label class="form-label" for="signup-trade">Your trade</label>
       <select class="form-input" id="signup-trade">
         <option value="plumbing">🔧 Plumbing</option>
         <option value="electrical">⚡ Electrical</option>
@@ -655,16 +674,17 @@
       </select>
     </div>
     <div class="form-group">
-      <label class="form-label">Password</label>
+      <label class="form-label" for="signup-password">Password</label>
       <input class="form-input" type="password" id="signup-password" placeholder="Min. 8 characters" autocomplete="new-password"/>
     </div>
     <button class="btn-auth yellow" id="signup-btn" onclick="doSignup()">Create my account →</button>
     <div class="auth-benefits">
-      <div class="auth-benefits-title">What you get free for 14 days</div>
+      <!-- TRIAL COPY: was "What you get free for 14 days" -->
+      <div class="auth-benefits-title">What you get</div>
       <div class="benefit-item"><span class="chk">✓</span> AI lead finder scanning 24/7</div>
       <div class="benefit-item"><span class="chk">✓</span> Instant alerts when leads are found</div>
       <div class="benefit-item"><span class="chk">✓</span> AI-written reply suggestions</div>
-      <div class="benefit-item"><span class="chk">✓</span> Full dashboard — no limits</div>
+      <div class="benefit-item"><span class="chk">✓</span> Full dashboard with lead map &amp; reports</div>
     </div>
     <div class="auth-switch">Already have an account? <a onclick="showScreen('screen-login')">Sign in</a></div>
   </div>
@@ -672,13 +692,13 @@
 
 <!-- ════════ SCREEN: PASSWORD RESET ════════ -->
 <!-- ════════ SCREEN: CONTINUE AS ════════ -->
-<div class="screen auth-screen" id="screen-continue">
+<div class="screen auth-screen" id="screen-continue" hidden aria-hidden="true">
   <div class="auth-bg"></div>
   <div class="auth-glow glow-tl"></div>
   <div class="auth-glow glow-br"></div>
   <div class="auth-card" style="text-align:center;">
     <div class="auth-logo">
-      <img src="/images/mascot.png" alt="APTO Pro"/>
+      <img src="/images/mascot-192.webp" width="192" height="192" alt="APTO Pro"/>
       <span class="auth-logo-text">APTO <span>Pro</span></span>
     </div>
     <div style="width:56px;height:56px;border-radius:50%;background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:800;font-size:22px;display:flex;align-items:center;justify-content:center;margin:16px auto 12px;" id="continue-avatar">J</div>
@@ -700,12 +720,12 @@
   </div>
 </div>
 
-<div class="screen auth-screen" id="screen-reset">
+<div class="screen auth-screen" id="screen-reset" hidden aria-hidden="true">
   <div class="auth-bg"></div>
   <div class="auth-glow glow-tl"></div>
   <div class="auth-card">
     <div class="auth-logo">
-      <img src="/images/mascot.png" alt="APTO Pro"/>
+      <img src="/images/mascot-192.webp" width="192" height="192" alt="APTO Pro"/>
       <span class="auth-logo-text">APTO <span>Pro</span></span>
     </div>
     <div class="auth-title">Reset your password</div>
@@ -713,7 +733,7 @@
     <div class="auth-error" id="reset-error"></div>
     <div class="auth-success" id="reset-success"></div>
     <div class="form-group">
-      <label class="form-label">Email address</label>
+      <label class="form-label" for="reset-email">Email address</label>
       <input class="form-input" type="email" id="reset-email" placeholder="you@example.com"/>
     </div>
     <button class="btn-auth yellow" id="reset-btn" onclick="doReset()">Send reset link</button>
@@ -722,12 +742,12 @@
 </div>
 
 <!-- ════════ SCREEN: SET NEW PASSWORD ════════ -->
-<div class="screen auth-screen" id="screen-new-password">
+<div class="screen auth-screen" id="screen-new-password" hidden aria-hidden="true">
   <div class="auth-bg"></div>
   <div class="auth-glow glow-tl"></div>
   <div class="auth-card">
     <div class="auth-logo">
-      <img src="/images/mascot.png" alt="APTO Pro"/>
+      <img src="/images/mascot-192.webp" width="192" height="192" alt="APTO Pro"/>
       <span class="auth-logo-text">APTO <span>Pro</span></span>
     </div>
     <div class="auth-title">Set a new password</div>
@@ -735,11 +755,11 @@
     <div class="auth-error" id="newpwd-error"></div>
     <div class="auth-success" id="newpwd-success"></div>
     <div class="form-group">
-      <label class="form-label">New password</label>
+      <label class="form-label" for="newpwd-password">New password</label>
       <input class="form-input" type="password" id="newpwd-password" placeholder="Min. 8 characters" autocomplete="new-password"/>
     </div>
     <div class="form-group">
-      <label class="form-label">Confirm new password</label>
+      <label class="form-label" for="newpwd-confirm">Confirm new password</label>
       <input class="form-input" type="password" id="newpwd-confirm" placeholder="Repeat your new password" autocomplete="new-password"/>
     </div>
     <button class="btn-auth yellow" id="newpwd-btn" onclick="doSetNewPassword()">Set new password →</button>
@@ -747,51 +767,56 @@
 </div>
 
 <!-- ════════ SCREEN: PLAN SELECTION ════════ -->
-<div class="screen auth-screen" id="screen-gate">
+<div class="screen auth-screen" id="screen-gate" hidden aria-hidden="true">
   <div class="auth-bg"></div>
   <div class="auth-glow glow-tl"></div>
   <div class="gate-card">
-    <img class="gate-mascot" src="/images/mascot.png" alt="APTO Pro"/>
+    <img class="gate-mascot" src="/images/mascot-192.webp" width="192" height="192" alt="APTO Pro"/>
     <div class="gate-title">One last step — choose your plan</div>
-    <div class="gate-sub">14-day free trial on all plans. No credit card charged today. Cancel anytime.</div>
+    <!-- TRIAL COPY: was "14-day free trial on all plans. No credit card charged today. Cancel anytime." -->
+    <div class="gate-sub">Pay monthly by card through Stripe's secure checkout. Cancel anytime.</div>
     <div class="gate-plans">
-      <div class="gate-plan" id="plan-starter" onclick="selectPlan('starter')">
+      <div class="gate-plan" id="plan-starter" role="button" tabindex="0" aria-pressed="false" onclick="selectPlan('starter')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectPlan('starter');}">
         <div class="gate-plan-name">Starter</div>
         <div class="gate-plan-price">£9.99<span>/mo</span></div>
         <div class="gate-plan-desc">50 leads/month · 1 trade · 1 area</div>
       </div>
-      <div class="gate-plan popular selected" id="plan-professional" onclick="selectPlan('professional')">
+      <div class="gate-plan popular selected" id="plan-professional" role="button" tabindex="0" aria-pressed="true" onclick="selectPlan('professional')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectPlan('professional');}">
         <div class="gate-plan-badge">⭐ Most Popular</div>
         <div class="gate-plan-name">Professional</div>
         <div class="gate-plan-price">£14.99<span>/mo</span></div>
         <div class="gate-plan-desc">Unlimited leads · 3 trades · 5 areas</div>
       </div>
-      <div class="gate-plan" id="plan-ultimate" onclick="selectPlan('ultimate')">
+      <div class="gate-plan" id="plan-ultimate" role="button" tabindex="0" aria-pressed="false" onclick="selectPlan('ultimate')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectPlan('ultimate');}">
         <div class="gate-plan-name">Ultimate</div>
         <div class="gate-plan-price">£19.99<span>/mo</span></div>
         <div class="gate-plan-desc">Everything + team seats + API</div>
       </div>
     </div>
     <button class="btn-gate" id="checkout-btn" onclick="doCheckout()">
-      <span>Start my free 14-day trial →</span>
+      <span>Continue to secure checkout →</span><!-- TRIAL COPY: was "Start my free 14-day trial →" -->
     </button>
-    <div class="gate-note">🔒 Secured by Stripe · No charge until trial ends · Cancel anytime</div>
-    <div class="gate-logout" onclick="doLogout()">← Sign out</div>
+    <!-- TRIAL COPY: was "🔒 Secured by Stripe · No charge until trial ends · Cancel anytime" -->
+    <div class="gate-note">🔒 Secured by Stripe · Billed monthly · Cancel anytime</div>
+    <!-- "Not now" keeps today's behaviour (the dashboard is not locked behind payment).
+         Remove this link if John decides the dashboard should require an active subscription. -->
+    <div class="gate-logout" role="button" tabindex="0" onclick="skipPlanGate()" onkeydown="if(event.key==='Enter'){skipPlanGate();}" style="margin-bottom:8px;">Not now — take me to my dashboard</div>
+    <div class="gate-logout" role="button" tabindex="0" onclick="doLogout()" onkeydown="if(event.key==='Enter'){doLogout();}">← Sign out</div>
   </div>
 </div>
 
 <!-- ════════ SCREEN: APP ════════ -->
-<div class="screen app-screen" id="screen-app">
+<div class="screen app-screen" id="screen-app" hidden aria-hidden="true">
 
   <aside class="sidebar">
-    <div class="sidebar-logo" style="cursor:pointer;" onclick="window.location.href='/index.html'">
-      <img src="/images/mascot.png" alt="APTO Pro"/>
+    <a class="sidebar-logo" href="/" aria-label="APTO Pro home">
+      <img src="/images/mascot-192.webp" width="192" height="192" alt=""/>
       <span class="sidebar-logo-text">APTO <span>Pro</span></span>
-    </div>
+    </a>
     <nav>
       <div class="sidebar-section-label">Main</div>
       <div class="nav-item active" onclick="showPage('page-dashboard',this)"><span class="nav-icon">📊</span> Dashboard</div>
-      <div class="nav-item" onclick="showPage('page-feed',this)"><span class="nav-icon">🔍</span> Find Leads <span class="nav-badge" id="feed-badge">12</span></div>
+      <div class="nav-item" onclick="showPage('page-feed',this)"><span class="nav-icon">🔍</span> Find Leads <span class="nav-badge" id="feed-badge" style="display:none;"></span></div>
       <div class="nav-item" onclick="showPage('page-saved',this)"><span class="nav-icon">💾</span> Saved Leads</div>
       <div class="nav-item" onclick="showPage('page-ai',this)"><span class="nav-icon">📱</span> Facebook Leads</div>
       <div class="nav-item" onclick="showPage('page-maps',this)"><span class="nav-icon">🗺️</span> Lead Map</div>
@@ -811,7 +836,7 @@
         <div class="user-avatar" id="sidebar-avatar">J</div>
         <div class="user-info">
           <div class="user-name" id="sidebar-name">Loading...</div>
-          <div class="user-plan" id="sidebar-plan">Pro · Trial</div>
+          <div class="user-plan" id="sidebar-plan"></div>
         </div>
       </div>
     </div>
@@ -842,7 +867,7 @@
             </div>
           </div>
         </div>
-        <div class="plan-chip" id="topbar-plan">⭐ Pro Trial</div>
+        <div class="plan-chip" id="topbar-plan">…</div>
         <div id="topbar-account" onclick="doLogout()" style="display:flex;align-items:center;gap:8px;background:var(--slate);border:1.5px solid var(--slate-mid);border-radius:100px;padding:5px 14px 5px 6px;cursor:pointer;transition:background 0.15s;" title="Click to sign out">
           <span id="topbar-avatar" style="width:24px;height:24px;border-radius:50%;background:var(--yellow);color:var(--navy-dark);font-family:var(--font-d);font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">U</span>
           <span style="font-size:12px;color:var(--navy);font-weight:600;" id="topbar-email">Loading...</span>
@@ -856,9 +881,9 @@
       <div class="welcome-bar">
         <div>
           <h1 id="welcome-msg">Good morning 👋</h1>
-          <p>Your AI found <strong>12 new leads</strong> overnight. Here's your summary.</p>
+          <p>Here's what your summary will look like <span class="example-tag">Example data</span> — your real numbers are in <a href="#" onclick="showPage('page-reports',null);return false;" style="text-decoration:underline;">My Results</a>.</p>
         </div>
-        <img class="welcome-mascot" id="welcome-mascot" src="/images/mascot.png" alt=""/>
+        <img class="welcome-mascot" id="welcome-mascot" src="/images/mascot-192.webp" width="192" height="192" alt=""/>
       </div>
       <div class="kpi-grid">
         <div class="kpi-card"><div class="kpi-label">Today's Leads</div><div class="kpi-value">12</div><span class="kpi-delta delta-up">↑ 4 vs yesterday</span></div>
@@ -869,21 +894,21 @@
       <div class="dash-grid">
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title"><span class="live-dot"></span>Live Lead Feed</div>
+            <div class="panel-title"><span class="live-dot"></span>Lead Feed <span class="example-tag">Example</span></div>
             <span class="panel-link" onclick="showPage('page-feed',null)">View all →</span>
           </div>
           <div id="dash-lead-rows"></div>
         </div>
         <div class="right-col">
           <div class="ai-tip">
-            <img src="/images/mascot.png" alt="AI tip"/>
+            <img src="/images/mascot-192.webp" width="192" height="192" alt="AI tip"/>
             <div>
               <div class="ai-tip-label">💡 APTO AI Tip</div>
-              <p>You have 3 urgent leads this morning. Businesses that respond within 5 minutes are <strong style="color:var(--yellow)">9× more likely</strong> to win the job.</p>
+              <p>Reply fast: the first tradesperson to respond to a request usually has the best chance of winning the job.</p><!-- was: "You have 3 urgent leads this morning ... 9× more likely" (example number + unsourced statistic) -->
             </div>
           </div>
           <div class="panel">
-            <div class="panel-header"><div class="panel-title">Recent Activity</div></div>
+            <div class="panel-header"><div class="panel-title">Recent Activity <span class="example-tag">Example</span></div></div>
             <div class="activity-item"><div class="act-icon ai-yellow">🎯</div><div><div class="act-main">AI found <strong>3 new leads</strong> in your area</div><div class="act-time">2 minutes ago</div></div></div>
             <div class="activity-item"><div class="act-icon ai-green">💾</div><div><div class="act-main">You <strong>saved a lead</strong> in Worthing</div><div class="act-time">Yesterday, 4:32pm</div></div></div>
             <div class="activity-item"><div class="act-icon ai-orange">📋</div><div><div class="act-main"><strong>AI reply copied</strong> for Hove lead</div><div class="act-time">Yesterday, 11:18am</div></div></div>
@@ -893,7 +918,7 @@
     </div>
 
     <!-- ── LEAD FEED ── -->
-    <div class="page-content" id="page-feed">
+    <div class="page-content" id="page-feed" hidden>
       <div style="background:rgba(27,43,94,0.04);border:1px solid rgba(27,43,94,0.12);border-radius:var(--r-md);padding:14px 18px;margin-bottom:16px;font-size:13px;color:var(--navy);line-height:1.6;">
         🔍 <strong>Find Leads</strong> searches public websites — Reddit, forums, and local directories — for people asking for your trade. <strong>Facebook posts are not included here</strong> — use <a onclick="showPage('page-ai',document.querySelectorAll('.nav-item')[3])" style="color:var(--orange);font-weight:600;cursor:pointer;">Facebook Leads →</a> for those.
       </div>
@@ -976,15 +1001,15 @@
     </div>
 
     <!-- ── SAVED LEADS ── -->
-    <div class="page-content" id="page-saved">
+    <div class="page-content" id="page-saved" hidden>
       <div id="saved-leads-container"></div>
     </div>
 
     <!-- ── AI ENGINE ── -->
-    <div class="page-content" id="page-ai">
+    <div class="page-content" id="page-ai" hidden>
       <div style="background:var(--navy);border-radius:var(--r-lg);padding:28px 32px;margin-bottom:24px;display:flex;align-items:center;gap:24px;position:relative;overflow:hidden;">
         <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(245,197,24,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(245,197,24,0.04) 1px,transparent 1px);background-size:40px 40px;"></div>
-        <img src="/images/mascot.png" style="width:72px;position:relative;z-index:1;" alt=""/>
+        <img src="/images/mascot-192.webp" width="192" height="192" style="width:72px;position:relative;z-index:1;" alt=""/>
         <div style="position:relative;z-index:1;">
           <h2 style="font-family:var(--font-d);font-weight:800;font-size:20px;color:var(--white);margin-bottom:6px;">📋 Facebook Leads — <span style="color:var(--yellow)">copy, paste, reply in seconds</span></h2>
           <p style="font-size:14px;color:rgba(255,255,255,0.65);line-height:1.6;">Spotted someone in a Facebook group looking for your trade? Copy their post and paste it below. You'll get a lead score, urgency rating, and a ready-to-send reply — all in a few seconds.</p>
@@ -1032,7 +1057,7 @@
         </div>
         <div class="panel" style="position:relative;">
           <div class="panel-header"><div class="panel-title">📊 AI Result</div><span id="ai-time" style="font-size:12px;color:var(--grey);"></span></div>
-          <div id="ai-empty" style="text-align:center;padding:48px 24px;"><img src="/images/mascot.png" style="width:64px;margin:0 auto 16px;opacity:0.6;" alt=""/><p style="font-size:14px;color:var(--grey);">Paste a lead and click Analyse — your result appears here.</p></div>
+          <div id="ai-empty" style="text-align:center;padding:48px 24px;"><img src="/images/mascot-192.webp" width="192" height="192" style="width:64px;margin:0 auto 16px;opacity:0.6;" alt=""/><p style="font-size:14px;color:var(--grey);">Paste a lead and click Analyse — your result appears here.</p></div>
           <div id="ai-result" style="display:none;">
             <div id="ai-score-header" style="background:var(--navy);padding:20px;display:flex;align-items:center;gap:16px;"></div>
             <div style="padding:20px;display:flex;flex-direction:column;gap:16px;">
@@ -1050,7 +1075,7 @@
     </div>
 
     <!-- ── NOTIFICATIONS ── -->
-    <div class="page-content" id="page-notifications">
+    <div class="page-content" id="page-notifications" hidden>
       <div style="max-width:600px;">
 
         <!-- Alert status card -->
@@ -1066,7 +1091,7 @@
           <!-- Big toggle -->
           <div style="background:var(--slate);border-radius:var(--r-md);padding:20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
             <div>
-              <div style="font-family:var(--font-d);font-weight:700;font-size:16px;color:var(--navy);margin-bottom:4px;" id="alerts-toggle-label">Email alerts: OFF</div>
+              <div style="font-family:var(--font-d);font-weight:700;font-size:16px;color:var(--navy);margin-bottom:4px;" id="alerts-toggle-label">Lead alerts: OFF</div>
               <div style="font-size:13px;color:var(--grey);" id="alerts-toggle-sub">Turn on to get notified when new leads appear</div>
             </div>
             <div id="alerts-toggle" onclick="toggleAlerts()" style="width:56px;height:30px;border-radius:100px;background:var(--slate-mid);position:relative;cursor:pointer;transition:background 0.3s;flex-shrink:0;">
@@ -1076,7 +1101,8 @@
 
           <!-- Alert settings -->
           <div id="alert-settings" style="display:none;">
-            <div style="font-family:var(--font-d);font-weight:700;font-size:14px;color:var(--navy);margin-bottom:14px;">Alert preferences</div>
+            <div style="font-family:var(--font-d);font-weight:700;font-size:14px;color:var(--navy);margin-bottom:6px;">Alert preferences</div>
+            <div style="font-size:12px;color:var(--grey);margin-bottom:14px;">Email delivery is coming soon — for now, new leads appear under the bell in your dashboard.</div>
 
             <div style="margin-bottom:14px;">
               <label class="settings-label">Alert frequency</label>
@@ -1129,14 +1155,15 @@
     </div>
 
     <!-- ── BILLING ── -->
-    <div class="page-content" id="page-billing">
+    <div class="page-content" id="page-billing" hidden>
       <div class="billing-plan-card">
-        <img class="billing-mascot" src="/images/mascot.png" alt=""/>
+        <img class="billing-mascot" src="/images/mascot-192.webp" width="192" height="192" alt=""/>
         <div>
-          <div class="billing-plan-name" id="billing-plan-name">Professional Plan</div>
-          <div class="billing-status"><span style="width:7px;height:7px;border-radius:50%;background:var(--success);display:inline-block;"></span> Active — Free Trial</div>
-          <div class="billing-detail" id="billing-detail">Your 14-day free trial is active. You will not be charged until your trial ends. Cancel anytime from the Stripe portal.</div>
+          <div class="billing-plan-name" id="billing-plan-name">Checking your plan…</div>
+          <div class="billing-status" id="billing-status" style="display:none;"><span style="width:7px;height:7px;border-radius:50%;background:var(--success);display:inline-block;"></span> <span id="billing-status-text"></span></div>
+          <div class="billing-detail" id="billing-detail">Loading your subscription details…</div>
           <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <button class="btn-manage" id="btn-choose-plan" onclick="openPlanGate()" style="display:none;">⭐ Choose a plan</button>
             <button class="btn-manage" onclick="openStripePortal()">💳 Manage Billing</button>
             <button class="btn-danger" onclick="openStripePortal()">Cancel subscription</button>
           </div>
@@ -1145,13 +1172,13 @@
       <div class="panel">
         <div class="panel-header"><div class="panel-title">Invoice History</div></div>
         <div class="empty-state" style="padding:32px;">
-          <p style="color:var(--grey);font-size:14px;">No invoices yet — your first charge will appear here after your trial ends.</p>
+          <p style="color:var(--grey);font-size:14px;">Your invoices and receipts are available in the Stripe billing portal (Manage Billing).</p>
         </div>
       </div>
     </div>
 
     <!-- ── SETTINGS ── -->
-    <div class="page-content" id="page-settings">
+    <div class="page-content" id="page-settings" hidden>
       <div class="settings-grid">
         <div class="settings-nav">
           <div class="settings-nav-item active">Profile</div>
@@ -1182,7 +1209,7 @@
 
     <!-- ── COMING SOON ── -->
     <!-- ── LEAD MAP ── -->
-    <div class="page-content" id="page-maps">
+    <div class="page-content" id="page-maps" hidden>
       <div style="margin-bottom:20px;">
         <div style="background:var(--white);border-radius:var(--r-md);border:1px solid var(--slate-mid);padding:14px 18px;margin-bottom:16px;font-size:13px;color:var(--navy);">
           🗺️ <strong>Lead Map</strong> shows where your saved leads are coming from. Save leads from the Find Leads or Facebook Leads pages and they'll appear here as pins on the map.
@@ -1191,7 +1218,7 @@
           <!-- Map renders here -->
           <div id="lead-map" style="width:100%;height:100%;"></div>
           <div id="map-empty" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--slate);">
-            <img src="/images/mascot.png" style="width:64px;margin-bottom:16px;opacity:0.6;" alt=""/>
+            <img src="/images/mascot-192.webp" width="192" height="192" style="width:64px;margin-bottom:16px;opacity:0.6;" alt=""/>
             <div style="font-family:var(--font-d);font-weight:700;font-size:16px;color:var(--navy);margin-bottom:8px;">No saved leads to map yet</div>
             <div style="font-size:13px;color:var(--grey);text-align:center;max-width:280px;line-height:1.6;">Save leads from Find Leads or Facebook Leads and they'll appear as pins here — showing you exactly where the demand is in your area.</div>
           </div>
@@ -1208,7 +1235,7 @@
     </div>
 
     <!-- ── MY RESULTS ── -->
-    <div class="page-content" id="page-reports">
+    <div class="page-content" id="page-reports" hidden>
 
       <!-- Summary cards -->
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;">
@@ -1261,9 +1288,9 @@
 
     </div>
 
-    <div class="page-content" id="page-empty">
+    <div class="page-content" id="page-empty" hidden>
       <div class="empty-state">
-        <img src="/images/mascot.png" alt="Coming soon"/>
+        <img src="/images/mascot-192.webp" width="192" height="192" alt="Coming soon"/>
         <h3>Coming soon</h3>
         <p>This section is in development. APTO Pro is growing fast — check back soon.</p>
       </div>
@@ -1276,7 +1303,7 @@
 
 <!-- ════════ FLOATING QUICK PASTE DRAWER ════════ -->
 <!-- Trigger button — always visible bottom right -->
-<button id="qp-trigger" onclick="toggleQuickPaste()" title="Quick Paste — analyse a Facebook lead instantly" style="
+<button id="qp-trigger" onclick="toggleQuickPaste()" title="Quick Paste — analyse a Facebook lead instantly" aria-label="Quick Paste — analyse a Facebook lead" style="
   position:fixed; bottom:24px; right:24px; z-index:8000;
   width:56px; height:56px; border-radius:50%;
   background:var(--yellow); color:var(--navy-dark);
@@ -1300,22 +1327,22 @@
   animation:slideUp 0.2s ease-out;
 ">
   <style>
-    @keyframes slideUp {{
-      from {{ opacity:0; transform:translateY(12px); }}
-      to   {{ opacity:1; transform:translateY(0); }}
-    }}
+    @keyframes slideUp {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
   </style>
 
   <!-- Drawer header -->
   <div style="background:var(--navy);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;">
     <div style="display:flex;align-items:center;gap:10px;">
-      <img src="/images/mascot.png" style="width:32px;" alt=""/>
+      <img src="/images/mascot-192.webp" width="192" height="192" style="width:32px;" alt=""/>
       <div>
         <div style="font-family:var(--font-d);font-weight:700;font-size:14px;color:var(--white);">Quick Paste Analyser</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.5);">Copy from Facebook → paste here → get reply</div>
       </div>
     </div>
-    <button onclick="toggleQuickPaste()" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:18px;cursor:pointer;padding:4px;">✕</button>
+    <button onclick="toggleQuickPaste()" aria-label="Close Quick Paste" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:18px;cursor:pointer;padding:4px;">✕</button>
   </div>
 
   <!-- Step indicator -->
@@ -1419,25 +1446,56 @@ const SUPABASE_URL  = 'https://gsahuqwmstnzejnoyfic.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_wYMMhxVA7noyBwUYFogGRQ_HOBw4-t8';
 // ──────────────────────────────────────────────────────────
 
+// NOTE: this project was restored in Oct 2026. If you ever move to a different Supabase project,
+// change these two values AND the SUPABASE_URL / SUPABASE_ANON_KEY Netlify env vars to match.
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// Where Supabase sends people after they click a password-reset link.
+// Must also be listed under Supabase → Authentication → URL Configuration → Redirect URLs.
+const SITE_URL = 'https://apto-pro.com';
+
+// ─── SAFE OUTPUT HELPERS ───
+// Scraped posts, AI output and saved leads are untrusted text: always escape before
+// putting them into innerHTML, and only allow http(s) links.
+function escapeHtml(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function safeUrl(value) {
+  try {
+    const u = new URL(String(value || ''), window.location.origin);
+    return (u.protocol === 'https:' || u.protocol === 'http:') ? u.href : '#';
+  } catch (e) { return '#'; }
+}
+// Adds the signed-in user's Supabase session token so the paid API endpoints
+// (/api/scan-leads, /api/analyse-lead) accept the request.
+async function authHeaders(extra) {
+  const { data } = await supabase.auth.getSession();
+  const token = data && data.session && data.session.access_token;
+  if (!token) throw new Error('Your session has expired — please sign in again.');
+  return Object.assign({}, extra || {}, { 'Authorization': `Bearer ${token}` });
+}
+async function apiErrorMessage(res) {
+  if (res.status === 401) return 'Your session has expired — please sign in again.';
+  try { const j = await res.json(); return j.error || `Request failed (${res.status})`; } catch (e) { return `Request failed (${res.status})`; }
+}
 
 // ─── TRADE MASCOT MAP ───
 const TRADE_MASCOTS = {
-  plumbing:      '/images/trades/plumbing.png',
-  electrical:    '/images/trades/electrical.png',
-  decorating:    '/images/trades/decorating.png',
-  gardening:     '/images/trades/gardening.png',
-  building:      '/images/trades/building.png',
-  'dog-grooming':'/images/trades/dog-grooming.png',
-  cleaning:      '/images/trades/cleaning.png',
-  removals:      '/images/trades/removals.png',
-  hvac:          '/images/trades/hvac.png',
-  locksmith:     '/images/trades/locksmith.png',
-  catering:      '/images/trades/catering.png',
-  photography:   '/images/trades/photography.png',
-  'windows-doors':'/images/trades/windows-doors.png',
-  hairdressing:  '/images/trades/hairdressing.png',
-  default:       '/images/mascot.png',
+  plumbing:      '/images/trades/plumbing.webp',
+  electrical:    '/images/trades/electrical.webp',
+  decorating:    '/images/trades/decorating.webp',
+  gardening:     '/images/trades/gardening.webp',
+  building:      '/images/trades/building.webp',
+  'dog-grooming':'/images/trades/dog-grooming.webp',
+  cleaning:      '/images/trades/cleaning.webp',
+  removals:      '/images/trades/removals.webp',
+  hvac:          '/images/trades/hvac.webp',
+  locksmith:     '/images/trades/locksmith.webp',
+  catering:      '/images/trades/catering.webp',
+  photography:   '/images/trades/photography.webp',
+  'windows-doors':'/images/trades/windows-doors.webp',
+  hairdressing:  '/images/trades/hairdressing.webp',
+  default:       '/images/mascot-192.webp',
 };
 
 function tradeMascot(trade) {
@@ -1457,6 +1515,8 @@ const SAMPLE_LEADS = [
 // ─── STATE ───
 let currentUser = null;
 let selectedPlan = 'professional';
+const VALID_PLANS = ['starter', 'professional', 'ultimate'];
+const PLAN_LABELS = { starter: 'Starter — £9.99/month', professional: 'Professional — £14.99/month', ultimate: 'Ultimate — £19.99/month' };
 let currentAIReply = '';
 
 // ─── INIT ───
@@ -1477,8 +1537,21 @@ async function init() {
     return;
   }
 
+  // Pricing buttons link to /app?action=signup&plan=<plan>. Remember the choice so the
+  // plan screen can pre-select it after the user signs in.
+  const planParam = (urlParams.get('plan') || '').toLowerCase();
+  if (VALID_PLANS.includes(planParam)) {
+    try { localStorage.setItem('apto_pending_plan', planParam); } catch (e) {}
+    selectPlan(planParam);
+  }
+
   if (action === 'signup') {
+    const pending = getPendingPlan();
+    const note = document.getElementById('signup-plan-note');
+    if (pending && note) { note.textContent = 'Selected plan: ' + PLAN_LABELS[pending]; note.style.display = 'block'; }
     showScreen('screen-signup');
+    // Still listen for auth events (e.g. user signs in from this tab later)
+    listenForAuthChanges();
     return;
   }
 
@@ -1498,6 +1571,13 @@ async function init() {
     showScreen('screen-login');
   }
 
+  listenForAuthChanges();
+}
+
+let authListenerAttached = false;
+function listenForAuthChanges() {
+  if (authListenerAttached) return;
+  authListenerAttached = true;
   supabase.auth.onAuthStateChange((event, session) => {
     if (event === 'PASSWORD_RECOVERY') {
       // User arrived via password reset email link
@@ -1506,7 +1586,7 @@ async function init() {
       // Only go to dashboard if not in password recovery flow
       if (!document.getElementById('screen-new-password').classList.contains('active')) {
         currentUser = session.user;
-        renderApp();
+        routeAfterSignIn();
       }
     } else if (event === 'SIGNED_OUT') {
       currentUser = null;
@@ -1517,8 +1597,45 @@ async function init() {
 
 function continueSession() {
   // User confirmed they want to continue with the existing session
+  routeAfterSignIn();
+}
+
+function getPendingPlan() {
+  let p = null;
+  try { p = localStorage.getItem('apto_pending_plan'); } catch (e) {}
+  if (!p && currentUser) p = currentUser.user_metadata?.selected_plan || null;
+  return VALID_PLANS.includes(p) ? p : null;
+}
+function clearPendingPlan() { try { localStorage.removeItem('apto_pending_plan'); } catch (e) {} }
+
+async function fetchSubscription() {
+  if (!currentUser) return null;
+  try {
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .select('plan, status, current_period_end')
+      .eq('email', currentUser.email)
+      .single();
+    return error ? null : data;
+  } catch (e) { return null; }
+}
+
+// After sign-in: if the user picked a plan on the pricing page and has no active
+// subscription yet, show the plan screen (pre-selected) so they can go to Stripe.
+// Otherwise go straight to the dashboard.
+async function routeAfterSignIn() {
+  const pending = getPendingPlan();
+  if (pending) {
+    const sub = await fetchSubscription();
+    const active = sub && ['active', 'trialing'].includes(sub.status);
+    if (!active) { selectPlan(pending); showScreen('screen-gate'); return; }
+    clearPendingPlan();
+  }
   renderApp();
 }
+
+function skipPlanGate() { clearPendingPlan(); renderApp(); }
+function openPlanGate() { selectPlan(selectedPlan); showScreen('screen-gate'); }
 
 async function switchAccount() {
   // Sign out the current session and show login
@@ -1560,7 +1677,7 @@ async function doSignup() {
 
   const { error } = await supabase.auth.signUp({
     email, password: pass,
-    options: { data: { full_name: `${first} ${last}`, trade } }
+    options: { data: { full_name: `${first} ${last}`, trade, ...(getPendingPlan() ? { selected_plan: getPendingPlan() } : {}) } }
   });
 
   setAuthLoading('signup-btn', false);
@@ -1581,7 +1698,7 @@ async function doReset() {
   clearAuthMessages('reset');
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://aptopro.netlify.app/app.html'
+    redirectTo: `${SITE_URL}/app`
   });
 
   setAuthLoading('reset-btn', false);
@@ -1622,8 +1739,9 @@ async function doSetNewPassword() {
   } else {
     document.getElementById('newpwd-success').textContent = '✅ Password updated! Taking you to your dashboard...';
     document.getElementById('newpwd-success').classList.add('show');
-    setTimeout(() => {
-      currentUser = supabase.auth.getUser();
+    setTimeout(async () => {
+      const { data } = await supabase.auth.getUser();
+      currentUser = data && data.user;
       renderApp();
     }, 1500);
   }
@@ -1636,9 +1754,11 @@ async function doLogout() {
 
 // ─── PLAN SELECTION + CHECKOUT ───
 function selectPlan(plan) {
+  if (!VALID_PLANS.includes(plan)) return;
   selectedPlan = plan;
-  document.querySelectorAll('.gate-plan').forEach(el => el.classList.remove('selected'));
-  document.getElementById('plan-' + plan).classList.add('selected');
+  document.querySelectorAll('.gate-plan').forEach(el => { el.classList.remove('selected'); el.setAttribute('aria-pressed', 'false'); });
+  const el = document.getElementById('plan-' + plan);
+  if (el) { el.classList.add('selected'); el.setAttribute('aria-pressed', 'true'); }
 }
 
 function doCheckout() {
@@ -1655,10 +1775,14 @@ function doCheckout() {
   btn.disabled = true;
   btn.innerHTML = '<span>Redirecting to Stripe...</span>';
 
-  // Pass email to Stripe so checkout is pre-filled
-  const email = currentUser?.email;
-  const finalUrl = email ? url + '?prefilled_email=' + encodeURIComponent(email) : url;
-  window.location.href = finalUrl;
+  // Pass email (and user id) to Stripe so checkout is pre-filled and the payment can be
+  // matched to this account. The webhook currently matches subscriptions by email.
+  const params = new URLSearchParams();
+  if (currentUser?.email) params.set('prefilled_email', currentUser.email);
+  if (currentUser?.id) params.set('client_reference_id', currentUser.id);
+  clearPendingPlan();
+  const qs = params.toString();
+  window.location.href = qs ? `${url}?${qs}` : url;
 }
 
 // ─── RENDER APP ───
@@ -1717,17 +1841,17 @@ function renderLeadRows() {
   const container = document.getElementById('dash-lead-rows');
   container.innerHTML = SAMPLE_LEADS.slice(0,4).map(l => `
     <div class="lead-row" onclick="showPage('page-feed',null)">
-      <img class="lead-trade-img" src="${tradeMascot(l.tradeKey)}" alt="${l.trade}"/>
+      <img class="lead-trade-img" src="${tradeMascot(l.tradeKey)}" width="48" height="48" alt=""/>
       <div class="lead-row-info">
         <div class="lead-row-top">
-          <span class="lrt-trade">${l.trade}</span>
-          <span class="lrt-loc">📍 ${l.loc}</span>
-          <span class="lrt-time">${l.time}</span>
+          <span class="lrt-trade">${escapeHtml(l.trade)}</span>
+          <span class="lrt-loc">📍 ${escapeHtml(l.loc)}</span>
+          <span class="lrt-time">Example</span>
         </div>
-        <div class="lead-row-msg">${l.msg}</div>
+        <div class="lead-row-msg">${escapeHtml(l.msg)}</div>
         <div class="lead-row-badges">
           <span class="mini-badge ${l.urgency==='urgent'?'mb-urgent':l.urgency==='high'?'mb-high':'mb-normal'}">${l.urgency==='urgent'?'🔴 Urgent':l.urgency==='high'?'🟡 High intent':'Normal'}</span>
-          <span class="mini-badge mb-trade">${l.trade}</span>
+          <span class="mini-badge mb-trade">${escapeHtml(l.trade)}</span>
         </div>
       </div>
     </div>
@@ -1768,20 +1892,22 @@ async function scanForRealLeads() {
     : `🔍 Searching within ${radius} miles of ${location} for ${trade} ${typeLabel} posted in the ${daysLabel}...`;
 
   try {
-    const res = await fetch(`/api/scan-leads?trade=${encodeURIComponent(trade)}&location=${encodeURIComponent(location)}&radius=${radius}&mode=${mode}&searchType=${searchType}&days=${days}`);
+    const qs = new URLSearchParams({ trade, location, radius, mode, searchType, days }).toString();
+    const res = await fetch(`/api/scan-leads?${qs}`, { headers: await authHeaders() });
+    if (!res.ok) throw new Error(await apiErrorMessage(res));
     const data = await res.json();
 
     if (data.error) throw new Error(data.error);
 
     if (!data.leads || data.leads.length === 0) {
       const areaText = mode === 'national' ? 'across the UK' : `within ${radius} miles of ${location}`;
-      const debugMsg = data.debugInfo ? ` <small style="color:var(--danger)">[${data.message}] ${data.debugInfo}</small>` : '';
-      status.innerHTML = `No genuine ${typeLabel} found right now for <strong>${trade}</strong> ${areaText}. APTO searched ${data.totalSearched || 0} real result(s) across approved sites and found no matching requests at this moment. Try widening your radius, switching to UK-wide, or check back later.${debugMsg}`;
+      // (Internal debug details are no longer shown to users.)
+      status.innerHTML = `No genuine ${escapeHtml(typeLabel)} found right now for <strong>${escapeHtml(trade)}</strong> ${escapeHtml(areaText)}. APTO searched ${Number(data.totalSearched) || 0} real result(s) across approved sites and found no matching requests at this moment. Try widening your radius, switching to UK-wide, or check back later.`;
       document.getElementById('lead-cards-container').innerHTML = `
         <div class="empty-state" style="background:var(--white);border-radius:var(--r-md);border:1px solid var(--slate-mid);">
-          <img src="/images/mascot.png" alt="No leads"/>
+          <img src="/images/mascot-192.webp" width="192" height="192" alt="No leads"/>
           <h3>No live leads right now</h3>
-          <p>APTO just searched real public sources ${areaText} and found nothing matching at this moment. Try a wider radius or UK-wide search, or check back later — new posts appear throughout the day.</p>
+          <p>APTO just searched real public sources ${escapeHtml(areaText)} and found nothing matching at this moment. Try a wider radius or UK-wide search, or check back later — new posts appear throughout the day.</p>
         </div>`;
       btn.disabled = false;
       btn.innerHTML = '🔍 Scan for Leads';
@@ -1830,7 +1956,7 @@ function restoreLastResults() {
     // Clean empty state — no examples
     container.innerHTML = `
       <div class="empty-state" style="background:var(--white);border-radius:var(--r-md);border:1px solid var(--slate-mid);">
-        <img src="/images/mascot.png" alt=""/>
+        <img src="/images/mascot-192.webp" width="192" height="192" alt=""/>
         <h3>Ready to find leads</h3>
         <p>Choose your trade and location above then click <strong>Scan for Leads</strong> to search real public sites for people looking for your services.</p>
       </div>`;
@@ -1853,27 +1979,27 @@ function renderRealLeadCards(leads) {
     <div class="lead-card" id="real-lead-${i}">
       <div class="lc-header">
         <div class="lc-meta">
-          <span class="lc-score">Score ${l.score}/100</span>
-          📍 ${l.detectedLocation || 'Local'}${l.detectedTrade ? ' · ' + l.detectedTrade : ''}
+          <span class="lc-score">Score ${escapeHtml(l.score)}/100</span>
+          📍 ${escapeHtml(l.detectedLocation || 'Local')}${l.detectedTrade ? ' · ' + escapeHtml(l.detectedTrade) : ''}
         </div>
-        <span class="mini-badge ${l.urgency==='High'||l.urgency==='Urgent'?'mb-urgent':'mb-normal'}">${l.urgency} Urgency</span>
+        <span class="mini-badge ${l.urgency==='High'||l.urgency==='Urgent'?'mb-urgent':'mb-normal'}">${escapeHtml(l.urgency)} Urgency</span>
       </div>
       <div class="lc-body">
-        <img class="lc-trade-mascot" src="/images/mascot.png" alt=""/>
+        <img class="lc-trade-mascot" src="/images/mascot-192.webp" width="192" height="192" alt=""/>
         <div class="lc-body-text">
-          <div class="lc-msg">${l.headline}</div>
+          <div class="lc-msg">${escapeHtml(l.headline)}</div>
           <div class="lc-chips">
-            <a href="${l.sourceUrl}" target="_blank" class="lc-chip" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px;">🌐 Found on <strong>${l.sourceName||'web'}</strong> ↗</a>
+            <a href="${escapeHtml(safeUrl(l.sourceUrl))}" target="_blank" rel="noopener noreferrer" class="lc-chip" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px;">🌐 Found on <strong>${escapeHtml(l.sourceName||'web')}</strong> ↗</a>
           </div>
           <div class="lc-reply">
             <div class="lc-reply-label">🤖 AI Suggested Reply</div>
-            <div class="lc-reply-text">${l.reply}</div>
+            <div class="lc-reply-text">${escapeHtml(l.reply)}</div>
           </div>
         </div>
       </div>
       <div class="lc-actions">
-        <a class="btn-lc btn-lc-save" href="${l.sourceUrl}" target="_blank" style="text-align:center;text-decoration:none;">🔗 View Post</a>
-        <button class="btn-lc btn-lc-copy" onclick="copyRealReply(${i}, '${(l.reply||'').replace(/'/g,"\\'").replace(/\n/g,' ')}')">📋 Copy Reply</button>
+        <a class="btn-lc btn-lc-save" href="${escapeHtml(safeUrl(l.sourceUrl))}" target="_blank" rel="noopener noreferrer" style="text-align:center;text-decoration:none;">🔗 View Post</a>
+        <button class="btn-lc btn-lc-copy" onclick="copyRealReply(${i})">📋 Copy Reply</button>
         <button class="btn-lc btn-lc-dismiss" onclick="saveRealLead(${i})">💾 Save</button>
       </div>
     </div>
@@ -1899,8 +2025,10 @@ function saveRealLead(idx) {
   showToast('💾 Lead saved — view in Saved Leads');
 }
 
-function copyRealReply(idx, reply) {
-  copyText(reply);
+function copyRealReply(idx) {
+  const lead = lastScanResults[idx];
+  if (!lead) return;
+  copyText(lead.reply || '');
   trackStat('replied');
   const card = document.getElementById(`real-lead-${idx}`);
   if (card) {
@@ -1919,24 +2047,24 @@ function renderLeadCards() {
         <div class="lc-meta">
           <span class="lc-score">Score ${l.score}/100</span>
           <span style="opacity:0.6;font-style:italic;">(Example)</span>
-          ${l.trade} · 📍 ${l.loc} · ${l.time}
+          ${escapeHtml(l.trade)} · 📍 ${escapeHtml(l.loc)}
         </div>
         <span class="mini-badge ${l.urgency==='urgent'?'mb-urgent':l.urgency==='high'?'mb-high':'mb-normal'}">${l.urgency==='urgent'?'🔴 Urgent':l.urgency==='high'?'🟡 High':'Normal'}</span>
       </div>
       <div class="lc-body">
-        <img class="lc-trade-mascot" src="${tradeMascot(l.tradeKey)}" alt="${l.trade}"/>
+        <img class="lc-trade-mascot" src="${tradeMascot(l.tradeKey)}" alt=""/>
         <div class="lc-body-text">
-          <div class="lc-msg">${l.msg}</div>
-          <div class="lc-chips">${l.chips.map(c=>`<span class="lc-chip">${c}</span>`).join('')}</div>
+          <div class="lc-msg">${escapeHtml(l.msg)}</div>
+          <div class="lc-chips">${l.chips.map(c=>`<span class="lc-chip">${escapeHtml(c)}</span>`).join('')}</div>
           <div class="lc-reply">
             <div class="lc-reply-label">🤖 AI Suggested Reply</div>
-            <div class="lc-reply-text">${l.reply}</div>
+            <div class="lc-reply-text">${escapeHtml(l.reply)}</div>
           </div>
         </div>
       </div>
       <div class="lc-actions">
         <button class="btn-lc btn-lc-save" onclick="showToast('💾 Lead saved!')">💾 Save</button>
-        <button class="btn-lc btn-lc-copy" onclick="copyText('${l.reply.replace(/'/g,"\\'")}')">📋 Copy Reply</button>
+        <button class="btn-lc btn-lc-copy" onclick="copyText(SAMPLE_LEADS[${i}].reply)">📋 Copy Reply</button>
         <button class="btn-lc btn-lc-dismiss" onclick="this.closest('.lead-card').remove()">✕ Dismiss</button>
       </div>
     </div>
@@ -1969,20 +2097,22 @@ async function runAI() {
   try {
     const res = await fetch('/api/analyse-lead', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: await authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ leadText, trade, location })
     });
+    if (!res.ok) throw new Error(await apiErrorMessage(res));
     const r = await res.json();
     renderAIResult(r);
   } catch(err) {
-    showToast('⚠️ Analysis failed — try again');
+    showToast('⚠️ Analysis failed — ' + (err.message || 'try again'));
+    document.getElementById('ai-empty').style.display = 'block';
   }
 
   btn.disabled = false; btn.innerHTML = '⚡ Analyse with AI';
 }
 
 function renderAIResult(r) {
-  const score = r.score || 75;
+  const score = Math.max(0, Math.min(100, Number(r.score) || 75));
   const c = score >= 80 ? '#4ADE80' : score >= 60 ? '#F5C518' : '#94A3B8';
   const circ = 2 * Math.PI * 28;
   const offset = circ - (score/100) * circ;
@@ -1998,26 +2128,26 @@ function renderAIResult(r) {
       <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:20px;color:var(--white);">${score}</div>
     </div>
     <div>
-      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.5);margin-bottom:4px;">${r.trade} Lead</div>
-      <div style="font-family:var(--font-d);font-weight:800;font-size:16px;color:var(--white);margin-bottom:6px;">${r.headline||'Lead detected'}</div>
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.5);margin-bottom:4px;">${escapeHtml(r.trade)} Lead</div>
+      <div style="font-family:var(--font-d);font-weight:800;font-size:16px;color:var(--white);margin-bottom:6px;">${escapeHtml(r.headline||'Lead detected')}</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <span class="mini-badge ${urgClass}">${r.urgency} Urgency</span>
-        <span class="mini-badge mb-normal">📍 ${r.detectedLocation||'Local'}</span>
-        <span class="mini-badge mb-normal">${r.estimatedValue||'Value TBC'}</span>
+        <span class="mini-badge ${urgClass}">${escapeHtml(r.urgency)} Urgency</span>
+        <span class="mini-badge mb-normal">📍 ${escapeHtml(r.detectedLocation||'Local')}</span>
+        <span class="mini-badge mb-normal">${escapeHtml(r.estimatedValue||'Value TBC')}</span>
       </div>
     </div>`;
 
   document.getElementById('ai-metrics').innerHTML = `
     <div style="background:var(--slate);border-radius:var(--r-md);padding:12px;text-align:center;">
-      <div style="font-family:var(--font-d);font-weight:800;font-size:20px;color:var(--navy);">${r.intentScore||score}%</div>
+      <div style="font-family:var(--font-d);font-weight:800;font-size:20px;color:var(--navy);">${escapeHtml(r.intentScore||score)}%</div>
       <div style="font-size:10px;color:var(--grey);margin-top:4px;text-transform:uppercase;letter-spacing:0.05em;">Intent</div>
     </div>
     <div style="background:var(--slate);border-radius:var(--r-md);padding:12px;text-align:center;">
-      <div style="font-family:var(--font-d);font-weight:800;font-size:20px;color:var(--navy);">${r.confidence||score}</div>
+      <div style="font-family:var(--font-d);font-weight:800;font-size:20px;color:var(--navy);">${escapeHtml(r.confidence||score)}</div>
       <div style="font-size:10px;color:var(--grey);margin-top:4px;text-transform:uppercase;letter-spacing:0.05em;">Confidence</div>
     </div>
     <div style="background:var(--slate);border-radius:var(--r-md);padding:12px;text-align:center;">
-      <div style="font-family:var(--font-d);font-weight:800;font-size:16px;color:var(--navy);">${r.timeline||'Soon'}</div>
+      <div style="font-family:var(--font-d);font-weight:800;font-size:16px;color:var(--navy);">${escapeHtml(r.timeline||'Soon')}</div>
       <div style="font-size:10px;color:var(--grey);margin-top:4px;text-transform:uppercase;letter-spacing:0.05em;">Timeline</div>
     </div>`;
 
@@ -2046,14 +2176,21 @@ function saveSettings() { showToast('✅ Settings saved!'); }
 
 // ─── UI HELPERS ───
 function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.screen').forEach(s => {
+    const on = s.id === id;
+    s.classList.toggle('active', on);
+    s.hidden = !on;
+    s.setAttribute('aria-hidden', on ? 'false' : 'true');
+  });
   updateMobileNavVisibility();
 }
 
 function showPage(pageId, navEl) {
-  document.querySelectorAll('.page-content').forEach(p=>p.classList.remove('active'));
-  document.getElementById(pageId).classList.add('active');
+  document.querySelectorAll('.page-content').forEach(p => {
+    const on = p.id === pageId;
+    p.classList.toggle('active', on);
+    p.hidden = !on;
+  });
   if (navEl) {
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
     navEl.classList.add('active');
@@ -2127,9 +2264,11 @@ let unreadLeads   = [];
 let bellOpen      = false;
 
 // Poll for new leads every 5 minutes while dashboard is open
+let leadPollTimer = null;
 function startLeadPolling() {
+  if (leadPollTimer) return;
   checkForNewLeads();
-  setInterval(checkForNewLeads, 5 * 60 * 1000);
+  leadPollTimer = setInterval(checkForNewLeads, 5 * 60 * 1000);
 }
 
 async function checkForNewLeads() {
@@ -2222,42 +2361,35 @@ function renderBellPanel() {
   }
 
   panel.innerHTML = unreadLeads.map(l => `
-    <div style="padding:14px 16px;border-bottom:1px solid var(--slate-mid);cursor:pointer;" onclick="window.open('${l.source_url || '#'}','_blank')">
+    <a href="${escapeHtml(safeUrl(l.source_url))}" target="_blank" rel="noopener noreferrer" style="display:block;padding:14px 16px;border-bottom:1px solid var(--slate-mid);cursor:pointer;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
         <div style="display:flex;align-items:center;gap:8px;">
-          <span style="background:var(--navy);color:var(--yellow);font-family:var(--font-d);font-weight:800;font-size:12px;padding:2px 8px;border-radius:100px;">${l.score}</span>
-          <span style="font-size:13px;font-weight:600;color:var(--navy);">${l.trade || 'Trade'}</span>
-          <span style="font-size:12px;color:var(--grey);">📍 ${l.location || 'Local'}</span>
+          <span style="background:var(--navy);color:var(--yellow);font-family:var(--font-d);font-weight:800;font-size:12px;padding:2px 8px;border-radius:100px;">${escapeHtml(l.score)}</span>
+          <span style="font-size:13px;font-weight:600;color:var(--navy);">${escapeHtml(l.trade || 'Trade')}</span>
+          <span style="font-size:12px;color:var(--grey);">📍 ${escapeHtml(l.location || 'Local')}</span>
         </div>
-        <span style="font-size:10px;color:var(--grey);">${new Date(l.found_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</span>
+        <span style="font-size:10px;color:var(--grey);">${l.found_at ? escapeHtml(new Date(l.found_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})) : ''}</span>
       </div>
-      <div style="font-size:13px;color:var(--dark);line-height:1.5;margin-bottom:8px;">${l.headline || 'New lead found'}</div>
-      <div style="font-size:11px;color:var(--grey);background:var(--slate);border-radius:var(--r-sm);padding:8px 10px;line-height:1.6;">${l.reply || ''}</div>
+      <div style="font-size:13px;color:var(--dark);line-height:1.5;margin-bottom:8px;">${escapeHtml(l.headline || 'New lead found')}</div>
+      <div style="font-size:11px;color:var(--grey);background:var(--slate);border-radius:var(--r-sm);padding:8px 10px;line-height:1.6;">${escapeHtml(l.reply || '')}</div>
       <div style="margin-top:8px;font-size:11px;color:var(--orange);font-weight:600;">🔗 Tap to view original post →</div>
-    </div>
+    </a>
   `).join('');
 }
 
 async function markLeadsRead() {
   if (!currentUser || !unreadLeads.length) return;
   try {
-    const session = await supabase.auth.getSession();
-    const token   = session.data.session?.access_token;
-    if (!token) return;
-
-    // Mark all as read in Supabase
-    await fetch(
-      `${process.env.SUPABASE_URL}/rest/v1/leads?user_id=eq.${currentUser.id}&is_read=eq.false`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'apikey': 'sb_publishable_wYMMhxVA7noyBwUYFogGRQ_HOBw4-t8'
-        },
-        body: JSON.stringify({ is_read: true })
-      }
-    );
+    // Mark all as read in Supabase. (Previously this used `process.env.SUPABASE_URL`,
+    // which does not exist in the browser and threw a ReferenceError.) Uses the same
+    // client-side Supabase client as the rest of the page; requires a row-level-security
+    // policy that lets users update their own rows in `leads`.
+    const { error } = await supabase
+      .from('leads')
+      .update({ is_read: true })
+      .eq('user_id', currentUser.id)
+      .eq('is_read', false);
+    if (error) throw error;
 
     // Clear badge
     const bellDot = document.getElementById('bell-dot');
@@ -2272,73 +2404,12 @@ function toggleAlerts() {
   alertsEnabled = !alertsEnabled;
   updateAlertUI();
   saveAlertsToSupabase(alertsEnabled);
+  if (alertsEnabled) startLeadPolling();
   showToast(alertsEnabled ? '🔔 Lead alerts ON — APTO will scan every hour' : '🔕 Lead alerts turned off');
 }
 
-function updateAlertUI() {
-  const bellIcon = document.getElementById('bell-icon');
-  const bellBtn  = document.getElementById('bell-btn');
-  const badge    = document.getElementById('notif-badge');
-  const toggle   = document.getElementById('alerts-toggle');
-  const knob     = document.getElementById('alerts-toggle-knob');
-  const label    = document.getElementById('alerts-toggle-label');
-  const sub      = document.getElementById('alerts-toggle-sub');
-  const settings = document.getElementById('alert-settings');
-  const bellVisual = document.getElementById('bell-visual');
-
-  if (bellIcon) bellIcon.textContent = alertsEnabled ? '🔔' : '🔕';
-  if (bellBtn)  bellBtn.style.background = alertsEnabled ? 'rgba(22,163,74,0.1)' : '';
-  if (badge)    badge.style.display = alertsEnabled ? 'inline-flex' : 'none';
-  if (toggle)   toggle.style.background = alertsEnabled ? 'var(--success)' : 'var(--slate-mid)';
-  if (knob)     knob.style.transform    = alertsEnabled ? 'translateX(26px)' : 'translateX(0)';
-  if (label)    label.textContent = alertsEnabled ? 'Alerts are ON ✅ — APTO checks for new leads every hour' : 'Email alerts: OFF';
-  if (sub)      sub.textContent   = alertsEnabled ? 'Every hour APTO scans for new job requests. When it finds one that matches your trade, the bell rings and the lead appears in your panel.' : 'Turn on to get notified when new leads appear';
-  if (settings) settings.style.display = alertsEnabled ? 'block' : 'none';
-  if (bellVisual) bellVisual.style.background = alertsEnabled ? 'var(--success-lt)' : 'var(--slate)';
-}
-
-async function saveAlertsToSupabase(enabled) {
-  if (!currentUser) return;
-  try {
-    await supabase.from('user_settings').upsert({
-      user_id:         currentUser.id,
-      alerts_enabled:  enabled,
-      alert_email:     currentUser.email,
-      alert_frequency: document.getElementById('alert-frequency')?.value || 'instant',
-      alert_min_score: parseInt(document.getElementById('alert-min-score')?.value || '70'),
-      trade:           currentUser.user_metadata?.trade || 'plumbing',
-      updated_at:      new Date().toISOString()
-    }, { onConflict: 'user_id' });
-  } catch (err) {
-    console.log('Supabase save skipped:', err.message);
-  }
-}
-
-async function loadAlertSettings() {
-  if (!currentUser) return;
-  try {
-    const { data } = await supabase
-      .from('user_settings')
-      .select('alerts_enabled,alert_frequency,alert_min_score,alert_email')
-      .eq('user_id', currentUser.id)
-      .single();
-    if (data) {
-      alertsEnabled = data.alerts_enabled || false;
-      updateAlertUI();
-    }
-  } catch (err) {
-    console.log('Alert settings not loaded yet');
-  }
-  // Start polling for new leads
-  if (alertsEnabled) startLeadPolling();
-}
-
-function saveAlertSettings() {
-  saveAlertsToSupabase(alertsEnabled);
-  if (alertsEnabled) startLeadPolling();
-  showToast('✅ Alert settings saved');
-}
-
+// (Duplicate earlier definitions of updateAlertUI / saveAlertsToSupabase / loadAlertSettings /
+//  saveAlertSettings were removed — the later definitions below always overrode them.)
 
 function updateAlertUI() {
   // Bell button in topbar
@@ -2363,8 +2434,8 @@ function updateAlertUI() {
 
   if (toggle) toggle.style.background = alertsEnabled ? 'var(--success)' : 'var(--slate-mid)';
   if (knob)   knob.style.transform    = alertsEnabled ? 'translateX(26px)' : 'translateX(0)';
-  if (label)  label.textContent       = alertsEnabled ? 'Email alerts: ON ✅' : 'Email alerts: OFF';
-  if (sub)    sub.textContent         = alertsEnabled ? 'You\'ll be emailed when new leads match your trade' : 'Turn on to get notified when new leads appear';
+  if (label)  label.textContent       = alertsEnabled ? 'Lead alerts: ON ✅' : 'Lead alerts: OFF';
+  if (sub)    sub.textContent         = alertsEnabled ? 'APTO checks for new leads every hour and rings the bell in your dashboard when it finds one' : 'Turn on to get notified when new leads appear';
   if (settings) settings.style.display = alertsEnabled ? 'block' : 'none';
   if (bellVisual) bellVisual.style.background = alertsEnabled ? 'var(--success-lt)' : 'var(--slate)';
 }
@@ -2408,10 +2479,13 @@ async function loadAlertSettings() {
   } catch (err) {
     console.log('Alert settings not loaded yet:', err.message);
   }
+  // Start polling for new leads (this call was lost when the duplicate function overrode it)
+  if (alertsEnabled) startLeadPolling();
 }
 
 function saveAlertSettings() {
   saveAlertsToSupabase(alertsEnabled);
+  if (alertsEnabled) startLeadPolling();
   showToast('✅ Alert settings saved');
 }
 
@@ -2424,7 +2498,7 @@ function renderSavedLeads() {
   if (saved.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
-        <img src="/images/mascot.png" alt="No saved leads"/>
+        <img src="/images/mascot-192.webp" width="192" height="192" alt="No saved leads"/>
         <h3>No saved leads yet</h3>
         <p>When you save a lead from Find Leads or Facebook Leads it will appear here so you can follow up.</p>
         <button class="btn-sm btn-navy" onclick="showPage('page-feed',null)">Go to Find Leads →</button>
@@ -2444,30 +2518,35 @@ function renderSavedLeads() {
     <div class="lead-card" id="saved-lead-${idx}">
       <div class="lc-header">
         <div class="lc-meta">
-          <span class="lc-score">Score ${l.score||'?'}/100</span>
-          📍 ${l.detectedLocation||l.location||'Local'}${l.detectedTrade?' · '+l.detectedTrade:''}
-          ${date?`<span style="color:var(--grey);font-size:11px;margin-left:8px;">Saved ${date}</span>`:''}
+          <span class="lc-score">Score ${escapeHtml(l.score||'?')}/100</span>
+          📍 ${escapeHtml(l.detectedLocation||l.location||'Local')}${l.detectedTrade?' · '+escapeHtml(l.detectedTrade):''}
+          ${date?`<span style="color:var(--grey);font-size:11px;margin-left:8px;">Saved ${escapeHtml(date)}</span>`:''}
         </div>
-        <span class="mini-badge ${l.urgency==='High'||l.urgency==='Urgent'?'mb-urgent':'mb-normal'}">${l.urgency||'Normal'}</span>
+        <span class="mini-badge ${l.urgency==='High'||l.urgency==='Urgent'?'mb-urgent':'mb-normal'}">${escapeHtml(l.urgency||'Normal')}</span>
       </div>
       <div class="lc-body">
-        <img class="lc-trade-mascot" src="/images/mascot.png" alt=""/>
+        <img class="lc-trade-mascot" src="/images/mascot-192.webp" width="192" height="192" alt=""/>
         <div class="lc-body-text">
-          <div class="lc-msg">${l.headline||l.msg||'Saved lead'}</div>
-          ${l.sourceUrl?`<div class="lc-chips"><a href="${l.sourceUrl}" target="_blank" class="lc-chip" style="text-decoration:none;">🌐 ${l.sourceName||'View source'} ↗</a></div>`:''}
+          <div class="lc-msg">${escapeHtml(l.headline||l.msg||'Saved lead')}</div>
+          ${l.sourceUrl?`<div class="lc-chips"><a href="${escapeHtml(safeUrl(l.sourceUrl))}" target="_blank" rel="noopener noreferrer" class="lc-chip" style="text-decoration:none;">🌐 ${escapeHtml(l.sourceName||'View source')} ↗</a></div>`:''}
           <div class="lc-reply">
             <div class="lc-reply-label">🤖 AI Suggested Reply</div>
-            <div class="lc-reply-text">${l.reply||'No reply saved'}</div>
+            <div class="lc-reply-text">${escapeHtml(l.reply||'No reply saved')}</div>
           </div>
         </div>
       </div>
       <div class="lc-actions">
-        ${l.sourceUrl?`<a class="btn-lc btn-lc-save" href="${l.sourceUrl}" target="_blank" style="text-align:center;text-decoration:none;">🔗 View Post</a>`:''}
-        <button class="btn-lc btn-lc-copy" onclick="copyText('${(l.reply||'').replace(/'/g,"\\'").replace(/\n/g,' ')}')">📋 Copy Reply</button>
+        ${l.sourceUrl?`<a class="btn-lc btn-lc-save" href="${escapeHtml(safeUrl(l.sourceUrl))}" target="_blank" rel="noopener noreferrer" style="text-align:center;text-decoration:none;">🔗 View Post</a>`:''}
+        <button class="btn-lc btn-lc-copy" onclick="copySavedReply(${idx})">📋 Copy Reply</button>
         <button class="btn-lc btn-lc-dismiss" onclick="deleteSavedLead(${idx})">🗑️ Remove</button>
       </div>
     </div>`;
   }).join('');
+}
+
+function copySavedReply(idx) {
+  const saved = JSON.parse(localStorage.getItem('apto_saved_leads') || '[]');
+  if (saved[idx]) copyText(saved[idx].reply || '');
 }
 
 function deleteSavedLead(idx) {
@@ -2530,11 +2609,11 @@ function renderReports() {
       const max = tradeEntries[0][1];
       breakdown.innerHTML = tradeEntries.map(([trade, count]) => `
         <div style="display:flex;align-items:center;gap:12px;">
-          <div style="width:120px;font-size:13px;color:var(--navy);font-weight:600;flex-shrink:0;">${trade}</div>
+          <div style="width:120px;font-size:13px;color:var(--navy);font-weight:600;flex-shrink:0;">${escapeHtml(trade)}</div>
           <div style="flex:1;background:var(--slate);border-radius:100px;height:8px;overflow:hidden;">
-            <div style="height:100%;background:var(--navy);border-radius:100px;width:${Math.round(count/max*100)}%;"></div>
+            <div style="height:100%;background:var(--navy);border-radius:100px;width:${Math.round(Number(count)/max*100)}%;"></div>
           </div>
-          <div style="font-size:13px;color:var(--grey);font-weight:600;width:24px;text-align:right;">${count}</div>
+          <div style="font-size:13px;color:var(--grey);font-weight:600;width:24px;text-align:right;">${Number(count)}</div>
         </div>
       `).join('');
     }
@@ -2585,7 +2664,7 @@ function renderMap() {
   if (locationBreakdown) {
     locationBreakdown.innerHTML = sorted.map(([loc, count]) => `
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-        <div style="font-size:13px;color:var(--navy);font-weight:600;min-width:140px;">📍 ${loc}</div>
+        <div style="font-size:13px;color:var(--navy);font-weight:600;min-width:140px;">📍 ${escapeHtml(loc)}</div>
         <div style="flex:1;background:var(--slate);border-radius:100px;height:8px;overflow:hidden;">
           <div style="height:100%;background:var(--orange);border-radius:100px;width:${Math.round(count/maxCount*100)}%;"></div>
         </div>
@@ -2602,19 +2681,19 @@ function renderMap() {
     fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(firstLoc + ' UK')}&format=json&limit=1`)
       .then(r => r.json())
       .then(data => {
-        const lat = data[0]?.lat || 50.8229;
-        const lon = data[0]?.lon || -0.1363;
+        const lat = parseFloat(data[0]?.lat) || 50.8229;
+        const lon = parseFloat(data[0]?.lon) || -0.1363;
         const zoom = 10;
         // Build OSM iframe with markers for each saved lead location
         mapEl.innerHTML = `<iframe
           width="100%" height="100%" style="border:0;border-radius:var(--r-lg);"
-          loading="lazy" allowfullscreen
+          loading="lazy" allowfullscreen title="Map of your saved leads"
           src="https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(lon)-0.5},${parseFloat(lat)-0.3},${parseFloat(lon)+0.5},${parseFloat(lat)+0.3}&layer=mapnik&marker=${lat},${lon}">
         </iframe>`;
         // Add view full map link
         const linkEl = document.createElement('div');
         linkEl.style.cssText = 'text-align:center;padding:8px;background:var(--white);font-size:12px;';
-        linkEl.innerHTML = `<a href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=${zoom}" target="_blank" style="color:var(--navy);font-weight:600;">View full map on OpenStreetMap ↗</a>`;
+        linkEl.innerHTML = `<a href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=${zoom}" target="_blank" rel="noopener noreferrer" style="color:var(--navy);font-weight:600;">View full map on OpenStreetMap ↗</a>`;
         mapEl.parentElement.appendChild(linkEl);
       })
       .catch(() => {
@@ -2698,11 +2777,11 @@ async function runQuickPaste() {
   try {
     const res = await fetch('/api/analyse-lead', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: await authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ leadText: text, trade, location: 'the local area' })
     });
+    if (!res.ok) throw new Error(await apiErrorMessage(res));
     const result = await res.json();
-    if (!res.ok) throw new Error(result.error || 'Analysis failed');
 
     clearInterval(progTimer);
     prog.style.width = '100%';
@@ -2725,7 +2804,7 @@ function renderQuickPasteResult(r) {
   qpCurrentReply = r.reply || '';
 
   // Score
-  const score = r.score || 75;
+  const score = Math.max(0, Math.min(100, Number(r.score) || 75));
   const scoreEl = document.getElementById('qp-score-num');
   scoreEl.textContent = score;
   scoreEl.style.color = score >= 80 ? '#4ADE80' : score >= 60 ? 'var(--yellow)' : 'rgba(255,255,255,0.5)';
@@ -2739,9 +2818,9 @@ function renderQuickPasteResult(r) {
     : 'background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6)';
 
   document.getElementById('qp-badges').innerHTML = `
-    <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;${urgClass}">${r.urgency} Urgency</span>
-    <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.65);">📍 ${r.detectedLocation || 'Local'}</span>
-    <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.65);">${r.estimatedValue || ''}</span>
+    <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;${urgClass}">${escapeHtml(r.urgency)} Urgency</span>
+    <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.65);">📍 ${escapeHtml(r.detectedLocation || 'Local')}</span>
+    <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.65);">${escapeHtml(r.estimatedValue || '')}</span>
   `;
 
   document.getElementById('qp-insight').textContent = r.insight || '';
@@ -2799,35 +2878,40 @@ async function loadSubscription() {
   if (!currentUser) return;
 
   try {
-    const { data, error } = await supabase
-      .from('subscriptions')
-      .select('plan, status, current_period_end')
-      .eq('email', currentUser.email)
-      .single();
+    const data = await fetchSubscription();
 
     const planChip    = document.getElementById('topbar-plan');
     const planName    = document.getElementById('billing-plan-name');
     const planDetail  = document.getElementById('billing-detail');
+    const choosePlan  = document.getElementById('btn-choose-plan');
+    const statusRow   = document.getElementById('billing-status');
+    const statusText  = document.getElementById('billing-status-text');
+    const sidebarPlan = document.getElementById('sidebar-plan');
 
-    if (error || !data) {
-      // No subscription found — show free trial
-      if (planChip)   planChip.textContent  = '⭐ Free Trial';
-      if (planName)   planName.textContent  = 'Free Trial';
-      if (planDetail) planDetail.textContent = 'You are on a free trial. Upgrade to a paid plan to keep full access.';
+    if (!data) {
+      // No subscription found. (Previously this said "Free Trial", but there is no trial in Stripe.)
+      if (planChip)   planChip.textContent  = 'No plan yet';
+      if (sidebarPlan) sidebarPlan.textContent = 'No plan yet';
+      if (planName)   planName.textContent  = 'No active plan';
+      if (planDetail) planDetail.textContent = "You don't have an active subscription yet. Choose a plan to subscribe — billed monthly, cancel anytime.";
+      if (choosePlan) choosePlan.style.display = 'inline-flex';
       return;
     }
+    if (statusRow && statusText) { statusRow.style.display = 'flex'; statusText.textContent = data.status ? data.status.replace('_',' ') : ''; }
 
     const plans = {
       starter:      { label: '🥉 Starter',      chip: '🥉 Starter — £9.99/mo' },
       professional: { label: '🥈 Professional', chip: '🥈 Pro — £14.99/mo' },
       ultimate:     { label: '🥇 Ultimate',     chip: '🥇 Ultimate — £19.99/mo' },
-      free:         { label: 'Free Trial',       chip: '⭐ Free Trial' },
+      free:         { label: 'No active',        chip: 'No plan yet' },
     };
 
     const p = plans[data.plan] || plans.free;
 
     if (planChip) planChip.textContent = p.chip;
+    if (sidebarPlan) sidebarPlan.textContent = p.label;
     if (planName) planName.textContent = `${p.label} Plan`;
+    if (choosePlan) choosePlan.style.display = ['active','trialing','past_due'].includes(data.status) ? 'none' : 'inline-flex';
 
     const endDate = data.current_period_end
       ? new Date(data.current_period_end).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })

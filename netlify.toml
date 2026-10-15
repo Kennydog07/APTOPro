@@ -5,6 +5,62 @@
 [build.environment]
   NODE_VERSION = "18"
 
+# Canonical URLs: send the duplicate .html addresses to the clean ones (forced 301).
+# Netlify serves /trades, /about etc. from the matching .html file, and rewrites are not
+# re-run through these rules, so this does not loop. If it ever did, delete this block.
+[[redirects]]
+  from = "/index.html"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/trades.html"
+  to = "/trades"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/about.html"
+  to = "/about"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/contact.html"
+  to = "/contact"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/privacy.html"
+  to = "/privacy"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/terms.html"
+  to = "/terms"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/cookies.html"
+  to = "/cookies"
+  status = 301
+  force = true
+
+# Common aliases for the legal pages
+[[redirects]]
+  from = "/privacy-policy"
+  to = "/privacy"
+  status = 301
+
+[[redirects]]
+  from = "/gdpr"
+  to = "/privacy#your-rights"
+  status = 301
+
 # Redirect all app routes to app.html (SPA-style for dashboard)
 [[redirects]]
   from = "/app"
@@ -23,20 +79,32 @@
   status = 200
 
 # Security headers
+# CSP note: 'unsafe-inline' is still needed for script-src/style-src because the pages use
+# inline <script>/<style> blocks and onclick= handlers. Moving those into .js files would allow
+# removing it. connect-src allows Supabase (auth/db/realtime) and OpenStreetMap Nominatim
+# (Lead Map geocoding); frame-src allows the OpenStreetMap embed. If you switch Supabase
+# project, *.supabase.co already covers the new URL.
 [[headers]]
   for = "/*"
   [headers.values]
     X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://nominatim.openstreetmap.org; frame-src https://www.openstreetmap.org; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
 
-# Cache static assets
+# Cache static assets. Filenames are not content-hashed, so use one week rather than
+# "immutable" — if you replace an image, give it a new filename (or wait up to 7 days).
 [[headers]]
   for = "/images/*"
   [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
 
 [[headers]]
   for = "/css/*"
@@ -49,6 +117,12 @@
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
 
+# ai-engine.html is an old prototype that is not linked anywhere (and does not work) — keep it out of search
+[[headers]]
+  for = "/ai-engine*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
 # Stripe webhook (raw body needed)
 [[redirects]]
   from = "/api/stripe-webhook"
@@ -58,6 +132,32 @@
 [[redirects]]
   from = "/trades"
   to = "/trades.html"
+  status = 200
+
+# Clean URLs for the information pages (Netlify also does this automatically; explicit for clarity)
+[[redirects]]
+  from = "/about"
+  to = "/about.html"
+  status = 200
+
+[[redirects]]
+  from = "/contact"
+  to = "/contact.html"
+  status = 200
+
+[[redirects]]
+  from = "/privacy"
+  to = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/terms"
+  to = "/terms.html"
+  status = 200
+
+[[redirects]]
+  from = "/cookies"
+  to = "/cookies.html"
   status = 200
 
 # Hourly scheduled lead scanner
